@@ -1,0 +1,11 @@
+# Additional dependencies for event audit/refinement with existing torch 2.1.2.
+# Install only in the data-disk virtualenv; do not replace the system CUDA stack.
+numpy==1.26.3
+scipy==1.10.1
+plyfile==1.0.3
+opencv-python-headless==4.8.1.78
+imageio==2.34.0
+imageio-ffmpeg==0.4.9
+ninja==1.11.1.1
+setuptools==69.5.1
+wheel==0.43.0

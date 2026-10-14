@@ -1,0 +1,424 @@
+"use strict";
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("canvas"), stage = $("stage"), context = canvas.getContext("2d", {alpha: false});
+  const rightCanvas = $("comparisonCanvas"), rightContext = rightCanvas.getContext("2d", {alpha: false});
+  const state = {scene: null, socket: null, playing: false, frame: 0, dirty: true, pending: new Set(),
+    id: 0, yaw: 0, pitch: 0, zoom: 1, pan_x: 0, pan_y: 0, background: "dark", speed: 1,
+    lastReceived: 0, displayedFrame: -1, lastDrawnId: 0, delivered: [], retry: null,
+    stream: null, minimumId: 0, interacting: false, lastStats: 0, lastLabels: 0, lastStreamStatus: 0,
+    autoRateCap: 60};
+  let pointer = null, wheelTimer = null;
+  const launchOptions = new URLSearchParams(window.location.search);
+  let autoStartPending = launchOptions.get("autoplay") === "1";
+
+  function stopStream() {
+    if (!state.stream) return;
+    state.stream.buffer.close(); state.stream = null;
+    state.minimumId = ++state.id; state.pending.clear();
+    if (state.socket?.readyState === WebSocket.OPEN) state.socket.send(JSON.stringify({type: "stop"}));
+  }
+
+  function status(text, kind = "") {
+    $("connectionText").textContent = text;
+    $("statusDot").className = `dot ${kind}`;
+  }
+  function overlay(title, message, error = false) {
+    $("overlay").hidden = false;
+    $("overlay").classList.toggle("error", error);
+    $("loadTitle").textContent = title;
+    $("loadMessage").textContent = message;
+  }
+  function controls(enabled) {
+    ["play", "previous", "next", "restart", "timeline", "snapshot"].forEach(id => $(id).disabled = !enabled);
+  }
+  function setPlaying(value) {
+    stopStream();
+    state.playing = value && !!state.scene && state.socket?.readyState === WebSocket.OPEN;
+    if (state.playing && state.frame >= state.scene.frame_count - 1) state.frame = 0;
+    $("play").replaceChildren(document.createTextNode(state.playing ? "Ⅱ " : "▶ "));
+    const label = document.createElement("span");
+    label.textContent = state.playing ? "暂停" : "播放";
+    $("play").append(label);
+    $("play").setAttribute("aria-label", label.textContent);
+    state.dirty = true;
+    labels();
+  }
+  function setFrame(frame) {
+    if (!state.scene) return;
+    state.frame = Math.max(0, Math.min(state.scene.frame_count - 1, Math.round(frame)));
+    state.dirty = true;
+    labels();
+  }
+  function labels() {
+    if (!state.scene) return;
+    const scene = state.scene, seconds = scene.times_seconds[state.frame];
+    $("timeline").value = state.frame;
+    $("timeline").setAttribute("aria-valuetext", `${seconds.toFixed(2)} 秒，第 ${state.frame + 1} 帧`);
+    $("timeLabel").replaceChildren(document.createTextNode(seconds.toFixed(2) + " "));
+    const total = document.createElement("small"); total.textContent = `/ ${scene.duration_seconds.toFixed(2)} s`;
+    $("timeLabel").append(total);
+    $("frameLabel").textContent = `帧 ${String(state.frame + 1).padStart(3, "0")} / ${scene.frame_count}`;
+    const rpm = scene.rpm[state.frame];
+    $("rpm").textContent = Number.isFinite(rpm) ? `${rpm.toFixed(1)} RPM` : "—";
+    $("motionLabel").textContent = scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
+      seconds === 0 ? "静止 · 起始状态" : seconds < scene.ramp_seconds ? "平滑加速" : "匀速旋转");
+    if (scene.event_validation) {
+      const check = scene.event_validation.interval_checks?.[state.frame - 1];
+      const names = {relative_l1: '变化幅度偏差', polarity_agreement: '事件极性不一致',
+        cosine: '变化分布不一致', unsupported_change_fraction: '存在事件未支持的变化',
+        insufficient_event_evidence: '事件证据不足'};
+      $("eventInterval").textContent = state.frame === 0 ? "当前：初始帧" : check ?
+        `当前：${check.passed ? '通过粗尺度检查' : check.reasons.map(reason => names[reason] || reason).join(' / ')}${check.reference_weak ? ' · 参考证据偏弱' : ''}` :
+        scene.event_validation.failed_intervals.includes(state.frame - 1) ? "当前时间段：未通过事件检查" :
+          "当前时间段：通过粗尺度事件检查";
+    }
+  }
+  function reset(yaw = 0, pitch = 0) {
+    Object.assign(state, {yaw, pitch, zoom: 1, pan_x: 0, pan_y: 0, dirty: true});
+    document.querySelectorAll(".preset").forEach(button => button.classList.toggle("active",
+      +button.dataset.yaw === yaw && +button.dataset.pitch === pitch));
+    const viewName = yaw === 0 && pitch === 0 ? "正视" : yaw === 180 && pitch === 0 ? "背面" :
+      yaw === 0 && pitch === 35 ? "俯视" : yaw === 0 && pitch === -35 ? "仰视" : "自由视角";
+    $("viewLabel").textContent = `${viewName} · 透视`;
+  }
+  function dimensions() {
+    const rect = stage.getBoundingClientRect(), longest = +$("resolution").value;
+    // Keep the calibrated square view in both panels. A narrow panel with the
+    // same vertical FOV would crop the bucket and look like missing geometry.
+    if (state.scene?.comparison) return {width: longest, height: longest};
+    const ratio = Math.max(0.2, Math.min(5, rect.width / (state.scene?.comparison ? 2 : 1) / rect.height));
+    return ratio >= 1 ? {width: longest, height: Math.max(128, Math.round(longest / ratio))} :
+      {width: Math.max(128, Math.round(longest * ratio)), height: longest};
+  }
+  function requestFrame() {
+    if (state.playing && !state.interacting) {
+      if (state.dirty) startStream();
+      return;
+    }
+    // Camera previews and exact single-frame inspection keep the old bounded
+    // request mode. Continuous playback uses a credit-based push stream.
+    if (!state.scene || state.pending.size >= 4 || !state.dirty || state.socket?.readyState !== WebSocket.OPEN || document.hidden) return;
+    state.dirty = false;
+    const {yaw, pitch, zoom, pan_x, pan_y, background} = state;
+    const id = ++state.id;
+    state.pending.add(id);
+    state.socket.send(JSON.stringify({id, frame: state.frame, yaw, pitch, zoom, pan_x, pan_y,
+      background, fovy: state.scene.fovy,
+      quality: state.interacting ? 72 : (state.scene.default_still_quality ?? 85), ...dimensions()}));
+  }
+  function startStream() {
+    if (!state.scene || state.socket?.readyState !== WebSocket.OPEN || document.hidden) return;
+    stopStream(); state.pending.clear();
+    const id = ++state.id;
+    const defaultView = state.scene.prewarmed_frames === state.scene.frame_count &&
+      state.yaw === 0 && state.pitch === 0 && state.zoom === 1 && state.pan_x === 0 && state.pan_y === 0 &&
+      state.background === state.scene.default_background && +$("resolution").value === state.scene.default_resolution;
+    const rate = $("streamRate").value === 'auto' ? Math.min(state.autoRateCap,
+      state.scene.comparison && !defaultView ? 30 : 60) : +$("streamRate").value;
+    state.minimumId = id; state.dirty = false; state.delivered = [];
+    const windowSize = state.scene.stream_window || 24;
+    const warmup = Math.min(windowSize - 4, Math.ceil(rate * (state.scene.buffer_seconds || .4)));
+    state.stream = {id, buffer: new GaussianPlayback(rate, warmup, windowSize), ack: -1,
+      jpeg: new Map(), jpegBytes: 0, cachePending: new Set()};
+    window.gaussianViewerStats = {presented: 0, underruns: 0, dropped: 0, buffered: 0,
+      target_fps: rate, cache_hits: 0, client_cache_hits: 0, decode_ms: 0, draw_ms: 0};
+    const {yaw, pitch, zoom, pan_x, pan_y, background} = state;
+    state.socket.send(JSON.stringify({type: "stream", id, frame: state.frame, speed: state.speed,
+      rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background,
+      fovy: state.scene.fovy, quality: state.scene.default_stream_quality ?? 78, ...dimensions()}));
+    $("streamStatus").textContent = "预缓冲…";
+  }
+  function present(item, close = true) {
+    const {meta, bitmap} = item, now = performance.now();
+    const panelWidth = meta.comparison ? meta.panel_width : meta.width;
+    if (canvas.width !== panelWidth || canvas.height !== meta.height) {
+      canvas.width = panelWidth; canvas.height = meta.height;
+    }
+    if (meta.comparison) {
+      if (rightCanvas.width !== panelWidth || rightCanvas.height !== meta.height) {
+        rightCanvas.width = panelWidth; rightCanvas.height = meta.height;
+      }
+      context.drawImage(bitmap, 0, 0, panelWidth, meta.height, 0, 0, panelWidth, meta.height);
+      rightContext.drawImage(bitmap, panelWidth, 0, panelWidth, meta.height, 0, 0, panelWidth, meta.height);
+      rightCanvas.dataset.frame = String(meta.right_frame);
+    } else context.drawImage(bitmap, 0, 0);
+    if (close) bitmap.close();
+    canvas.dataset.frame = String(meta.frame);
+    canvas.dataset.requestId = meta.stream ? `${meta.id}:${meta.stream.seq}` : String(meta.id);
+    state.displayedFrame = meta.frame; state.lastReceived = now;
+    state.delivered.push(now); state.delivered = state.delivered.filter(t => t >= now - 1500);
+    if (now - state.lastStats >= 250) {
+      const elapsed = now - state.delivered[0];
+      $("displayFps").textContent = elapsed > 0 ? ((state.delivered.length - 1) * 1000 / elapsed).toFixed(1) : "—";
+      $("renderMs").textContent = meta.render_ms.toFixed(1);
+      $("renderKind").textContent = meta.client_cache_hit ? "ms · 本地帧缓存" :
+        meta.cache_hit ? "ms · 同视角缓存" : "ms 渲染";
+      state.lastStats = now;
+    }
+    if (meta.stream) {
+      state.frame = meta.frame;
+      if (now - state.lastLabels > 80 || meta.frame === state.scene.frame_count - 1) {
+        labels(); state.lastLabels = now;
+      }
+    }
+    if (!$("overlay").hidden) {$("overlay").hidden = true; status("已连接", "ready");}
+    if (meta.stream && window.gaussianViewerStats) {
+      window.gaussianViewerStats.draw_ms = performance.now() - now;
+      window.gaussianViewerStats.cache_hits += Number(!!meta.cache_hit);
+      window.gaussianViewerStats.client_cache_hits += Number(!!meta.client_cache_hit);
+    }
+  }
+  function scheduleRetry() {
+    clearTimeout(state.retry);
+    state.retry = setTimeout(poll, 2000);
+  }
+  function connect() {
+    const socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/ws`);
+    state.socket = socket; socket.binaryType = "arraybuffer";
+    socket.onopen = () => {
+      status("已连接", "ready"); state.pending.clear(); state.dirty = true;
+      controls(true); requestFrame();
+      if (autoStartPending) {
+        autoStartPending = false;
+        $("loop").checked = launchOptions.get("loop") === "1";
+        setPlaying(true);
+      }
+    };
+    socket.onmessage = async (event) => {
+      if (state.socket !== socket) return;
+      let responseId;
+      try {
+        if (typeof event.data === "string") {
+          const error = JSON.parse(event.data);
+          if (error.type === "stream_end") {
+            if (state.stream?.id === error.id) state.stream.buffer.finish(error.seq);
+            return;
+          }
+          setPlaying(false); status("渲染错误", "error");
+          overlay("暂时无法渲染", error.message || "请检查服务器日志", true);
+          state.dirty = false; state.pending.clear(); return;
+        }
+        const data = event.data;
+        const length = new DataView(data).getUint32(0, true);
+        if (length > 65536 || length + 4 > data.byteLength) throw new Error("Invalid image packet");
+        const meta = JSON.parse(new TextDecoder().decode(new Uint8Array(data, 4, length)));
+        responseId = meta.id;
+        // Keep compressed JPEGs (<= 64 MiB), not hundreds of decoded bitmaps.
+        // Stream lifetime fixes frame/camera/quality; replacements start empty.
+        const stream = state.stream?.id === meta.id ? state.stream : null;
+        if (meta.id < state.minimumId || (meta.stream && !stream)) return;
+        let blob;
+        if (meta.client_cache_hit) {
+          blob = stream?.jpeg.get(meta.frame);
+          if (!blob) throw new Error("Missing retained stream frame");
+        } else {
+          if (length + 4 === data.byteLength) throw new Error("Missing JPEG");
+          blob = new Blob([new Uint8Array(data, 4 + length)], {type: "image/jpeg"});
+          if (stream && !stream.jpeg.has(meta.frame) && stream.jpegBytes + blob.size <= 64 * 1024**2) {
+            stream.jpeg.set(meta.frame, blob); stream.jpegBytes += blob.size;
+            stream.cachePending.add(meta.frame);
+          }
+        }
+        const decodeStart = performance.now();
+        const bitmap = await createImageBitmap(blob);
+        if (state.socket !== socket || meta.id < state.minimumId) {bitmap.close(); return;}
+        if (meta.stream) {
+          if (state.stream?.id !== meta.id) {bitmap.close(); return;}
+          window.gaussianViewerStats.decode_ms = performance.now() - decodeStart;
+          const item = {meta, bitmap}, buffer = state.stream.buffer;
+          if (buffer.push(item) && meta.stream.seq === 0) present(item, false);
+        } else {
+          if (meta.id <= state.lastDrawnId || state.stream) {bitmap.close(); return;}
+          state.lastDrawnId = meta.id; present({meta, bitmap});
+        }
+      } catch (error) {
+        console.error("Viewer image error", error);
+        overlay("画面解析失败", "请刷新页面重试。", true); setPlaying(false); state.dirty = false; state.pending.clear();
+      } finally {
+        if (state.socket === socket) state.pending.delete(responseId);
+      }
+    };
+    socket.onclose = () => {
+      if (state.socket !== socket) return;
+      state.pending.clear(); setPlaying(false); controls(false);
+      status("连接已断开", "error");
+      overlay("正在重新连接", "请保持 SSH 隧道和 AutoDL 渲染服务运行。"); scheduleRetry();
+    };
+    socket.onerror = () => status("连接异常", "error");
+  }
+  async function poll() {
+    try {
+      const response = await fetch("/api/status", {cache: "no-store", signal: AbortSignal.timeout(8000)});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      $("loadProgress").value = data.progress || 0;
+      if (data.error) {
+        overlay("场景加载失败", `${data.message}（${data.detail}）`, true);
+        status("加载失败", "error"); return;
+      }
+      if (!data.ready) {
+        overlay("加载动态高斯", data.message); status("加载中"); scheduleRetry(); return;
+      }
+      const firstLoad = !state.scene;
+      state.scene = data.scene; const scene = data.scene;
+      if (firstLoad) {
+        $("streamRate").value = scene.comparison ? 'auto' : String(scene.default_stream_rate || 60);
+        $("resolution").value = String(scene.default_resolution || 768);
+        state.background = scene.default_background || "dark";
+        document.querySelectorAll(".swatch").forEach(button => {
+          const selected = button.dataset.background === state.background;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+      state.frame = Math.min(state.frame, scene.frame_count - 1);
+      $("sceneName").textContent = scene.name;
+      stage.classList.toggle("comparison", !!scene.comparison);
+      rightCanvas.hidden = !scene.comparison;
+      $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !scene.comparison;
+      if (scene.comparison) {
+        $("leftCompareLabel").textContent = scene.left_label;
+        $("rightCompareLabel").textContent = scene.right_label;
+      }
+      const event = scene.event_validation;
+      $("eventNotice").hidden = !event;
+      $("geometryNotice").hidden = !scene.geometry_repaired;
+      $("geometryNotice").textContent = scene.geometry_repaired ? scene.geometry_repair_scope : "";
+      $("sequenceBadge").textContent = scene.comparison ? "左右同步对比 · 事件校正" : event ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
+      if (event) {
+        $("eventDecision").textContent = event.approved ? "事件校正候选 · 粗尺度检查通过" : "事件校正后 · 尚未通过整段验收";
+        $("eventSummary").textContent = `区间通过 ${event.summary.passed}/${event.summary.intervals} · 事件余弦 ${event.summary.cosine.toFixed(3)}` +
+          (event.validation_summary ? ` · 留出事件 ${event.validation_summary.passed}/${event.validation_summary.intervals}` : '') +
+          (event.reference_weak_intervals?.length ? ` · 参考弱证据 ${event.reference_weak_intervals.length} 段（仍计入验收）` : '');
+      }
+      $("gaussianCount").textContent = scene.gaussian_count.toLocaleString("en-US");
+      $("frameCount").textContent = `${scene.frame_count} 帧`;
+      $("sourceFps").textContent = `${scene.fps} FPS`;
+      $("duration").textContent = `${scene.duration_seconds.toFixed(2)} s`;
+      $("tickMid").textContent = `${(scene.duration_seconds / 2).toFixed(1)} s`;
+      $("tickEnd").textContent = `${scene.duration_seconds.toFixed(1)} s`;
+      $("timeline").max = scene.frame_count - 1;
+      $("gpuName").textContent = scene.gpu;
+      $("cacheInfo").textContent = `${scene.cache.toUpperCase()} ${scene.comparison ? "缓存上限" : "缓存"} · ${scene.cache_gib.toFixed(2)} GiB 运动数据`;
+      $("gpuDot").className = "dot ready";
+      labels(); connect();
+    } catch (error) {
+      status("等待服务器", "error");
+      overlay("无法连接渲染服务器", "确认服务已启动，并通过 SSH 将端口转发到本机。"); scheduleRetry();
+    }
+  }
+  function tick(now) {
+    if (state.playing && state.stream && !document.hidden && !state.interacting) {
+      const stream = state.stream, buffer = stream.buffer, item = buffer.take(now);
+      if (item?.ended) {setPlaying(false); labels();}
+      else if (item) {
+        present(item);
+        if (buffer.last - stream.ack >= 4 || buffer.last === buffer.end) {
+          const retained = [...stream.cachePending].slice(0, buffer.limit);
+          state.socket.send(JSON.stringify({type: "ack", id: stream.id, seq: buffer.last, cached_frames: retained}));
+          retained.forEach(frame => stream.cachePending.delete(frame));
+          stream.ack = buffer.last;
+        }
+        window.gaussianViewerStats.presented++;
+      }
+      Object.assign(window.gaussianViewerStats, {underruns: buffer.underruns, dropped: buffer.dropped,
+        buffered: buffer.frames.size});
+      if ($("streamRate").value === 'auto' && buffer.rate === 60 && buffer.underruns >= 2) {
+        state.autoRateCap = 30; state.dirty = true;
+      }
+      if (now - state.lastStreamStatus >= 250) {
+        $("streamStatus").textContent = buffer.buffering ? "网络缓冲…" :
+          `${buffer.rate} FPS 同步流 · 缓存 ${buffer.frames.size} 帧 · 断流 ${buffer.underruns}`;
+        state.lastStreamStatus = now;
+      }
+    } else if (!state.playing) {
+      $("streamStatus").textContent = "逐帧查看";
+    } else if (state.interacting) {
+      $("streamStatus").textContent = "视角交互 · 松开恢复播放";
+    }
+    if (now - state.lastReceived > 1500) $("displayFps").textContent = "0.0";
+    requestFrame(); requestAnimationFrame(tick);
+  }
+  $("play").onclick = () => setPlaying(!state.playing);
+  $("restart").onclick = () => {setPlaying(false); setFrame(0);};
+  $("previous").onclick = () => {setPlaying(false); setFrame(state.frame - 1);};
+  $("next").onclick = () => {setPlaying(false); setFrame(state.frame + 1);};
+  $("timeline").oninput = event => {
+    const frame = +event.target.value; // Pausing updates labels, including this input.
+    setPlaying(false); setFrame(frame);
+  };
+  $("speed").onchange = event => {state.speed = +event.target.value; state.dirty = true;};
+  $("loop").onchange = () => state.dirty = true;
+  $("streamRate").onchange = () => {state.autoRateCap = 60; state.dirty = true;};
+  $("resolution").onchange = () => state.dirty = true;
+  $("reset").onclick = $("resetFloating").onclick = () => reset();
+  document.querySelectorAll(".preset").forEach(button => button.onclick = () => reset(+button.dataset.yaw, +button.dataset.pitch));
+  document.querySelectorAll(".swatch").forEach(button => button.onclick = () => {
+    state.background = button.dataset.background; state.dirty = true;
+    document.querySelectorAll(".swatch").forEach(other => {
+      other.classList.toggle("active", other === button); other.setAttribute("aria-pressed", String(other === button));
+    });
+  });
+  stage.oncontextmenu = event => event.preventDefault();
+  stage.onpointerdown = event => {
+    if (event.target.closest("button") || event.target.closest(".overlay")) return;
+    stage.focus({preventScroll: true}); stage.setPointerCapture(event.pointerId);
+    state.interacting = true; stopStream();
+    pointer = {x: event.clientX, y: event.clientY, id: event.pointerId, pan: event.button === 2 || event.shiftKey};
+  };
+  stage.onpointermove = event => {
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
+    pointer.x = event.clientX; pointer.y = event.clientY;
+    if (pointer.pan) {
+      const factor = state.zoom * 1.2 / stage.clientHeight;
+      state.pan_x = Math.max(-5, Math.min(5, state.pan_x - dx * factor));
+      state.pan_y = Math.max(-5, Math.min(5, state.pan_y + dy * factor));
+    } else {
+      state.yaw = ((state.yaw - dx * .35 + 540) % 360) - 180;
+      state.pitch = Math.max(-85, Math.min(85, state.pitch + dy * .35));
+    }
+    document.querySelectorAll(".preset").forEach(button => button.classList.remove("active"));
+    $("viewLabel").textContent = "自由视角 · 透视"; state.dirty = true;
+  };
+  stage.onpointerup = stage.onpointercancel = event => {
+    if (pointer?.id === event.pointerId) {pointer = null; state.interacting = false; state.dirty = true;}
+  };
+  stage.ondblclick = () => reset();
+  stage.addEventListener("wheel", event => {
+    state.interacting = true; stopStream(); clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {state.interacting = false; state.dirty = true;}, 180);
+    event.preventDefault(); state.zoom = Math.max(.2, Math.min(8, state.zoom * Math.exp(event.deltaY * .001)));
+    state.dirty = true;
+  }, {passive: false});
+  document.addEventListener("keydown", event => {
+    if (event.target.closest("input,select,textarea,button,a") || !state.scene) return;
+    if (event.code === "Space") {event.preventDefault(); setPlaying(!state.playing);}
+    if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
+      event.preventDefault(); setPlaying(false); setFrame(state.frame + (event.code === "ArrowRight" ? 1 : -1));
+    }
+    if (event.code === "KeyR") reset();
+  });
+  document.addEventListener("visibilitychange", () => {if (document.hidden) setPlaying(false); else state.dirty = true;});
+  // Square calibrated comparison renders do not depend on CSS panel size.
+  // Don't restart their stream when surrounding text or layout changes size.
+  new ResizeObserver(() => {if (!state.scene?.comparison) state.dirty = true;}).observe(stage);
+  $("snapshot").onclick = () => {
+    let snapshot = canvas;
+    if (state.scene?.comparison) {
+      snapshot = document.createElement("canvas");
+      snapshot.width = canvas.width + rightCanvas.width; snapshot.height = canvas.height;
+      const ctx = snapshot.getContext("2d");
+      ctx.drawImage(canvas, 0, 0); ctx.drawImage(rightCanvas, canvas.width, 0);
+    }
+    snapshot.toBlob(blob => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob), link = document.createElement("a");
+    link.href = url; link.download = `gaussian-frame-${String(state.displayedFrame).padStart(4, "0")}.png`;
+    link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, "image/png");
+  };
+  window.addEventListener("beforeunload", () => state.socket?.close());
+  reset(); poll(); requestAnimationFrame(tick);
+})();

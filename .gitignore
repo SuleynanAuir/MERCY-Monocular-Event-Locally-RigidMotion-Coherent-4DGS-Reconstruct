@@ -1,0 +1,26 @@
+# Local datasets and generated experiment artifacts
+/Lego_data/
+/outputs/
+/fan_dynamic_gaussians.ply
+/data/
+/datasets/
+/checkpoints/
+/runs/
+
+# Model checkpoints and array dumps
+*.pth
+*.pt
+*.ckpt
+*.npz
+*.npy
+
+# Local editor, OS, and Python cache files
+.DS_Store
+.vscode/
+__pycache__/
+*.py[cod]
+
+# Keep the repository's runnable shell scripts
+*.sh
+!train_gui.sh
+!scripts/*.sh

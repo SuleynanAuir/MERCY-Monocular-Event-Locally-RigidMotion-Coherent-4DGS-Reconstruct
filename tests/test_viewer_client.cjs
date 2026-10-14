@@ -1,0 +1,177 @@
+/* Frontend logic with a fake DOM/socket/decoder. Not a browser rendering test. */
+const {test} = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const viewer = path.join(__dirname, '../viewer');
+
+async function client(overrides = {}) {
+  const ids = [...fs.readFileSync(path.join(viewer, 'index.html'), 'utf8').matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+  const element = () => ({value: '', hidden: false, dataset: {}, checked: false, textContent: '',
+    classList: {toggle() {}, remove() {}}, setAttribute() {}, replaceChildren() {}, append() {}, addEventListener() {},
+    focus() {}, setPointerCapture() {},
+    getContext() {return {drawImage() {}};}, getBoundingClientRect() {return {width: 800, height: 500};}});
+  const elements = Object.fromEntries(ids.map(id => [id, element()]));
+  const presets = [...fs.readFileSync(path.join(viewer, 'index.html'), 'utf8')
+    .matchAll(/class="preset(?: active)?" data-yaw="([^"]+)" data-pitch="([^"]+)"/g)]
+    .map(match => Object.assign(element(), {dataset: {yaw: match[1], pitch: match[2]}}));
+  const scene = {comparison: true, frame_count: 20, prewarmed_frames: 20, fps: 60,
+    duration_seconds: 20/60, fovy: 40, default_resolution: 640, default_background: 'black',
+    stream_window: 24, buffer_seconds: .4, gaussian_count: 1841816, cache: 'gpu-lru', cache_gib: 5,
+    times_seconds: Array.from({length: 20}, (_,i) => i/60), rpm: Array(20).fill(null)};
+  Object.assign(scene, overrides);
+  const callbacks = [], decoded = [], errors = [];
+  let socket, resize, now = 0;
+  class Socket {
+    static OPEN = 1;
+    constructor() {socket = this; this.readyState = 1; this.sent = [];}
+    send(data) {this.sent.push(JSON.parse(data));}
+    close() {}
+  }
+  const context = {
+    document: {hidden: false, getElementById(id) {assert.ok(elements[id], `Missing HTML element ${id}`); return elements[id];},
+      querySelectorAll(selector) {return selector === '.preset' ? presets : [];},
+      createTextNode: text => text, createElement: element, addEventListener() {}},
+    location: {search: '?autoplay=1&loop=1', protocol: 'http:', host: '127.0.0.1:8892'},
+    fetch: async () => ({ok: true, json: async () => ({ready: true, scene})}),
+    WebSocket: Socket, performance: {now: () => now},
+    requestAnimationFrame: callback => callbacks.push(callback),
+    ResizeObserver: class {constructor(callback) {resize = callback;} observe() {}},
+    createImageBitmap: async blob => {decoded.push(blob); return {close() {}};},
+    URL, URLSearchParams, Blob, AbortSignal, TextDecoder, Uint8Array, DataView,
+    setTimeout() {}, clearTimeout() {}, addEventListener() {}, console: {error: e => errors.push(e)},
+  };
+  context.window = context;
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(viewer, 'playback.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(viewer, 'app.js'), 'utf8'), context);
+  await new Promise(resolve => setImmediate(resolve));
+  socket.onopen();
+  const tick = value => {now = value; callbacks.shift()(value);};
+  tick(0);
+  const stream = () => socket.sent.filter(m => m.type === 'stream').at(-1);
+  async function packet(seq, frame, reference = false, id = stream().id) {
+    const header = Buffer.from(JSON.stringify({id, frame, stream: {seq}, width: 1280,
+      height: 640, panel_width: 640, comparison: true, left_frame: frame, right_frame: frame,
+      render_ms: 0, encode_ms: 0, cache_hit: true, client_cache_hit: reference}));
+    const data = new ArrayBuffer(4 + header.length + (reference ? 0 : 4));
+    new DataView(data).setUint32(0, header.length, true);
+    new Uint8Array(data, 4, header.length).set(header);
+    await socket.onmessage({data});
+  }
+  return {elements, presets, socket, stream, tick, packet, decoded, resize, errors, context};
+}
+
+test('default cached view selects 60 FPS, new camera selects 30, layout does not restart playback', async () => {
+  const c = await client();
+  assert.equal(c.stream().rate, 60);
+  const id = c.stream().id;
+  c.resize(); c.tick(16);
+  assert.equal(c.stream().id, id);
+  c.presets[1].onclick(); c.tick(32);
+  assert.equal(c.stream().rate, 30);
+  assert.notEqual(c.stream().id, id);
+});
+
+test('back and elevation presets change actual render camera and keep source motion speed', async () => {
+  const c = await client();
+  for (const [index, yaw, pitch, label] of [[3, 180, 0, '背面'], [4, 0, 35, '俯视'], [5, 0, -35, '仰视']]) {
+    c.presets[index].onclick(); c.tick(16 * index);
+    assert.equal(c.stream().yaw, yaw);
+    assert.equal(c.stream().pitch, pitch);
+    assert.equal(c.stream().speed, 1);
+    assert.equal(c.elements.viewLabel.textContent, `${label} · 透视`);
+  }
+});
+
+test('scene quality settings preserve cached playback timing and single-frame quality', async () => {
+  const c = await client({default_stream_quality: 92, default_still_quality: 95});
+  assert.equal(c.stream().quality, 92);
+  assert.equal(c.stream().rate, 60);
+  assert.equal(c.stream().speed, 1);
+  const firstStill = c.socket.sent.find(m => m.type === undefined);
+  assert.equal(firstStill.quality, 95);
+  const id = c.stream().id;
+  c.resize(); c.tick(16);
+  assert.equal(c.stream().id, id);
+  c.presets[1].onclick(); c.tick(32);
+  assert.equal(c.stream().quality, 92);
+  assert.equal(c.stream().rate, 30);
+  c.elements.play.onclick(); c.tick(48);
+  assert.equal(c.socket.sent.at(-1).quality, 95);
+});
+
+test('legacy scenes keep the old stream and still quality defaults', async () => {
+  const c = await client();
+  assert.equal(c.stream().quality, 78);
+  assert.equal(c.socket.sent.find(m => m.type === undefined).quality, 85);
+  c.elements.play.onclick(); c.tick(16);
+  assert.equal(c.socket.sent.at(-1).quality, 85);
+});
+
+test('camera interaction keeps its inexpensive quality and resumes the scene stream quality', async () => {
+  const c = await client({default_stream_quality: 92, default_still_quality: 95});
+  c.elements.stage.onpointerdown({target: {closest: () => null}, pointerId: 1, clientX: 0, clientY: 0});
+  c.elements.stage.onpointermove({pointerId: 1, clientX: 10, clientY: 0}); c.tick(16);
+  assert.equal(c.socket.sent.at(-1).quality, 72);
+  c.elements.stage.onpointerup({pointerId: 1}); c.tick(32);
+  assert.equal(c.stream().quality, 92);
+  assert.equal(c.stream().rate, 30);
+  assert.equal(c.stream().speed, 1);
+});
+
+test('both canvases consume the retained JPEG, and a replaced stream rejects stale references', async () => {
+  const c = await client({default_stream_quality: 92}), id = c.stream().id;
+  for (let i = 0; i < 20; i++) await c.packet(i, i);
+  for (let i = 0; i < 4; i++) c.tick(100 + i * 1000 / 60);
+  const ack = c.socket.sent.filter(m => m.type === 'ack').at(-1);
+  assert.equal(ack.seq, 3); assert.equal(ack.cached_frames.length, 20);
+  assert.equal(c.elements.canvas.dataset.frame, '3');
+  assert.equal(c.elements.comparisonCanvas.dataset.frame, '3');
+  await c.packet(20, 0, true);
+  assert.equal(c.decoded[20], c.decoded[0]);
+  c.presets[1].onclick(); c.tick(200);
+  const count = c.decoded.length;
+  await c.packet(21, 1, true, id);
+  assert.equal(c.decoded.length, count);
+  // New streams never claim a JPEG from an earlier camera.
+  await c.packet(0, 0, true);
+  assert.equal(c.errors.length, 1);
+  assert.equal(c.elements.loadTitle.textContent, '画面解析失败');
+});
+
+test('automatic mode lowers the target after two buffer underruns without changing motion speed', async () => {
+  const c = await client();
+  for (let i = 0; i < 20; i++) await c.packet(i, i);
+  for (let i = 0; i <= 20; i++) c.tick(100 + i * 1000 / 60);
+  assert.equal(c.context.gaussianViewerStats.underruns, 1);
+  for (let i = 20; i < 40; i++) await c.packet(i, i % 20);
+  for (let i = 0; i <= 20; i++) c.tick(600 + i * 1000 / 60);
+  assert.equal(c.stream().rate, 30);
+  assert.equal(c.stream().speed, 1);
+});
+
+test('failed and weak event intervals stay visible with their actual reasons', async () => {
+  const c = await client({event_validation: {approved: false,
+    summary: {passed: 5, intervals: 19, cosine: .84}, validation_summary: {passed: 1, intervals: 3},
+    failed_intervals: [0], reference_weak_intervals: [0],
+    interval_checks: [{passed: false, reasons: ['relative_l1'], reference_weak: true}]}});
+  assert.match(c.elements.eventDecision.textContent, /尚未通过整段验收/);
+  assert.match(c.elements.eventSummary.textContent, /留出事件 1\/3/);
+  assert.match(c.elements.eventSummary.textContent, /仍计入验收/);
+  for (let i = 0; i < 20; i++) await c.packet(i, (i+1)%20);
+  c.tick(100);
+  assert.match(c.elements.eventInterval.textContent, /变化幅度偏差/);
+  assert.match(c.elements.eventInterval.textContent, /参考证据偏弱/);
+});
+
+test('repaired geometry is disclosed without implying event approval', async () => {
+  const plain = await client();
+  assert.equal(plain.elements.geometryNotice.hidden, true);
+  const c = await client({geometry_repaired: true, geometry_repair_scope: '右侧采用深度修复高斯；原始输入保留。',
+    event_validation: {approved: false, summary: {passed: 5, intervals: 19, cosine: .84}}});
+  assert.equal(c.elements.geometryNotice.hidden, false);
+  assert.match(c.elements.geometryNotice.textContent, /深度修复/);
+  assert.match(c.elements.eventDecision.textContent, /尚未通过整段验收/);
+});

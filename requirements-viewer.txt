@@ -1,0 +1,4 @@
+# Optional browser viewer dependency, on top of the existing SC-GS environment.
+# AutoDL's existing aiohttp 3.11.4 was used for verification; do not upgrade its
+# PyTorch/CUDA stack just to run the viewer.
+aiohttp>=3.11.4,<4

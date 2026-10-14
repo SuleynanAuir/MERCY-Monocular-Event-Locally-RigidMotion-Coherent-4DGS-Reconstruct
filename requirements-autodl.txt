@@ -1,0 +1,32 @@
+# Python 3.10, existing PyTorch 2.1.2+cu121 / torchvision 0.16.2+cu121.
+# Use in the data-disk virtualenv, not the system/base environment.
+torch==2.1.2
+torchvision==0.16.2
+numpy==1.26.3
+Pillow==10.2.0
+scipy==1.10.1
+opencv-python-headless==4.8.1.78
+PyYAML==6.0.1
+tqdm==4.66.1
+imageio==2.34.0
+imageio-ffmpeg==0.4.9
+plyfile==1.0.3
+piq==0.8.0
+dearpygui==1.11.1
+lpips==0.1.4
+pytorch_msssim==1.0.0
+matplotlib==3.7.5
+scikit-image==0.21.0
+fvcore==0.1.5.post20221221
+iopath==0.1.10
+ninja==1.11.1.1
+setuptools==69.5.1
+wheel==0.43.0
+# Transitive dependencies pinned so HTTP/2 prefetch supports offline installs.
+PyWavelets==1.5.0
+tifffile==2023.7.10
+lazy-loader==0.3
+yacs==0.1.8
+termcolor==2.4.0
+tabulate==0.9.0
+portalocker==2.8.2
