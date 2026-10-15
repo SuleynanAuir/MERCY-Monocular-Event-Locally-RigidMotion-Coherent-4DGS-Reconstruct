@@ -281,6 +281,20 @@ def check_candidate(baseline, candidate, *, parts=None, binding=None, joint_repo
         report['appearance_scope'] += (' The explicit roof extension retires static source opacity and appends '
                                        'fixed static rows after this unchanged inherited motion. This pose test '
                                        'does not assess new roof appearance or unseen-view ground truth.')
+    if cache.get('color_residual') is not None:
+        report.update(color_residual=cache['color_residual'],
+                      color_residual_report_sha256=audit['artifact_sha256']['color_residual_report'],
+                      color_residual_sha256=audit['artifact_sha256']['color_residual'])
+        report['appearance_scope'] += (' Explicit bounded source color residuals are included in the fresh '
+                                       'event audit; this pose check only verifies unchanged geometry and motion.')
+    if cache.get('protected_surface_detail') is not None:
+        report.update(protected_surface_detail=cache['protected_surface_detail'],
+                      surface_detail_report_sha256=audit['artifact_sha256']['surface_detail_report'],
+                      surface_detail_extension_sha256=audit['artifact_sha256']['surface_detail_extension'],
+                      rendered_gaussian_count=cache['rendered_gaussian_count'])
+        report['appearance_scope'] += (' The separately verified protected surface layer appends only fixed '
+                                       'root-part geometry and suppresses guarded static source opacity. '
+                                       'This motion check does not establish unseen appearance accuracy.')
     return report
 
 

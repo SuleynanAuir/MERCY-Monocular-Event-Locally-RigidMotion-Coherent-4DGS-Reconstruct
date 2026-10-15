@@ -124,6 +124,18 @@ def verify_inputs(baseline, candidate, masks):
         for field, artifact in (('report', 'static_surface_report'), ('extension', 'static_surface_extension')):
             inputs[artifact] = Path(cache['static_surface_rebuild'][field])
             hashes[artifact] = sha256(inputs[artifact])
+    from utils.color_residual import verify_color_residual, color_residual_contract
+    residual = verify_color_residual(cache, record, baseline=baseline)
+    if residual is not None:
+        for field, artifact in (('report', 'color_residual_report'), ('residual', 'color_residual')):
+            inputs[artifact] = Path(cache['color_residual'][field])
+            hashes[artifact] = sha256(inputs[artifact])
+    from utils.protected_surface_detail import verify_protected_surface_detail, protected_surface_contract
+    detail = verify_protected_surface_detail(cache, record, baseline=baseline)
+    if detail is not None:
+        for field, artifact in (('report', 'surface_detail_report'), ('extension', 'surface_detail_extension')):
+            inputs[artifact] = Path(cache['protected_surface_detail'][field])
+            hashes[artifact] = sha256(inputs[artifact])
     report = completed['report'] if completed is not None else None
     if completed is not None:
         del completed
@@ -181,11 +193,15 @@ def verify_inputs(baseline, candidate, masks):
     if audit_path.exists():
         event_audit = json.loads(audit_path.read_text())
         require_same_sampling(cache, record, event_audit)
-        extra = [key for key in ('cleanup_report', 'cleanup_overlay', 'static_surface_report', 'static_surface_extension') if key in hashes]
+        extra = [key for key in ('cleanup_report', 'cleanup_overlay', 'static_surface_report', 'static_surface_extension',
+                                 'color_residual_report', 'color_residual', 'surface_detail_report',
+                                 'surface_detail_extension') if key in hashes]
         for key in ['source_ply', 'correction', 'baseline_cache_metadata', 'baseline_poses', 'dynamic_indices', *extra]:
             if event_audit.get('artifact_sha256', {}).get(key) != hashes[key]:
                 raise ValueError(f'Existing event audit artifact differs: {key}')
         static_surface_contract(cache, record, event_audit)
+        color_residual_contract(cache, record, event_audit)
+        protected_surface_contract(cache, record, event_audit)
         audit_decision = event_audit.get('approved_for_export')
         inputs['existing_event_audit'] = audit_path
         hashes['existing_event_audit'] = sha256(audit_path)
@@ -282,6 +298,8 @@ def main():
         'multiview_completion': cache.get('multiview_completion'),
         'gaussian_cleanup': cache.get('gaussian_cleanup'),
         'static_surface_rebuild': cache.get('static_surface_rebuild'),
+        'color_residual': cache.get('color_residual'),
+        'protected_surface_detail': cache.get('protected_surface_detail'),
         'diagnostic_only': True, 'approved_for_export': False, 'existing_event_audit_approved': audit_decision,
         'inputs_rechecked_after_render': True, 'native_pngs': [f'view-{i:02d}.png' for i in range(len(views))],
         'contact_sheets': contacts, 'view_seconds': timings,

@@ -64,6 +64,10 @@ def verify_candidate(baseline, candidate, allow_unapproved=False):
     verify_gaussian_cleanup(cache, correction, report, baseline=baseline)
     from utils.static_surface_rebuild import verify_static_surface_rebuild
     verify_static_surface_rebuild(cache, correction, report, baseline=baseline)
+    from utils.color_residual import verify_color_residual
+    verify_color_residual(cache, correction, report, baseline=baseline)
+    from utils.protected_surface_detail import verify_protected_surface_detail
+    verify_protected_surface_detail(cache, correction, report, baseline=baseline)
     return cache, correction, report
 
 
@@ -78,11 +82,15 @@ def main():
     if args.output.exists():
         raise FileExistsError(args.output)
     cache, parameters, report = verify_candidate(args.baseline, args.candidate, args.allow_unapproved_preview)
+    from utils.protected_surface_detail import require_no_protected_surface_detail
+    require_no_protected_surface_detail(cache, 'Legacy baked sequence export')
     require_no_completion(cache, 'Baked sequence export')
     from utils.gaussian_cleanup import require_no_cleanup
     require_no_cleanup(cache, 'Baked sequence export')
     from utils.static_surface_rebuild import require_no_static_surface_rebuild
     require_no_static_surface_rebuild(cache, 'Legacy baked sequence export')
+    from utils.color_residual import require_no_color_residual
+    require_no_color_residual(cache, 'Legacy baked sequence export')
     require_native_sampling(cache, 'Baked sequence export')
     source = Path(cache['source'])
     vertices = PlyData.read(source)['vertex'].data.copy()

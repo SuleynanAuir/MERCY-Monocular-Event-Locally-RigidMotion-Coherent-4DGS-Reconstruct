@@ -21,6 +21,8 @@ from utils.multiview_completion import (FORMAT as MULTIVIEW_FORMAT, CompactCompl
                                         verify_multiview_completion)
 from utils.gaussian_cleanup import verify_gaussian_cleanup, apply_gaussian_cleanup
 from utils.static_surface_rebuild import verify_static_surface_rebuild, StaticSurfaceRebuild
+from utils.color_residual import verify_color_residual, apply_color_residual
+from utils.protected_surface_detail import verify_protected_surface_detail, ProtectedSurfaceDetail
 
 
 def validate_comparison_sources(left_meta, right_meta, audit, left_sha256, geometry_report=None):
@@ -273,6 +275,9 @@ class ComparisonRenderer:
         cleaned = verify_gaussian_cleanup(right_meta, correction, audit, baseline=right)
         rebuilt_static = verify_static_surface_rebuild(right_meta, correction, audit, baseline=right)
         static_surface = StaticSurfaceRebuild(rebuilt_static, 'cuda') if rebuilt_static is not None else None
+        residual = verify_color_residual(right_meta, correction, audit, baseline=right)
+        detail = verify_protected_surface_detail(right_meta, correction, audit, baseline=right)
+        surface_detail = ProtectedSurfaceDetail(detail, 'cuda') if detail is not None else None
         if extension is not None:
             if geometry_report != extension['report']:
                 raise ValueError('Comparison manifest differs from audited multiview completion report')
@@ -307,10 +312,14 @@ class ComparisonRenderer:
                 validate_repaired_gaussians(self.model, repaired, left_meta['gaussian_count'],
                                             right_meta['gaussian_count'] if completion else None)
             apply_gaussian_cleanup(repaired, cleaned)
+            apply_color_residual(repaired, residual)
             right_xyz, right_q = repaired._xyz.detach(), repaired._rotation.detach()
             if static_surface is not None:
                 static_surface.apply_appearance(repaired)
                 right_xyz, right_q = static_surface.append_geometry(right_xyz, right_q)
+            if surface_detail is not None:
+                surface_detail.apply_appearance(repaired)
+                right_xyz, right_q = surface_detail.append_geometry(right_xyz, right_q)
             self.side_geometry.append((right_xyz.clone(), right_q.clone(), repaired._scaling.detach().clone()))
             self.side_appearance.append((repaired._features_dc.detach(), repaired._opacity.detach(),
                                          torch.empty((len(repaired._features_dc), 0, 3), device='cuda')))
@@ -333,11 +342,11 @@ class ComparisonRenderer:
         self.pipe = SimpleNamespace(convert_SHs_python=False, compute_cov3D_python=False, debug=False)
         self.backgrounds = {key: torch.tensor(value, dtype=torch.float32, device='cuda') for key, value in BACKGROUNDS.items()}
         frames = left_meta['frame_count']
-        self.info = {'name': 'Lego · 同步事件校正对比', 'comparison': True,
+        self.info = {'name': 'Lego · 最原始 / 进一步优化', 'comparison': True,
                      **audited_source_fingerprints(audit),
                      'left_render_sampling': self.side_sampling[0],
                      'right_render_sampling': self.side_sampling[1],
-                     'left_label': '未经过事件校正 · 初始动画',
+                     'left_label': '最原始结果 · 未校正初始动画',
                      'right_label': settings.get('right_label', '经过事件校正 · 改进候选'),
                      'geometry_repaired': self.geometry_repaired,
                      **({'geometry_repair_scope': (
@@ -392,6 +401,25 @@ class ComparisonRenderer:
                 ' 已对部分原始静态高斯施加独立透明度清理层；位置、颜色、行序与运动不变。')
             self.info['geometry_repair_scope'] += (' 结果已重新执行整段事件检查；这不是二维图像去噪，'
                                                   '也不代表所有斑驳或缺口已消除。')
+        if residual is not None:
+            self.info['color_residual'] = {
+                'report_sha256': audit['artifact_sha256']['color_residual_report'],
+                'residual_sha256': audit['artifact_sha256']['color_residual'],
+                'optimized_gaussians': residual['report']['optimized_count'],
+                'maximum_linear_rgb_delta': residual['report']['maximum_delta']}
+            self.info['geometry_repair_scope'] += (' 已加入全局与局部细节的有界高斯颜色残差优化，'
+                '使用视频、多尺度梯度和训练事件约束；几何、透明度与运动不变。'
+                '未观测面的完整性仍不作保证，事件未通过区间继续如实显示。')
+        if detail is not None:
+            self.info['protected_surface_detail'] = {
+                'report_sha256': audit['artifact_sha256']['surface_detail_report'],
+                'extension_sha256': audit['artifact_sha256']['surface_detail_extension'],
+                'retired_gaussians': detail['report']['retired_gaussian_count'],
+                'added_gaussians': detail['report']['added_gaussian_count'],
+                'part_ids': detail['report']['allowed_part_ids']}
+            self.info['geometry_repair_scope'] += (' 车顶及固定部件的局部表面加入致密薄层高斯，'
+                '保留原始视角可见点，并检查替换后的表面缺口；运动与已有颜色优化保留。'
+                '未观测的背面仍采用网格和颜色先验，不代表真实背面已由事件验证。')
         if rebuilt_static is not None:
             self.info['static_surface_rebuild'] = {
                 'report_sha256': audit['artifact_sha256']['static_surface_report'],

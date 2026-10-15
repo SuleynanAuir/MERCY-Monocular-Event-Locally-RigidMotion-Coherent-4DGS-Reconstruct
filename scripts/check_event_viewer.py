@@ -25,6 +25,24 @@ def verify_live_sampling(scene, audit, baseline_metadata=None):
 
 def verify_live_cleanup(scene, audit):
     """Source PLY identity alone cannot identify an independent attribute layer."""
+    detail, live_detail = audit.get('protected_surface_detail'), scene.get('protected_surface_detail')
+    if detail is None:
+        if live_detail is not None:
+            raise ValueError('Live viewer has an unaudited protected surface detail layer')
+    elif (not isinstance(live_detail, dict)
+          or any(live_detail.get(field+'_sha256') != detail[field+'_sha256']
+                 or live_detail.get(field+'_sha256') != audit.get('artifact_sha256', {}).get(artifact)
+                 for field, artifact in (('report', 'surface_detail_report'), ('extension', 'surface_detail_extension')))):
+        raise ValueError('Live protected surface detail differs from the fresh event audit')
+    residual, live_residual = audit.get('color_residual'), scene.get('color_residual')
+    if residual is None:
+        if live_residual is not None:
+            raise ValueError('Live viewer has an unaudited color residual')
+    elif (not isinstance(live_residual, dict)
+          or any(live_residual.get(field+'_sha256') != residual[field+'_sha256']
+                 or live_residual.get(field+'_sha256') != audit.get('artifact_sha256', {}).get(artifact)
+                 for field, artifact in (('report', 'color_residual_report'), ('residual', 'color_residual')))):
+        raise ValueError('Live color residual identity differs from the fresh event audit')
     surface, live_surface = audit.get('static_surface_rebuild'), scene.get('static_surface_rebuild')
     if surface is None:
         if live_surface is not None:

@@ -49,6 +49,17 @@ class MultiviewMaskTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'requires'):
             views(heldout=True, frame_count=150)
 
+    def test_roof_back_detail_plan_has_twelve_new_camera_angles(self):
+        old = {(r['frame'], r['yaw'], r['pitch']) for r in views()+views(heldout=True)}
+        new = {(r['frame'], r['yaw'], r['pitch']) for r in views(detail_check=True)}
+        self.assertEqual(len(new), 12)
+        self.assertFalse(old & new)
+        self.assertEqual({row[2] for row in new}, {50, 70})
+        with self.assertRaises(ValueError):
+            views(heldout=True, detail_check=True)
+        with self.assertRaises(ValueError):
+            views(front_stride=10, detail_check=True)
+
     def test_heldout_and_front_stride_are_mutually_exclusive(self):
         with self.assertRaisesRegex(ValueError, 'exclusive'):
             views(front_stride=10, heldout=True)
@@ -57,6 +68,19 @@ class MultiviewMaskTests(unittest.TestCase):
         with patch('sys.stderr', new=io.StringIO()), self.assertRaises(SystemExit) as raised:
             argument_parser().parse_args(argv)
         self.assertEqual(raised.exception.code, 2)
+
+    def test_second_detail_plan_is_disjoint_from_all_previous_diagnostics(self):
+        old = {(r['frame'], r['yaw'], r['pitch']) for r in
+               views()+views(heldout=True)+views(detail_check=True)}
+        new = {(r['frame'], r['yaw'], r['pitch']) for r in views(detail_check_v2=True)}
+        self.assertEqual(len(new), 12)
+        self.assertFalse(old & new)
+        self.assertEqual({r[0] for r in new}, {250})
+        self.assertEqual({r[2] for r in new}, {45, 65})
+        with self.assertRaises(ValueError):
+            views(detail_check=True, detail_check_v2=True)
+        with self.assertRaises(ValueError):
+            views(detail_check_v2=True, frame_count=250)
 
     def test_rays_use_pixel_centers_and_opengl_forward(self):
         origin, directions = camera_rays(np.eye(4), 3, 3, 90)

@@ -74,6 +74,20 @@ test('default cached view selects 60 FPS, new camera selects 30, layout does not
   assert.notEqual(c.stream().id, id);
 });
 
+test('an obsolete preparation advertisement does not delay playback until all 400 frames arrive', async () => {
+  const c = await client({frame_count: 400, prewarmed_frames: 400,
+    times_seconds: Array.from({length: 400}, (_, i) => i / 60), rpm: Array(400).fill(null),
+    camera_preparation: {enabled: true, max_frames: 600, max_bytes: 128 * 1024**2, window: 24}});
+  assert.equal(c.stream().type, 'stream');
+  assert.equal(c.socket.sent.some(message => message.type === 'prepare'), false);
+  for (let i = 0; i < 20; i++) await c.packet(i, i);
+  c.tick(100); c.tick(100 + 1000 / 60);
+  assert.equal(c.context.gaussianViewerStats.presented, 2);
+  assert.equal(c.elements.canvas.dataset.frame, '1');
+  assert.equal(c.elements.comparisonCanvas.dataset.frame, '1');
+  assert.equal(c.decoded.length, 20, 'short warmup starts playback without the other 380 frames');
+});
+
 test('back and elevation presets change actual render camera and keep source motion speed', async () => {
   const c = await client();
   for (const [index, yaw, pitch, label] of [[3, 180, 0, '背面'], [4, 0, 35, '俯视'], [5, 0, -35, '仰视']]) {
@@ -169,9 +183,31 @@ test('failed and weak event intervals stay visible with their actual reasons', a
 test('repaired geometry is disclosed without implying event approval', async () => {
   const plain = await client();
   assert.equal(plain.elements.geometryNotice.hidden, true);
+  assert.equal(plain.elements.geometryDetails.hidden, true);
   const c = await client({geometry_repaired: true, geometry_repair_scope: '右侧采用深度修复高斯；原始输入保留。',
     event_validation: {approved: false, summary: {passed: 5, intervals: 19, cosine: .84}}});
   assert.equal(c.elements.geometryNotice.hidden, false);
+  assert.equal(c.elements.geometryDetails.hidden, false);
   assert.match(c.elements.geometryNotice.textContent, /深度修复/);
+  assert.match(c.elements.eventDecision.textContent, /尚未通过整段验收/);
+});
+
+test('original and optimized sources are labeled explicitly without hiding event failures', async () => {
+  const c = await client({left_label: '最原始结果 · 未校正初始动画',
+    right_label: '进一步优化后 · 全局 + 局部细节 + 事件约束',
+    event_validation: {approved: false, summary: {passed: 382, intervals: 399, cosine: .944},
+      interval_checks: [{passed: false, reasons: ['relative_l1', 'polarity_agreement',
+        'cosine', 'unsupported_change_fraction'], reference_weak: true}]}});
+  assert.match(c.elements.leftCompareLabel.textContent, /^最原始结果/);
+  assert.match(c.elements.rightCompareLabel.textContent, /^进一步优化后/);
+  assert.match(c.elements.sequenceBadge.textContent, /同帧同视角/);
+  assert.match(c.elements.snapshot.textContent, /原始 \/ 优化对比/);
+  for (let i = 0; i < 20; i++) await c.packet(i, (i + 1) % 20);
+  c.tick(100);
+  for (const reason of ['变化幅度偏差', '事件极性不一致', '变化分布不一致', '存在事件未支持的变化', '参考证据偏弱']) {
+    assert.ok(c.elements.eventInterval.textContent.includes(reason));
+  }
+  assert.equal(c.elements.eventInterval.title, c.elements.eventInterval.textContent);
+  assert.equal(c.elements.timeCurrent.textContent, (1 / 60).toFixed(2));
   assert.match(c.elements.eventDecision.textContent, /尚未通过整段验收/);
 });

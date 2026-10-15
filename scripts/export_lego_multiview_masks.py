@@ -27,10 +27,19 @@ def sha256(path):
     return result.hexdigest()
 
 
-def views(front_stride=None, frame_count=400, heldout=False):
-    if type(heldout) is not bool or (heldout and front_stride is not None):
+def views(front_stride=None, frame_count=400, heldout=False, detail_check=False, detail_check_v2=False):
+    if (type(heldout) is not bool or type(detail_check) is not bool or type(detail_check_v2) is not bool
+            or int(heldout)+int(detail_check)+int(detail_check_v2)+int(front_stride is not None) > 1):
         raise ValueError('Held-out plan and front-only stride are mutually exclusive')
-    if heldout:
+    if detail_check_v2:
+        if type(frame_count) is not int or frame_count <= 250:
+            raise ValueError('Second detail check requires frame 250')
+        plan = [(250, yaw, pitch) for pitch in (45, 65) for yaw in (210, 230, 250, 290, 310, 330)]
+    elif detail_check:
+        if type(frame_count) is not int or frame_count <= 150:
+            raise ValueError('Detail check requires frame 150')
+        plan = [(150, yaw, pitch) for pitch in (50, 70) for yaw in (215, 225, 235, 305, 315, 325)]
+    elif heldout:
         if type(frame_count) is not int or frame_count <= 150:
             raise ValueError('Held-out plan requires frames 50 and 150')
         plan = [(frame, yaw, 0) for frame in (50, 150) for yaw in (0, 90, 180, 270)]
@@ -143,6 +152,10 @@ def argument_parser():
     plan_group.add_argument('--heldout', action='store_true',
                             help='24 additional mesh-prior view/time checks not in the original '
                                  '36-view surface-selection plan; not held-out event data')
+    plan_group.add_argument('--detail-check', action='store_true',
+                            help='12 fresh roof/rear camera angles outside both the 36-view and 24-view plans')
+    plan_group.add_argument('--detail-check-v2', action='store_true',
+                            help='12 further fixed cameras at frame250, disjoint from all earlier diagnostic plans')
     return parser
 
 
@@ -183,7 +196,7 @@ def main():
     faces, labels = triangles[keep], part_ids[keep]
     if not len(faces):
         raise ValueError('No rigid mesh faces remain')
-    plan = views(args.front_stride, len(quaternions), args.heldout)
+    plan = views(args.front_stride, len(quaternions), args.heldout, args.detail_check, args.detail_check_v2)
     masks = np.full((len(plan), args.height, args.width), -1, np.int16)
     depths = np.full(masks.shape, np.nan, np.float32)
     palette = np.random.default_rng(17).integers(48, 256, (len(objects), 3), dtype=np.uint8)
@@ -208,7 +221,9 @@ def main():
         'cpu_only': True, 'views': [],
         'front_only_stride': args.front_stride,
         'heldout_prior_view_plan': args.heldout,
-        'plan': ('heldout_prior_geometry_24' if args.heldout else
+        'detail_check_prior_view_plan': args.detail_check or args.detail_check_v2,
+        'detail_check_revision': 2 if args.detail_check_v2 else 1 if args.detail_check else None,
+        'plan': ('roof_back_detail_check_v2_12' if args.detail_check_v2 else 'roof_back_detail_check_12' if args.detail_check else 'heldout_prior_geometry_24' if args.heldout else
                  'original_camera_temporal_guard' if args.front_stride is not None else 'surface_selection_orbit_36'),
         'heldout_scope': ('These 24 camera/time tuples do not occur in the original 36-view '
                           'surface-selection plan. The two yaw=0,pitch=0 views at frames 50 and '

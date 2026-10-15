@@ -65,7 +65,10 @@ class RenderSamplingTests(unittest.TestCase):
         verify_live_cleanup({}, {})
         for key, fields in (('gaussian_cleanup', {'report': 'cleanup_report', 'overlay': 'cleanup_overlay'}),
                             ('static_surface_rebuild', {'report': 'static_surface_report',
-                                                        'extension': 'static_surface_extension'})):
+                                                        'extension': 'static_surface_extension'}),
+                            ('color_residual', {'report': 'color_residual_report', 'residual': 'color_residual'}),
+                            ('protected_surface_detail', {'report': 'surface_detail_report',
+                                                          'extension': 'surface_detail_extension'})):
             contract = {field+'_sha256': str(index)*64 for index, field in enumerate(fields, 1)}
             audit = {key: contract, 'artifact_sha256':
                      {artifact: contract[field+'_sha256'] for field, artifact in fields.items()}}

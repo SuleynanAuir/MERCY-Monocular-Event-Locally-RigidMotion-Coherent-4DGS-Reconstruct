@@ -51,6 +51,14 @@ class MotionRenderer:
         self.static_surface = StaticSurfaceRebuild(rebuilt, 'cuda') if rebuilt is not None else None
         if self.static_surface is not None:
             self.static_surface.apply_appearance(self.model)
+        from utils.color_residual import verify_color_residual, apply_color_residual
+        residual = verify_color_residual(self.meta, baseline=baseline)
+        apply_color_residual(self.model, residual)
+        from utils.protected_surface_detail import verify_protected_surface_detail, ProtectedSurfaceDetail
+        detail = verify_protected_surface_detail(self.meta, baseline=baseline)
+        self.surface_detail = ProtectedSurfaceDetail(detail, 'cuda') if detail is not None else None
+        if self.surface_detail is not None:
+            self.surface_detail.apply_appearance(self.model)
         if self.completion is not None and torch.any(self.indices >= self.completion.prefix_count):
             raise ValueError('Parent baked motion must not reference the compact suffix')
         self.pipe = SimpleNamespace(convert_SHs_python=False, compute_cov3D_python=False, debug=False)
@@ -85,6 +93,9 @@ class MotionRenderer:
         if getattr(self, 'static_surface', None) is not None:
             self.model._xyz, self.model._rotation = self.static_surface.append_geometry(
                 self.model._xyz, self.model._rotation)
+        if getattr(self, 'surface_detail', None) is not None:
+            self.model._xyz, self.model._rotation = self.surface_detail.append_geometry(
+                self.model._xyz, self.model._rotation)
         rgb = resolve_rgb(render(self.camera, self.model, self.pipe, self.background, 0., 0., 0.)['render'],
                           self.supersample)
         return (rgb * self.luma).sum(0)
@@ -104,7 +115,11 @@ def main():
                         help='Additional visible foreground coverage constraint in training-event-active region')
     args = parser.parse_args()
     from utils.gaussian_cleanup import require_no_cleanup
+    from utils.protected_surface_detail import require_no_protected_surface_detail
+    require_no_protected_surface_detail(json.loads((args.baseline/'cache.json').read_text()), 'Legacy motion training')
     require_no_cleanup(json.loads((args.baseline/'cache.json').read_text()), 'Legacy motion training')
+    from utils.color_residual import require_no_color_residual
+    require_no_color_residual(json.loads((args.baseline/'cache.json').read_text()), 'Legacy motion training')
     if json.loads((args.baseline/'cache.json').read_text()).get('static_surface_rebuild'):
         raise ValueError('Legacy motion training does not support static surface replacement')
     if args.output.exists():

@@ -84,6 +84,27 @@ class CompletionRenderAuditTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'changed while rendering'):
                     attach_provenance({}, cache, record, baseline, candidate, supervision)
 
+    def test_color_residual_is_in_fresh_audit_without_changing_gate_decision(self):
+        from utils.color_residual import FORMAT as RESIDUAL_FORMAT
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            baseline, candidate, supervision, cache, record = self.artifact_fixture(root)
+            fit, residual = root/'fit.json', root/'residual.npz'
+            fit.write_text('{}'); residual.write_bytes(b'fixture residual')
+            contract = {'format': RESIDUAL_FORMAT, 'report': str(fit), 'report_sha256': sha256_file(fit),
+                        'residual': str(residual), 'residual_sha256': sha256_file(residual)}
+            cache['color_residual'] = record['color_residual'] = contract
+            decision = {'approved_for_export': False, 'failed_intervals': [1, 2],
+                        'summary': {'all': {'passed': 397, 'intervals': 399}}}
+            result = attach_provenance(decision, cache, record, baseline, candidate, supervision)
+            self.assertFalse(result['approved_for_export'])
+            self.assertEqual(result['failed_intervals'], [1, 2])
+            self.assertEqual(result['summary'], decision['summary'])
+            self.assertEqual(result['artifact_sha256']['color_residual'], sha256_file(residual))
+            self.assertEqual(result['artifact_sha256']['color_residual_report'], sha256_file(fit))
+            self.assertTrue(result['observed_color_residual_fitted'])
+            self.assertFalse(result['residual_motion_reoptimized'])
+
     def test_overwrite_and_partial_render_are_refused_before_input_load(self):
         for filename in ('rendered_gray.npy', 'rendered_gray.npy.partial', 'event-audit.json',
                          'completion-render-check.json', 'frame_0100.png'):
@@ -94,6 +115,27 @@ class CompletionRenderAuditTests(unittest.TestCase):
                     prepare_inputs(Path(folder)/'absent', candidate, Path(folder)/'absent.npz')
                 self.assertEqual((candidate/filename).read_bytes(), b'existing user artifact')
         self.assertEqual(len(output_paths(Path('/tmp/example'))), 11)
+
+    def test_protected_surface_layer_has_fresh_identity_without_approval_promotion(self):
+        from utils.protected_surface_detail import FORMAT as DETAIL_FORMAT
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            baseline, candidate, supervision, cache, record = self.artifact_fixture(root)
+            report, extension = root/'surface-report.json', root/'surface.npz'
+            report.write_text('{}'); extension.write_bytes(b'new surface fixture')
+            contract = {'format': DETAIL_FORMAT, 'report': str(report), 'report_sha256': sha256_file(report),
+                        'extension': str(extension), 'extension_sha256': sha256_file(extension)}
+            cache['protected_surface_detail'] = record['protected_surface_detail'] = contract
+            decision = {'approved_for_export': False, 'failed_intervals': [0, 398]}
+            result = attach_provenance(decision, cache, record, baseline, candidate, supervision)
+            self.assertFalse(result['approved_for_export'])
+            self.assertEqual(result['failed_intervals'], [0, 398])
+            self.assertTrue(result['unobserved_geometry_is_prior'])
+            self.assertFalse(result['surface_detail_motion_reoptimized'])
+            self.assertEqual(result['artifact_sha256']['surface_detail_extension'], sha256_file(extension))
+            extension.write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError, 'detail artifacts changed'):
+                attach_provenance(decision, cache, record, baseline, candidate, supervision)
 
     def test_json_outputs_are_created_exclusively(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -1,6 +1,8 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
+  // Avoid replacing identical live text on every animation frame.
+  const text = (id, value) => {if ($(id).textContent !== value) $(id).textContent = value;};
   const canvas = $("canvas"), stage = $("stage"), context = canvas.getContext("2d", {alpha: false});
   const rightCanvas = $("comparisonCanvas"), rightContext = rightCanvas.getContext("2d", {alpha: false});
   const state = {scene: null, socket: null, playing: false, frame: 0, dirty: true, pending: new Set(),
@@ -55,9 +57,8 @@
     const scene = state.scene, seconds = scene.times_seconds[state.frame];
     $("timeline").value = state.frame;
     $("timeline").setAttribute("aria-valuetext", `${seconds.toFixed(2)} 秒，第 ${state.frame + 1} 帧`);
-    $("timeLabel").replaceChildren(document.createTextNode(seconds.toFixed(2) + " "));
-    const total = document.createElement("small"); total.textContent = `/ ${scene.duration_seconds.toFixed(2)} s`;
-    $("timeLabel").append(total);
+    text("timeCurrent", seconds.toFixed(2));
+    text("timeTotal", `/ ${scene.duration_seconds.toFixed(2)} s`);
     $("frameLabel").textContent = `帧 ${String(state.frame + 1).padStart(3, "0")} / ${scene.frame_count}`;
     const rpm = scene.rpm[state.frame];
     $("rpm").textContent = Number.isFinite(rpm) ? `${rpm.toFixed(1)} RPM` : "—";
@@ -68,10 +69,12 @@
       const names = {relative_l1: '变化幅度偏差', polarity_agreement: '事件极性不一致',
         cosine: '变化分布不一致', unsupported_change_fraction: '存在事件未支持的变化',
         insufficient_event_evidence: '事件证据不足'};
-      $("eventInterval").textContent = state.frame === 0 ? "当前：初始帧" : check ?
+      const intervalText = state.frame === 0 ? "当前：初始帧" : check ?
         `当前：${check.passed ? '通过粗尺度检查' : check.reasons.map(reason => names[reason] || reason).join(' / ')}${check.reference_weak ? ' · 参考证据偏弱' : ''}` :
-        scene.event_validation.failed_intervals.includes(state.frame - 1) ? "当前时间段：未通过事件检查" :
+        scene.event_validation.failed_intervals?.includes(state.frame - 1) ? "当前时间段：未通过事件检查" :
           "当前时间段：通过粗尺度事件检查";
+      text("eventInterval", intervalText);
+      $("eventInterval").title = intervalText;
     }
   }
   function reset(yaw = 0, pitch = 0) {
@@ -280,12 +283,14 @@
       if (scene.comparison) {
         $("leftCompareLabel").textContent = scene.left_label;
         $("rightCompareLabel").textContent = scene.right_label;
+        $("snapshot").textContent = "保存原始 / 优化对比图 ↓";
       }
       const event = scene.event_validation;
       $("eventNotice").hidden = !event;
       $("geometryNotice").hidden = !scene.geometry_repaired;
+      $("geometryDetails").hidden = !scene.geometry_repaired;
       $("geometryNotice").textContent = scene.geometry_repaired ? scene.geometry_repair_scope : "";
-      $("sequenceBadge").textContent = scene.comparison ? "左右同步对比 · 事件校正" : event ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
+      $("sequenceBadge").textContent = scene.comparison ? "原始 / 优化 · 同帧同视角" : event ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
       if (event) {
         $("eventDecision").textContent = event.approved ? "事件校正候选 · 粗尺度检查通过" : "事件校正后 · 尚未通过整段验收";
         $("eventSummary").textContent = `区间通过 ${event.summary.passed}/${event.summary.intervals} · 事件余弦 ${event.summary.cosine.toFixed(3)}` +
@@ -328,14 +333,14 @@
         state.autoRateCap = 30; state.dirty = true;
       }
       if (now - state.lastStreamStatus >= 250) {
-        $("streamStatus").textContent = buffer.buffering ? "网络缓冲…" :
-          `${buffer.rate} FPS 同步流 · 缓存 ${buffer.frames.size} 帧 · 断流 ${buffer.underruns}`;
+        text("streamStatus", buffer.buffering ? "网络缓冲…" :
+          `${buffer.rate} FPS 同步流 · 缓存 ${buffer.frames.size} 帧 · 断流 ${buffer.underruns}`);
         state.lastStreamStatus = now;
       }
     } else if (!state.playing) {
-      $("streamStatus").textContent = "逐帧查看";
+      text("streamStatus", "逐帧查看");
     } else if (state.interacting) {
-      $("streamStatus").textContent = "视角交互 · 松开恢复播放";
+      text("streamStatus", "视角交互 · 松开恢复播放");
     }
     if (now - state.lastReceived > 1500) $("displayFps").textContent = "0.0";
     requestFrame(); requestAnimationFrame(tick);
@@ -405,12 +410,24 @@
   // Don't restart their stream when surrounding text or layout changes size.
   new ResizeObserver(() => {if (!state.scene?.comparison) state.dirty = true;}).observe(stage);
   $("snapshot").onclick = () => {
+    if (state.displayedFrame < 0) return;
     let snapshot = canvas;
     if (state.scene?.comparison) {
       snapshot = document.createElement("canvas");
-      snapshot.width = canvas.width + rightCanvas.width; snapshot.height = canvas.height;
+      const header = 56;
+      snapshot.width = canvas.width + rightCanvas.width; snapshot.height = canvas.height + header;
       const ctx = snapshot.getContext("2d");
-      ctx.drawImage(canvas, 0, 0); ctx.drawImage(rightCanvas, canvas.width, 0);
+      ctx.fillStyle = "#171c23"; ctx.fillRect(0, 0, snapshot.width, header);
+      ctx.fillStyle = "#e6ebf2"; ctx.font = "16px sans-serif";
+      ctx.fillText(state.scene.left_label, 12, 22, canvas.width - 24);
+      ctx.fillText(state.scene.right_label, canvas.width + 12, 22, rightCanvas.width - 24);
+      ctx.font = "12px sans-serif"; ctx.fillStyle = "#b6aa8f";
+      const frame = state.displayedFrame;
+      const stamp = `帧 ${frame + 1} / ${state.scene.frame_count} · ${state.scene.times_seconds[frame].toFixed(3)} s · 同帧同视角`;
+      ctx.fillText(stamp, 12, 43);
+      ctx.fillText(state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
+        "尚未通过整段事件验收；背面完整性不保证", canvas.width + 12, 43, rightCanvas.width - 24);
+      ctx.drawImage(canvas, 0, header); ctx.drawImage(rightCanvas, canvas.width, header);
     }
     snapshot.toBlob(blob => {
     if (!blob) return;

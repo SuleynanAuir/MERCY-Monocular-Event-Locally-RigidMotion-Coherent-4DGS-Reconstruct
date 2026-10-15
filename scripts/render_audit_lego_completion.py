@@ -24,6 +24,8 @@ from utils.render_sampling import require_same_sampling
 from utils.rigid_checkpoint import sha256_file
 from utils.gaussian_cleanup import cleanup_contract, verify_gaussian_cleanup
 from utils.static_surface_rebuild import static_surface_contract, verify_static_surface_rebuild
+from utils.color_residual import color_residual_contract, verify_color_residual
+from utils.protected_surface_detail import protected_surface_contract, verify_protected_surface_detail
 
 
 FRAME_COUNT = 400
@@ -61,6 +63,8 @@ def prepare_inputs(baseline, candidate, supervision):
     verified = verify_multiview_completion(cache, record, baseline=baseline)
     cleaned = verify_gaussian_cleanup(cache, record, baseline=baseline)
     static_surface = verify_static_surface_rebuild(cache, record, baseline=baseline)
+    residual = verify_color_residual(cache, record, baseline=baseline)
+    detail = verify_protected_surface_detail(cache, record, baseline=baseline)
     report = verified['report']
     parent_candidate = Path(report['parent_correction']).parent
     parent_cache, parent_record, parent_audit = verify_candidate(
@@ -78,6 +82,10 @@ def prepare_inputs(baseline, candidate, supervision):
     comparison_candidate = Path(cleaned['report']['parent_candidate']) if cleaned is not None else parent_candidate
     if static_surface is not None:
         comparison_candidate = Path(static_surface['report']['parent_candidate'])
+    if residual is not None:
+        comparison_candidate = Path(residual['report']['parent_candidate'])
+    if detail is not None:
+        comparison_candidate = Path(detail['report']['parent_candidate'])
     expected = np.load(comparison_candidate / 'rendered_gray.npy', mmap_mode='r', allow_pickle=False)
     if expected.shape != (FRAME_COUNT, WIDTH, WIDTH) or expected.dtype not in (np.float16, np.float32):
         raise ValueError('Audited parent rendering has an incompatible frame shape or dtype')
@@ -139,10 +147,32 @@ def attach_provenance(result, cache, record, baseline, candidate, supervision):
                       static_rebuild_scope='Explicit appended static roof Gaussian surfaces plus retired source opacities. '
                         'Source PLY and inherited event-corrected motion are unchanged; this fresh render includes the replacement.')
         paths.update(static_surface_report=Path(surface['report']), static_surface_extension=Path(surface['extension']))
+    residual = color_residual_contract(cache, record)
+    if residual is not None:
+        result.update(color_residual=residual, observed_color_residual_fitted=True,
+            residual_motion_reoptimized=False,
+            color_residual_scope='Bounded same-chroma source Gaussian color increments; geometry, opacity, '
+                'covariance, source rows and corrected motion are unchanged. Actual residual colors are '
+                'included in this fresh full-event audit. Unseen views are not newly observed.',
+            validation_note='Existing event-heldout intervals and every fifth RGB timestamp were withheld '
+                'from this residual stage only. Parent-stage RGB independence is not claimed.')
+        paths.update(color_residual_report=Path(residual['report']), color_residual=Path(residual['residual']))
+    detail = protected_surface_contract(cache, record)
+    if detail is not None:
+        result.update(protected_surface_detail=detail, protected_static_surface_refinement=True,
+            surface_detail_motion_reoptimized=False,
+            surface_detail_scope='Guarded static Gaussian retirement and exact-triangle thin surface additions, '
+                'after the inherited color residual. All source motion is unchanged; this fresh full-timeline '
+                'render audit includes both layers. Unseen appearance and geometry remain explicit priors.')
+        paths.update(surface_detail_report=Path(detail['report']), surface_detail_extension=Path(detail['extension']))
     result['artifact_sha256'] = {key: sha256_file(path) for key, path in paths.items()}
     if (result['artifact_sha256']['completion_report'] != contract['report_sha256']
             or result['artifact_sha256']['completion_extension'] != contract['extension_sha256']):
         raise ValueError('Completion artifacts changed while rendering')
+    if detail is not None and (
+            result['artifact_sha256']['surface_detail_report'] != detail['report_sha256']
+            or result['artifact_sha256']['surface_detail_extension'] != detail['extension_sha256']):
+        raise ValueError('Protected surface detail artifacts changed while rendering')
     return result
 
 
@@ -219,6 +249,14 @@ def main():
         check.update(static_surface_rebuild=cache['static_surface_rebuild'],
                      gaussian_prefix_unchanged_scope='Serialized source only; roof retirement opacity and appended static Gaussians are separately audited.',
                      comparison_reference='The static surface report parent candidate, before replacing the roof.')
+    if color_residual_contract(cache, record) is not None:
+        check.update(color_residual=cache['color_residual'],
+                     gaussian_prefix_unchanged_scope='Serialized source and geometry only; audited RGB residual is applied at render time.',
+                     comparison_reference='The residual report parent candidate, before applying measured color residuals.')
+    if protected_surface_contract(cache, record) is not None:
+        check.update(protected_surface_detail=cache['protected_surface_detail'],
+                     gaussian_prefix_unchanged_scope='Serialized source only; guarded retirement and added static surfaces are applied after color residuals.',
+                     comparison_reference='The protected surface detail parent candidate, including its measured color residual.')
     write_new_json(args.candidate / 'completion-render-check.json', check)
     write_new_json(args.candidate / 'event-audit.json', result)
     verify_candidate(args.baseline, args.candidate, allow_unapproved=True)
