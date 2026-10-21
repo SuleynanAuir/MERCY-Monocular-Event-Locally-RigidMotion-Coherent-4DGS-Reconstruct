@@ -435,16 +435,18 @@ class ComparisonRenderer:
         if not prewarm:
             self.status = {'ready': True, 'progress': 100, 'scene': self.info}
             return
-        if settings.get('mesh_path'):
+        if settings.get('mesh_paths'):
             try:
-                from utils.viewer_mesh import MeshRenderer
-                mesh_path = Path(settings['mesh_path'])
-                if not mesh_path.is_absolute():
-                    mesh_path = self.path.parent / mesh_path
-                self.mesh = MeshRenderer(mesh_path, audited_source_fingerprints(audit), self.correction,
-                                         self.base_pose, self.target)
-                self.mesh.render(validate_request({'render_mode': 'mesh', 'width': 512, 'height': 512,
-                                                    'fovy': camera['fovy_degrees']}, frames))
+                from utils.viewer_mesh import MeshPairRenderer
+                paths = {side: (Path(value) if Path(value).is_absolute() else self.path.parent / value)
+                         for side, value in settings['mesh_paths'].items()}
+                fingerprints = {'left': dict(source_sha256=sha256_file(left_meta['source']),
+                                              poses_sha256=sha256_file(left / 'poses.npy'),
+                                              dynamic_indices_sha256=sha256_file(left / 'dynamic_indices.npy')),
+                                'right': audited_source_fingerprints(audit)}
+                self.mesh = MeshPairRenderer(paths, fingerprints, self.correction, self.base_pose, self.target)
+                self.mesh.render_panels(validate_request({'render_mode': 'mesh', 'width': 512, 'height': 512,
+                                                          'fovy': camera['fovy_degrees']}, frames))
                 self.info['mesh'] = self.mesh.info
             except Exception:
                 self.mesh = None
@@ -473,7 +475,7 @@ class ComparisonRenderer:
                                               'background': self.info['default_background'],
                                               'fovy': camera['fovy_degrees']}, frames))
                 if (index + 1) % 40 == 0 or index + 1 == frames:
-                    self.progress(99, f'预缓存 GS / Mesh 对比 {index + 1}/{frames} 帧')
+                    self.progress(99, f'预缓存 V1 / V3 Mesh 对比 {index + 1}/{frames} 帧')
             self.info['mesh']['prewarmed_frames'] = frames
         self.status = {'ready': True, 'progress': 100, 'message': '就绪', 'scene': self.info}
         logging.getLogger('gaussian-viewer').info('Ready: %d paired frames cached, %.1f MiB JPEG',
@@ -531,7 +533,7 @@ class ComparisonRenderer:
             return self.packet(request, jpeg, 0., 0., cache_hit=True)
         pose = orbit_pose(self.base_pose, self.target, request)
         pixels = []
-        for side in ((1,) if mesh_mode else (0, 1)):
+        for side in (() if mesh_mode else (0, 1)):
             supersample = self.side_sampling[side]['render_supersample']
             camera = make_camera(pose, request['width'] * supersample, request['height'] * supersample,
                                  np.deg2rad(request['fovy']))
@@ -540,7 +542,7 @@ class ComparisonRenderer:
             rgb = resolve_rgb(rgb, supersample)
             pixels.append((rgb.permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
         if mesh_mode:
-            pixels.append(self.mesh.render_pixels(request))
+            pixels = self.mesh.render_panels(request)
         rendered = time.perf_counter()
         stream = io.BytesIO()
         Image.fromarray(np.concatenate(pixels, axis=1)).save(stream, format='JPEG', quality=request['quality'], subsampling=0)

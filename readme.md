@@ -277,10 +277,27 @@ python viewer.py \
 #### 可选 Mesh 展示（从高斯重建）
 
 查看器的「渲染设置 → 显示模式」支持 `Gaussian` 和 `Mesh`，默认保留高斯对比。
-Mesh 模式保持双视窗：左侧为优化 GS，右侧为从它重建的 Mesh，两边同帧、同相机、同尺寸。点击「放大对比」可将两个视窗一起全屏显示。
-Mesh 来自当前优化高斯的多视角 RGB/深度 TSDF 融合，不读取原始三角网格；按刚性运动组分别重建，沿用当前校正动画。
-细节版默认使用 1280 像素、90 个视角、0.0015 体素、0.65 透明度阈值和 4 体素截断距离；不进行整体平滑，颜色从可见的高分辨率高斯视角单独烘焙，显示时不再叠加光照。
+Mesh 模式保持双视窗：左侧为 V1 Mesh（原始 GS），右侧为 V3 Mesh（最新优化 GS），两边同帧、同相机、同尺寸。此处 V1/V3 指查看器原有左右两份结果，并非历史实验目录的版本号。点击「放大对比」可将两个视窗一起全屏显示。
+两份 Mesh 分别来自各自高斯的多视角 RGB/深度 TSDF 融合，不读取原始三角网格。V1 仅复用原有部件绑定标签，并从自身逐帧高斯恢复刚体变换、检查全部帧的刚性误差；V3 沿用自身事件校正运动。两份运动独立存入网格，避免将 V3 的运动套用给 V1。
+细节版默认使用 1280 像素、90 个视角、0.0015 体素、0.65 透明度阈值和 4 体素截断距离；用受原始表面邻域限制的 Screened Poisson 重建改善细碎裂缝，并根据多视角高斯的空域证据剔除不受支持的表面，减少误填真实孔洞。颜色从可见的高分辨率高斯视角单独烘焙，显示时不再叠加光照。可使用 `--surface-method tsdf` 对照原始提取方法。
+当整体表面正则化降低细节相似度时，可用 `scripts/refine_viewer_mesh_gaps.py --base <同版本细节网格> --surface <同版本经空域筛查的连续网格> --output <新目录>` 仅添加边界附近的补片，完整保留细节网格原有顶点、三角面和颜色。两种网格必须来自同一份高斯，不能跨 V1/V3 混用。
+表面仍有细碎凸起时，可对左右两份网格分别运行 `python scripts/denoise_viewer_mesh.py --input <mesh.npz> --output <新目录>`，再将 manifest 指向处理后的文件。默认沿已有三角面连接进行 16 轮受限 Taubin 平滑，边界顶点最多移动 1 个体素，内部最多 2 个体素；不增删三角面、不跨部件或跨孔洞连接，并完整保留各自的运动。按实际保存的 float32 精度检查三角面朝向，对可能翻折的顶点局部回退。另做 3 轮保留颜色边界的顶点颜色去噪，输出报告记录每个部件的位移及局部起伏变化。查看器以宽高各 2 倍采样后缩回输出尺寸，改善微小三角面和轮廓的抗锯齿，画面大小和相机保持不变。
+需要进一步减少毛躁时使用 `--preset smooth`：本次处理采用 64 轮几何平滑和 10 轮颜色去噪，保持相同的位移限制及防翻折检查。左右两版使用相同参数，输出保留前次去噪报告与输入文件哈希；建议对当前结果运行一次后检查轮廓与孔洞，不要无检查地反复叠加。此预设偏重平顺度，细小纹理的对比度可能略降。
+
+需要增加三角面精细度时，可分别执行 `python scripts/subdivide_viewer_mesh.py --input <已去噪的 mesh.npz> --output <新目录>`。默认对超过 4/3 个体素的长边做一次自适应细分，每个部件的三角面最多增加至原来的 2 倍；相邻面共用边中点，过渡面同步拆分以避免裂缝。原有顶点和颜色保持不变，新增顶点按去噪后表面的切平面估计曲率，偏离线性中点最多 0.15 个体素且不超过边长的 8%；边界与锐边附近只做线性细分。原网格中的极薄面与重复面保持原样，按实际 float32 输出检查子面朝向，不安全区域回退或保持原面。左右独立处理并保留各自全部运动帧，新增顶点颜色沿边插值。细分改善曲面的离散精度，不会凭空恢复高斯源中缺失的真实结构或纹理；新增面数也会增加显存与渲染开销，切换 manifest 前应检查多视角效果和播放速度。
 低置信度表面、小碎片及弹性带会被略去，网格是高斯表面的近似，不代表重建精度或事件验收有所提升。
+
+细节颜色可在去噪后再拟合一次。`scripts/capture_viewer_mesh_views.cjs` 从正在运行的查看器采集 24 组训练视角和 6 组验证视角，每张图包含左右各自的高斯结果；拟合时严格按侧别裁切。`scripts/refine_viewer_mesh_colors.py` 仅优化顶点颜色，保持几何、三角面、部件归属及全部运动参数不变，限制 RGB 改变量，并通过随机表面邻域约束及递减学习率减少颗粒和单视角过拟合。已有颜色均匀区域的改动上限降至全局上限的 5%，避免白色平面新增斑点；沿已有颜色边缘逐步放宽限制。验证视角不参与梯度计算，候选应通过新视角对照后再部署；可以用采集脚本的 `check` 模式额外采集 4 组检查视角。颜色拟合不能补回缺失的几何或证明真实重建精度提高。
+
+```bash
+node scripts/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-views
+python scripts/refine_viewer_mesh_colors.py \
+  --comparison /path/to/comparison-manifest.json \
+  --input /path/to/v1-denoised/mesh.npz --views /path/to/color-views \
+  --output /path/to/v1-color-refined
+# 对 V3 输入单独执行同一命令；不能将 V1 的颜色套给 V3。
+node scripts/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-check check
+```
 
 在现有 CUDA 环境安装可选依赖并生成一次网格：
 
@@ -289,10 +306,14 @@ pip install --no-deps --no-build-isolation -r requirements-mesh.txt
 pip install open3d-cpu==0.19.0 'numpy<2'
 python scripts/reconstruct_viewer_mesh.py \
   --comparison /path/to/comparison-manifest.json \
-  --output /path/to/new-gaussian-mesh
+  --side left --left-binding /path/to/original/initial-binding.npz \
+  --output /path/to/v1-gaussian-mesh
+python scripts/reconstruct_viewer_mesh.py \
+  --comparison /path/to/comparison-manifest.json \
+  --side right --output /path/to/v3-gaussian-mesh
 ```
 
-在对比 manifest 中增加 `"mesh_path": "/path/to/new-gaussian-mesh/mesh.npz"`，重启查看器即可选择 Mesh。
+在对比 manifest 中增加 `"mesh_paths": {"left": "/path/to/v1-gaussian-mesh/mesh.npz", "right": "/path/to/v3-gaussian-mesh/mesh.npz"}`，重启查看器即可选择 Mesh。两份文件必须与各自高斯、运动和侧别匹配；缺失或混用时禁用 Mesh 模式，避免误标。旧的单份 `mesh_path` 配置需要重新生成双份网格后迁移。
 也可通过 `http://127.0.0.1:8892/?mode=mesh&autoplay=1&loop=1` 直接打开。
 切换模式保留时间与相机；Mesh 加载失败时高斯仍可使用。重新生成高斯或校正参数后，需要重新生成匹配的网格。
 

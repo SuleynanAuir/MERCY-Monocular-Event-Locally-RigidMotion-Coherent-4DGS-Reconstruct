@@ -32,18 +32,18 @@
     $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
     $("eventNotice").hidden = mesh || !scene.event_validation;
     $("sceneKind").textContent = mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
-    $("sceneName").textContent = mesh ? "优化 GS / 重建 Mesh" : scene.name;
-    $("leftCompareLabel").textContent = mesh ? (scene.mesh.left_label || "优化 GS") : scene.left_label;
-    $("rightCompareLabel").textContent = mesh ? (scene.mesh.right_label || "重建 Mesh") : scene.right_label;
-    $("sequenceBadge").textContent = mesh ? "GS / Mesh · 同帧同视角" : paired ?
+    $("sceneName").textContent = mesh ? "V1 / V3 Mesh 对比" : scene.name;
+    $("leftCompareLabel").textContent = mesh ? (scene.mesh.left_label || "V1 Mesh · 原始结果") : scene.left_label;
+    $("rightCompareLabel").textContent = mesh ? (scene.mesh.right_label || "V3 Mesh · 最新优化结果") : scene.right_label;
+    $("sequenceBadge").textContent = mesh ? "V1 / V3 Mesh · 同帧同视角" : paired ?
       "原始 / 优化 · 同帧同视角" : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
     $("gaussianCount").textContent = (mesh ? scene.mesh.triangle_count : scene.gaussian_count).toLocaleString("en-US");
     $("primitiveLabel").textContent = mesh ? "TRIANGLES / 三角面数量" : "GAUSSIANS / 高斯数量";
     $("sceneDescription").textContent = mesh ? scene.mesh.description :
       "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。";
-    $("snapshot").textContent = mesh ? "保存 GS / Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
-    canvas.setAttribute("aria-label", mesh ? "优化后的高斯渲染，与右侧 Mesh 同帧同视角" : "GPU 实时渲染的动态高斯");
-    rightCanvas.setAttribute("aria-label", mesh ? "从高斯重建的动态三角网格" : "优化高斯，同步右视窗");
+    $("snapshot").textContent = mesh ? "保存 V1 / V3 Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
+    canvas.setAttribute("aria-label", mesh ? "V1 原始高斯重建的 Mesh，与右侧同帧同视角" : "GPU 实时渲染的动态高斯");
+    rightCanvas.setAttribute("aria-label", mesh ? "V3 最新优化高斯重建的 Mesh，与左侧同帧同视角" : "优化高斯，同步右视窗");
   }
   function stopStream() {
     if (!state.stream) return;
@@ -484,7 +484,7 @@
       const frame = state.displayedFrame;
       const stamp = `帧 ${frame + 1} / ${state.scene.frame_count} · ${state.scene.times_seconds[frame].toFixed(3)} s · 同帧同视角`;
       ctx.fillText(stamp, 12, 43);
-      ctx.fillText(state.renderMode === "mesh" ? "由优化高斯重建的近似表面" : state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
+      ctx.fillText(state.renderMode === "mesh" ? "V1 与 V3 各自高斯重建的近似表面" : state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
         "尚未通过整段事件验收；背面完整性不保证", canvas.width + 12, 43, rightCanvas.width - 24);
       ctx.drawImage(canvas, 0, header); ctx.drawImage(rightCanvas, canvas.width, header);
     }

@@ -214,7 +214,7 @@ test('original and optimized sources are labeled explicitly without hiding event
 
 test('Mesh switch preserves the two comparison panels, frame, camera and isolated streams', async () => {
   const c = await client({mesh: {available: true, triangle_count: 12345, description: '高斯深度融合',
-    default_resolution: 768, left_label: '优化 GS', right_label: '重建 Mesh'}});
+    default_resolution: 768, left_label: 'V1 Mesh · 原始结果', right_label: 'V3 Mesh · 最新优化结果'}});
   const oldId = c.stream().id;
   c.elements.play.onclick(); c.tick(16);
   c.elements.timeline.oninput({target: {value: '7'}}); c.tick(32);
@@ -225,8 +225,10 @@ test('Mesh switch preserves the two comparison panels, frame, camera and isolate
   assert.equal(mesh.frame, 7);
   assert.equal(mesh.yaw, 35);
   assert.equal(c.elements.comparisonCanvas.hidden, false);
-  assert.equal(c.elements.leftCompareLabel.textContent, '优化 GS');
-  assert.equal(c.elements.rightCompareLabel.textContent, '重建 Mesh');
+  assert.equal(c.elements.leftCompareLabel.textContent, 'V1 Mesh · 原始结果');
+  assert.equal(c.elements.rightCompareLabel.textContent, 'V3 Mesh · 最新优化结果');
+  assert.equal(c.elements.snapshot.textContent, '保存 V1 / V3 Mesh 对比图 ↓');
+  assert.equal(c.elements.sceneName.textContent, 'V1 / V3 Mesh 对比');
   assert.equal(mesh.width, 768);
   assert.equal(mesh.height, 768);
   assert.equal(c.elements.primitiveLabel.textContent, 'TRIANGLES / 三角面数量');

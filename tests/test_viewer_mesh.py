@@ -7,10 +7,49 @@ import numpy as np
 
 from scripts.reconstruct_viewer_mesh import bilinear, projected_samples, valid_depth
 from utils.viewer_mesh import load_mesh_data, projection_matrix
+from utils.mesh_motion import baseline_groups, recover_rigid_motion, rotate
 from utils.viewer_state import cached_image_reference, validate_stream
 
 
 class MeshTests(unittest.TestCase):
+    def test_column_major_mesh_arrays_are_packed_for_cuda_rasterization(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'mesh.npz'
+            vertices = np.asfortranarray([[0., 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], dtype=np.float32)
+            faces = np.asfortranarray([[0, 1, 2], [0, 2, 3]], dtype=np.int32)
+            np.savez(path, vertices=vertices, triangles=faces, colors=vertices,
+                     vertex_groups=np.zeros(4, np.int32),
+                     metadata_json=np.asarray(json.dumps(dict(format='gaussian_tsdf_mesh_v1', source_fingerprints={}))))
+            result = load_mesh_data(path, 1, {})
+            for key in ('vertices', 'faces', 'colors'):
+                self.assertTrue(result[key].flags.c_contiguous)
+            np.testing.assert_array_equal(result['faces'], faces)
+            np.testing.assert_array_equal(result['vertices'], vertices)
+
+    def test_original_motion_is_recovered_without_optimized_correction(self):
+        rest = np.array([[0, 0, 0, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0, 0],
+                         [0, 1, 0, 1, 0, 0, 0]], np.float32)
+        poses = np.stack([rest.copy() for _ in range(3)])
+        q = np.array([np.cos(.2), 0, 0, np.sin(.2)])
+        poses[1, :2, :3] = rotate(q, rest[:2, :3]) + [2, 0, 0]
+        poses[1, :2, 3:] = q
+        poses[2, :2, :3] += [0, 3, 0]
+        poses[1:, 2, :3] += 100  # Unmodelled elastic motion must not be frozen into a rigid group.
+        qs, ts, report = recover_rigid_motion(poses, np.array([1, 1, -1]), 2)
+        np.testing.assert_allclose(ts[1, 1], [2, 0, 0], atol=1e-6)
+        np.testing.assert_allclose(ts[2, 1], [0, 3, 0], atol=1e-6)
+        self.assertEqual(report['checked_frames'], 3)
+        self.assertEqual(report['checked_rigid_rows'], 2)
+        poses[2, 1, 0] += .1
+        with self.assertRaisesRegex(ValueError, 'not rigid'):
+            recover_rigid_motion(poses, np.array([1, 1, -1]), 2)
+
+    def test_binding_matches_objects_by_name_and_excludes_elastic_parts(self):
+        labels = np.array([0, 1, 2, 0])
+        groups = baseline_groups(labels, ['arm', 'band', 'base'],
+                                 [{'group': 0, 'object_names': ['base']}, {'group': 1, 'object_names': ['arm']}])
+        self.assertEqual(groups.tolist(), [1, -1, 0, 1])
+
     def test_gaussian_depth_is_normalized_and_transparent_pixels_are_excluded(self):
         depth = valid_depth(np.array([1., 2., np.nan, -1]), np.array([.5, .9, 1., 1.]), .65)
         np.testing.assert_allclose(depth, [0, 2 / .9, 0, 0])
@@ -48,6 +87,20 @@ class MeshTests(unittest.TestCase):
             data['triangles'][0, 2] = 4
             np.savez(path, **data)
             with self.assertRaises(ValueError):
+                load_mesh_data(path, 2, fingerprints)
+            data['triangles'][0, 2] = 2
+            data['vertex_groups'][:] = 0
+            data['metadata_json'] = np.asarray(json.dumps(dict(format='gaussian_tsdf_mesh_v2',
+                source_side='left', frame_count=3, source_fingerprints=fingerprints)))
+            data['motion_quaternions'] = np.tile([1., 0, 0, 0], (3, 2, 1))
+            data['motion_translations'] = np.zeros((3, 2, 3))
+            data['motion_translations'][2, 1, 0] = 2
+            np.savez(path, **data)
+            restored = load_mesh_data(path, 2, fingerprints)
+            self.assertEqual(restored['motion_translations'][2, 1, 0], 2)
+            data['motion_quaternions'][1, 0] = 0
+            np.savez(path, **data)
+            with self.assertRaisesRegex(ValueError, 'embedded source motion'):
                 load_mesh_data(path, 2, fingerprints)
 
     def test_mesh_cache_reference_preserves_two_synchronized_panels(self):

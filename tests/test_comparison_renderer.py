@@ -22,6 +22,31 @@ from utils.render_sampling import render_sampling_contract
 
 
 class ComparisonRendererTests(unittest.TestCase):
+    def test_mesh_mode_renders_two_independent_meshes_without_gaussian_pixels(self):
+        renderer = ComparisonRenderer('unused.json', 'cpu')
+        renderer.base_pose = np.eye(4); renderer.base_pose[2, 3] = 2; renderer.target = np.zeros(3)
+        calls = []
+        def panels(request):
+            calls.append(request['frame'])
+            return [np.full((128, 128, 3), 40 + request['frame'], np.uint8),
+                    np.full((128, 128, 3), 180 + request['frame'], np.uint8)]
+        renderer.mesh = SimpleNamespace(render_panels=panels)
+        def unexpected(*args):
+            raise AssertionError('Mesh comparison must not render GS in either panel')
+        with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=unexpected),
+                                      'render_ply': SimpleNamespace(make_camera=unexpected)}):
+            request = validate_request({'render_mode': 'mesh', 'frame': 1, 'width': 128, 'height': 128}, 3)
+            for _ in range(2):
+                packet = renderer.render(request)
+                size = struct.unpack('<I', packet[:4])[0]
+                meta = json.loads(packet[4:4+size])
+                image = np.asarray(Image.open(io.BytesIO(packet[4+size:])))
+                self.assertTrue(meta['comparison'])
+                self.assertEqual(meta['left_frame'], meta['right_frame'])
+                self.assertAlmostEqual(image[:, :128].mean(), 41, delta=1)
+                self.assertAlmostEqual(image[:, 128:].mean(), 181, delta=1)
+        self.assertEqual(calls, [1])
+
     def test_scene_identity_exposes_only_exact_audited_correction_and_source_hashes(self):
         audit = {'artifact_sha256': {'correction': 'c' * 64, 'source_ply': 'a' * 64,
                                      'supervision': 'private-unneeded-field'}, 'internal_note': 'not public'}
