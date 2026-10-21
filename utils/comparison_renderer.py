@@ -234,13 +234,15 @@ class ComparisonRenderer:
         self.image_cache = EncodedFrameCache()
         self.side_sampling = [render_sampling_contract({}), render_sampling_contract({})]
         self.completion = None
+        self.mesh = None
+        self.mesh_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
 
     def progress(self, value, message):
         self.status = {'ready': False, 'progress': value, 'message': message}
         logging.getLogger('gaussian-viewer').info('%s (%s%%)', message, value)
 
     @torch.no_grad()
-    def load(self):
+    def load(self, prewarm=True):
         from scene import GaussianModel
         from scripts.export_lego_event_preview import verify_candidate
         from utils.rigid_checkpoint import sha256_file
@@ -429,6 +431,25 @@ class ComparisonRenderer:
                 'part_ids': rebuilt_static['report']['allowed_part_ids']}
             self.info['geometry_repair_scope'] += (' 驾驶舱车顶的5个固定零件另按真实网格表面重建高斯；'
                 '可见面采用视频颜色，未观测面仍是先验。窗框、立柱和运动参数保留；结果另经完整事件复验。')
+        self.info['mesh'] = {'available': False, 'description': '当前场景未生成高斯重建网格。'}
+        if not prewarm:
+            self.status = {'ready': True, 'progress': 100, 'scene': self.info}
+            return
+        if settings.get('mesh_path'):
+            try:
+                from utils.viewer_mesh import MeshRenderer
+                mesh_path = Path(settings['mesh_path'])
+                if not mesh_path.is_absolute():
+                    mesh_path = self.path.parent / mesh_path
+                self.mesh = MeshRenderer(mesh_path, audited_source_fingerprints(audit), self.correction,
+                                         self.base_pose, self.target)
+                self.mesh.render(validate_request({'render_mode': 'mesh', 'width': 512, 'height': 512,
+                                                    'fovy': camera['fovy_degrees']}, frames))
+                self.info['mesh'] = self.mesh.info
+            except Exception:
+                self.mesh = None
+                self.info['mesh'] = {'available': False, 'description': 'Mesh 加载失败；高斯模式仍可使用。'}
+                logging.getLogger('gaussian-viewer').exception('Optional Mesh failed to load')
         self.progress(95, '预热双视图实时渲染')
         self.render(validate_request({'width': 512, 'height': 512, 'fovy': camera['fovy_degrees']}, frames))
         # Render every source frame of the initial view once, before autoplay.
@@ -443,6 +464,17 @@ class ComparisonRenderer:
             if (index + 1) % 40 == 0 or index + 1 == frames:
                 self.progress(95 + int(4 * (index + 1) / frames), f'预缓存双视图 {index + 1}/{frames} 帧')
         self.info['prewarmed_frames'] = frames
+        if self.mesh is not None:
+            resolution = self.info['mesh']['default_resolution']
+            for index in range(frames):
+                self.render(validate_request({'render_mode': 'mesh', 'frame': index,
+                                              'width': resolution, 'height': resolution,
+                                              'quality': self.info['default_stream_quality'],
+                                              'background': self.info['default_background'],
+                                              'fovy': camera['fovy_degrees']}, frames))
+                if (index + 1) % 40 == 0 or index + 1 == frames:
+                    self.progress(99, f'预缓存 GS / Mesh 对比 {index + 1}/{frames} 帧')
+            self.info['mesh']['prewarmed_frames'] = frames
         self.status = {'ready': True, 'progress': 100, 'message': '就绪', 'scene': self.info}
         logging.getLogger('gaussian-viewer').info('Ready: %d paired frames cached, %.1f MiB JPEG',
                                                  frames, self.image_cache.bytes / 1024**2)
@@ -487,15 +519,19 @@ class ComparisonRenderer:
 
     @torch.no_grad()
     def render(self, request):
+        mesh_mode = request.get('render_mode', 'gaussian') == 'mesh'
+        if mesh_mode and self.mesh is None:
+            raise ValueError('Mesh is unavailable for this scene')
         from gaussian_renderer import render
         from render_ply import make_camera
         start = time.perf_counter()
-        jpeg = self.image_cache.get(request)
+        cache = self.mesh_comparison_cache if mesh_mode else self.image_cache
+        jpeg = cache.get(request)
         if jpeg is not None:
             return self.packet(request, jpeg, 0., 0., cache_hit=True)
         pose = orbit_pose(self.base_pose, self.target, request)
         pixels = []
-        for side in (0, 1):
+        for side in ((1,) if mesh_mode else (0, 1)):
             supersample = self.side_sampling[side]['render_supersample']
             camera = make_camera(pose, request['width'] * supersample, request['height'] * supersample,
                                  np.deg2rad(request['fovy']))
@@ -503,15 +539,18 @@ class ComparisonRenderer:
             rgb = render(camera, self.model, self.pipe, self.backgrounds[request['background']], 0., 0., 0.)['render']
             rgb = resolve_rgb(rgb, supersample)
             pixels.append((rgb.permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
+        if mesh_mode:
+            pixels.append(self.mesh.render_pixels(request))
         rendered = time.perf_counter()
         stream = io.BytesIO()
-        Image.fromarray(np.concatenate(pixels, axis=1)).save(stream, format='JPEG', quality=request['quality'])
+        Image.fromarray(np.concatenate(pixels, axis=1)).save(stream, format='JPEG', quality=request['quality'], subsampling=0)
         jpeg = stream.getvalue()
-        self.image_cache.put(request, jpeg)
+        cache.put(request, jpeg)
         return self.packet(request, jpeg, (rendered-start)*1000, (time.perf_counter()-rendered)*1000)
 
     def packet(self, request, jpeg, render_ms, encode_ms, cache_hit=False):
         return image_packet({'id': request['id'], 'frame': request['frame'], 'comparison': True,
+                             'render_mode': request.get('render_mode', 'gaussian'),
                              'left_frame': request['frame'], 'right_frame': request['frame'],
                              **({'stream': request['_stream']} if '_stream' in request else {}),
                              'width': request['width'] * 2, 'height': request['height'],

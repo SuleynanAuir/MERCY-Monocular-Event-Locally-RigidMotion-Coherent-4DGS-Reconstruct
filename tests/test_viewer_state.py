@@ -12,13 +12,15 @@ class ViewerStateTests(unittest.TestCase):
         state = validate_request({}, 360)
         self.assertEqual(state["frame"], 0)
         self.assertEqual(state["background"], "dark")
+        self.assertEqual(state['render_mode'], 'gaussian')
 
     def test_bad_values(self):
         for data in ([], None, {"frame": -1}, {"frame": 360}, {"frame": 1.5},
                      {"frame": True}, {"width": 10000}, {"zoom": 0},
                      {"yaw": float("nan")}, {"pitch": float("inf")},
                      {"pan_x": "1"}, {"background": []}, {"background": "red"},
-                     {"quality": 1}, {"width": 1280, "height": 1280}):
+                     {"quality": 1}, {"width": 1280, "height": 1280},
+                     {'render_mode': 'unknown'}, {'render_mode': []}):
             with self.subTest(data=data), self.assertRaises(ValueError):
                 validate_request(data, 360)
 

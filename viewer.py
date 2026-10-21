@@ -282,6 +282,9 @@ def create_app(path, cache="auto", renderer_factory=None):
                     if kind not in {"frame", "stream"}:
                         raise ValueError("Unknown request type")
                     data = (validate_stream if kind == "stream" else validate_request)(raw, renderer.info["frame_count"])
+                    if data['render_mode'] == 'mesh' and not renderer.info.get('mesh', {}).get('available'):
+                        await ws.send_json({'type': 'error', 'message': '当前场景未提供可用的 Mesh'})
+                        continue
                 except (ValueError, TypeError, OverflowError):
                     await ws.send_json({"type": "error", "message": "无效的相机或帧参数"})
                     continue

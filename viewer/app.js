@@ -9,11 +9,42 @@
     id: 0, yaw: 0, pitch: 0, zoom: 1, pan_x: 0, pan_y: 0, background: "dark", speed: 1,
     lastReceived: 0, displayedFrame: -1, lastDrawnId: 0, delivered: [], retry: null,
     stream: null, minimumId: 0, interacting: false, lastStats: 0, lastLabels: 0, lastStreamStatus: 0,
-    autoRateCap: 60};
+    autoRateCap: 60, renderMode: "gaussian"};
   let pointer = null, wheelTimer = null;
   const launchOptions = new URLSearchParams(window.location.search);
   let autoStartPending = launchOptions.get("autoplay") === "1";
 
+  function comparisonView() {return !!state.scene?.comparison;}
+  function modeResolution(mode = state.renderMode) {
+    return (mode === "mesh" ? state.scene?.mesh?.default_resolution : null) || state.scene?.default_resolution || 768;
+  }
+  function updateModeUI() {
+    const scene = state.scene;
+    if (!scene) return;
+    const mesh = state.renderMode === "mesh", paired = comparisonView();
+    $("renderMode").value = state.renderMode;
+    $("renderMode").disabled = false;
+    $("meshOption").disabled = !scene.mesh?.available;
+    $("meshNotice").textContent = scene.mesh?.available ? scene.mesh.description :
+      (scene.mesh?.description || "当前场景未生成高斯重建网格。");
+    stage.classList.toggle("comparison", paired);
+    rightCanvas.hidden = !paired;
+    $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
+    $("eventNotice").hidden = mesh || !scene.event_validation;
+    $("sceneKind").textContent = mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
+    $("sceneName").textContent = mesh ? "优化 GS / 重建 Mesh" : scene.name;
+    $("leftCompareLabel").textContent = mesh ? (scene.mesh.left_label || "优化 GS") : scene.left_label;
+    $("rightCompareLabel").textContent = mesh ? (scene.mesh.right_label || "重建 Mesh") : scene.right_label;
+    $("sequenceBadge").textContent = mesh ? "GS / Mesh · 同帧同视角" : paired ?
+      "原始 / 优化 · 同帧同视角" : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
+    $("gaussianCount").textContent = (mesh ? scene.mesh.triangle_count : scene.gaussian_count).toLocaleString("en-US");
+    $("primitiveLabel").textContent = mesh ? "TRIANGLES / 三角面数量" : "GAUSSIANS / 高斯数量";
+    $("sceneDescription").textContent = mesh ? scene.mesh.description :
+      "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。";
+    $("snapshot").textContent = mesh ? "保存 GS / Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
+    canvas.setAttribute("aria-label", mesh ? "优化后的高斯渲染，与右侧 Mesh 同帧同视角" : "GPU 实时渲染的动态高斯");
+    rightCanvas.setAttribute("aria-label", mesh ? "从高斯重建的动态三角网格" : "优化高斯，同步右视窗");
+  }
   function stopStream() {
     if (!state.stream) return;
     state.stream.buffer.close(); state.stream = null;
@@ -62,7 +93,7 @@
     $("frameLabel").textContent = `帧 ${String(state.frame + 1).padStart(3, "0")} / ${scene.frame_count}`;
     const rpm = scene.rpm[state.frame];
     $("rpm").textContent = Number.isFinite(rpm) ? `${rpm.toFixed(1)} RPM` : "—";
-    $("motionLabel").textContent = scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
+    $("motionLabel").textContent = state.renderMode === "mesh" ? "高斯重建 Mesh · 同步部件动画" : scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
       seconds === 0 ? "静止 · 起始状态" : seconds < scene.ramp_seconds ? "平滑加速" : "匀速旋转");
     if (scene.event_validation) {
       const check = scene.event_validation.interval_checks?.[state.frame - 1];
@@ -107,16 +138,17 @@
     const id = ++state.id;
     state.pending.add(id);
     state.socket.send(JSON.stringify({id, frame: state.frame, yaw, pitch, zoom, pan_x, pan_y,
-      background, fovy: state.scene.fovy,
+      background, render_mode: state.renderMode, fovy: state.scene.fovy,
       quality: state.interacting ? 72 : (state.scene.default_still_quality ?? 85), ...dimensions()}));
   }
   function startStream() {
     if (!state.scene || state.socket?.readyState !== WebSocket.OPEN || document.hidden) return;
     stopStream(); state.pending.clear();
     const id = ++state.id;
-    const defaultView = state.scene.prewarmed_frames === state.scene.frame_count &&
+    const prewarmed = state.renderMode === "mesh" ? state.scene.mesh?.prewarmed_frames : state.scene.prewarmed_frames;
+    const defaultView = prewarmed === state.scene.frame_count &&
       state.yaw === 0 && state.pitch === 0 && state.zoom === 1 && state.pan_x === 0 && state.pan_y === 0 &&
-      state.background === state.scene.default_background && +$("resolution").value === state.scene.default_resolution;
+      state.background === state.scene.default_background && +$("resolution").value === modeResolution();
     const rate = $("streamRate").value === 'auto' ? Math.min(state.autoRateCap,
       state.scene.comparison && !defaultView ? 30 : 60) : +$("streamRate").value;
     state.minimumId = id; state.dirty = false; state.delivered = [];
@@ -128,12 +160,13 @@
       target_fps: rate, cache_hits: 0, client_cache_hits: 0, decode_ms: 0, draw_ms: 0};
     const {yaw, pitch, zoom, pan_x, pan_y, background} = state;
     state.socket.send(JSON.stringify({type: "stream", id, frame: state.frame, speed: state.speed,
-      rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background,
+      rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background, render_mode: state.renderMode,
       fovy: state.scene.fovy, quality: state.scene.default_stream_quality ?? 78, ...dimensions()}));
     $("streamStatus").textContent = "预缓冲…";
   }
   function present(item, close = true) {
     const {meta, bitmap} = item, now = performance.now();
+    $("snapshot").disabled = false;
     const panelWidth = meta.comparison ? meta.panel_width : meta.width;
     if (canvas.width !== panelWidth || canvas.height !== meta.height) {
       canvas.width = panelWidth; canvas.height = meta.height;
@@ -307,7 +340,10 @@
       $("gpuName").textContent = scene.gpu;
       $("cacheInfo").textContent = `${scene.cache.toUpperCase()} ${scene.comparison ? "缓存上限" : "缓存"} · ${scene.cache_gib.toFixed(2)} GiB 运动数据`;
       $("gpuDot").className = "dot ready";
-      labels(); connect();
+      if (firstLoad && launchOptions.get("mode") === "mesh" && scene.mesh?.available) state.renderMode = "mesh";
+      if (state.renderMode === "mesh" && !scene.mesh?.available) state.renderMode = "gaussian";
+      if (firstLoad) $("resolution").value = String(modeResolution());
+      updateModeUI(); labels(); connect();
     } catch (error) {
       status("等待服务器", "error");
       overlay("无法连接渲染服务器", "确认服务已启动，并通过 SSH 将端口转发到本机。"); scheduleRetry();
@@ -357,6 +393,29 @@
   $("loop").onchange = () => state.dirty = true;
   $("streamRate").onchange = () => {state.autoRateCap = 60; state.dirty = true;};
   $("resolution").onchange = () => state.dirty = true;
+  $("renderMode").onchange = event => {
+    const mode = event.target.value;
+    if (!state.scene || !["gaussian", "mesh"].includes(mode) ||
+        (mode === "mesh" && !state.scene.mesh?.available)) return;
+    stopStream(); state.pending.clear();
+    state.minimumId = ++state.id;
+    const wasDefaultResolution = +$("resolution").value === modeResolution();
+    state.renderMode = mode; state.autoRateCap = 60; state.dirty = true;
+    if (wasDefaultResolution) $("resolution").value = String(modeResolution());
+    state.displayedFrame = -1;
+    $("snapshot").disabled = true;
+    overlay("切换显示模式", mode === "mesh" ? "正在渲染高斯重建网格…" : "正在渲染高斯…");
+    updateModeUI(); labels();
+  };
+  $("expandView").onclick = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await $("viewerPanel").requestFullscreen();
+    } catch (error) {$("expandView").title = "浏览器未允许全屏，可放大窗口查看";}
+  };
+  document.addEventListener("fullscreenchange", () => {
+    $("expandView").textContent = document.fullscreenElement ? "退出全屏" : "放大对比";
+  });
   $("reset").onclick = $("resetFloating").onclick = () => reset();
   document.querySelectorAll(".preset").forEach(button => button.onclick = () => reset(+button.dataset.yaw, +button.dataset.pitch));
   document.querySelectorAll(".swatch").forEach(button => button.onclick = () => {
@@ -412,27 +471,27 @@
   $("snapshot").onclick = () => {
     if (state.displayedFrame < 0) return;
     let snapshot = canvas;
-    if (state.scene?.comparison) {
+    if (comparisonView()) {
       snapshot = document.createElement("canvas");
       const header = 56;
       snapshot.width = canvas.width + rightCanvas.width; snapshot.height = canvas.height + header;
       const ctx = snapshot.getContext("2d");
       ctx.fillStyle = "#171c23"; ctx.fillRect(0, 0, snapshot.width, header);
       ctx.fillStyle = "#e6ebf2"; ctx.font = "16px sans-serif";
-      ctx.fillText(state.scene.left_label, 12, 22, canvas.width - 24);
-      ctx.fillText(state.scene.right_label, canvas.width + 12, 22, rightCanvas.width - 24);
+      ctx.fillText($("leftCompareLabel").textContent, 12, 22, canvas.width - 24);
+      ctx.fillText($("rightCompareLabel").textContent, canvas.width + 12, 22, rightCanvas.width - 24);
       ctx.font = "12px sans-serif"; ctx.fillStyle = "#b6aa8f";
       const frame = state.displayedFrame;
       const stamp = `帧 ${frame + 1} / ${state.scene.frame_count} · ${state.scene.times_seconds[frame].toFixed(3)} s · 同帧同视角`;
       ctx.fillText(stamp, 12, 43);
-      ctx.fillText(state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
+      ctx.fillText(state.renderMode === "mesh" ? "由优化高斯重建的近似表面" : state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
         "尚未通过整段事件验收；背面完整性不保证", canvas.width + 12, 43, rightCanvas.width - 24);
       ctx.drawImage(canvas, 0, header); ctx.drawImage(rightCanvas, canvas.width, header);
     }
     snapshot.toBlob(blob => {
     if (!blob) return;
     const url = URL.createObjectURL(blob), link = document.createElement("a");
-    link.href = url; link.download = `gaussian-frame-${String(state.displayedFrame).padStart(4, "0")}.png`;
+    link.href = url; link.download = `${state.renderMode}-frame-${String(state.displayedFrame).padStart(4, "0")}.png`;
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, "image/png");
   };

@@ -211,3 +211,50 @@ test('original and optimized sources are labeled explicitly without hiding event
   assert.equal(c.elements.timeCurrent.textContent, (1 / 60).toFixed(2));
   assert.match(c.elements.eventDecision.textContent, /尚未通过整段验收/);
 });
+
+test('Mesh switch preserves the two comparison panels, frame, camera and isolated streams', async () => {
+  const c = await client({mesh: {available: true, triangle_count: 12345, description: '高斯深度融合',
+    default_resolution: 768, left_label: '优化 GS', right_label: '重建 Mesh'}});
+  const oldId = c.stream().id;
+  c.elements.play.onclick(); c.tick(16);
+  c.elements.timeline.oninput({target: {value: '7'}}); c.tick(32);
+  c.presets[1].onclick(); c.tick(48);
+  c.elements.renderMode.onchange({target: {value: 'mesh'}}); c.tick(64);
+  const mesh = c.socket.sent.at(-1);
+  assert.equal(mesh.render_mode, 'mesh');
+  assert.equal(mesh.frame, 7);
+  assert.equal(mesh.yaw, 35);
+  assert.equal(c.elements.comparisonCanvas.hidden, false);
+  assert.equal(c.elements.leftCompareLabel.textContent, '优化 GS');
+  assert.equal(c.elements.rightCompareLabel.textContent, '重建 Mesh');
+  assert.equal(mesh.width, 768);
+  assert.equal(mesh.height, 768);
+  assert.equal(c.elements.primitiveLabel.textContent, 'TRIANGLES / 三角面数量');
+  assert.equal(c.elements.gaussianCount.textContent, '12,345');
+  const count = c.decoded.length;
+  await c.packet(0, 0, true, oldId);
+  assert.equal(c.decoded.length, count);
+  c.elements.play.onclick(); c.tick(80);
+  assert.equal(c.stream().render_mode, 'mesh');
+  c.elements.renderMode.onchange({target: {value: 'gaussian'}}); c.tick(96);
+  assert.equal(c.stream().render_mode, 'gaussian');
+  assert.equal(c.elements.comparisonCanvas.hidden, false);
+  assert.equal(c.stream().yaw, 35);
+});
+
+test('scenes without a reconstructed mesh retain Gaussian mode', async () => {
+  const c = await client();
+  assert.equal(c.elements.meshOption.disabled, true);
+  c.elements.renderMode.onchange({target: {value: 'mesh'}}); c.tick(16);
+  assert.equal(c.stream().render_mode, 'gaussian');
+});
+
+test('expand comparison enters and exits fullscreen for the shared viewport', async () => {
+  const c = await client();
+  c.elements.viewerPanel.requestFullscreen = async () => {c.context.document.fullscreenElement = c.elements.viewerPanel;};
+  c.context.document.exitFullscreen = async () => {c.context.document.fullscreenElement = null;};
+  await c.elements.expandView.onclick();
+  assert.equal(c.context.document.fullscreenElement, c.elements.viewerPanel);
+  await c.elements.expandView.onclick();
+  assert.equal(c.context.document.fullscreenElement, null);
+});

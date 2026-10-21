@@ -46,6 +46,14 @@ class ViewerServerTests(unittest.IsolatedAsyncioTestCase):
         response = await self.client.get("/viewer.py")
         self.assertEqual(response.status, 404)
 
+    async def test_unavailable_mesh_rejects_request_without_breaking_gaussian(self):
+        ws = await self.client.ws_connect('/ws')
+        await ws.send_json({'render_mode': 'mesh'})
+        self.assertIn('Mesh', (await ws.receive_json())['message'])
+        await ws.send_json({'frame': 5})
+        self.assertEqual((await self.read_packet(ws))['frame'], 5)
+        await ws.close()
+
     async def test_foreign_host(self):
         response = await self.client.get("/api/status", headers={"Host": "untrusted.example:8890"})
         self.assertEqual(response.status, 403)

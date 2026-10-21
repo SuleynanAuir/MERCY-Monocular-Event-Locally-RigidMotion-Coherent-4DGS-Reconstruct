@@ -60,6 +60,10 @@ def validate_request(data, frame_count):
     if not isinstance(background, str) or background not in BACKGROUNDS:
         raise ValueError("Unknown background")
     result["background"] = background
+    mode = data.get('render_mode', 'gaussian')
+    if not isinstance(mode, str) or mode not in {'gaussian', 'mesh'}:
+        raise ValueError('Unknown render mode')
+    result['render_mode'] = mode
     return result
 
 
@@ -92,6 +96,7 @@ def cached_image_reference(request, comparison=False):
     """Reference a JPEG explicitly retained by this stream's browser client."""
     frame = request['frame']
     return image_packet({'id': request['id'], 'frame': frame, 'stream': request['_stream'],
+                         'render_mode': request.get('render_mode', 'gaussian'),
                          'width': request['width'] * (2 if comparison else 1),
                          'height': request['height'], 'render_ms': 0., 'encode_ms': 0.,
                          'cache_hit': True, 'client_cache_hit': True,
