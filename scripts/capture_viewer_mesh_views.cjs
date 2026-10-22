@@ -6,7 +6,7 @@ const crypto = require('node:crypto');
 (async () => {
   const [url = 'http://127.0.0.1:8892', output, mode = 'fit'] = process.argv.slice(2);
   if (!output || fs.existsSync(output)) throw Error('Provide a new output directory');
-  if (!['fit', 'check'].includes(mode)) throw Error('Capture mode must be fit or check');
+  if (!['fit', 'check', 'dynamic'].includes(mode)) throw Error('Capture mode must be fit, check or dynamic');
   const status = await (await fetch(`${url}/api/status`)).json();
   if (!status.ready || !status.scene.comparison) throw Error('Paired viewer is not ready');
   const plan = [];
@@ -22,6 +22,16 @@ const crypto = require('node:crypto');
       plan.push({split: 'validation', frame, yaw, pitch});
     }
   }
+  if (mode === 'dynamic') {
+    plan.length = 0;
+    // Held-out cameras and consecutive time samples expose motion-dependent
+    // errors that a few attractive still images can hide.
+    for (const [yaw, pitch] of [[15,15], [165,45], [285,-10]]) {
+      for (let frame = 36; frame < 228; frame += 4) {
+        plan.push({split: 'validation', frame, yaw, pitch});
+      }
+    }
+  }
   fs.mkdirSync(output, {recursive: true});
   const ws = new WebSocket(`${url.replace(/^http/, 'ws')}/ws`);
   ws.binaryType = 'arraybuffer';
@@ -30,7 +40,8 @@ const crypto = require('node:crypto');
   try {
     for (const [id, view] of plan.entries()) {
       const request = {id, render_mode: 'gaussian', frame: view.frame, yaw: view.yaw, pitch: view.pitch,
-        width: 1024, height: 1024, fovy: status.scene.fovy, background: 'black', quality: 95};
+        width: mode === 'dynamic' ? 768 : 1024, height: mode === 'dynamic' ? 768 : 1024,
+        fovy: status.scene.fovy, background: 'black', quality: 95};
       const received = new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(Error('Render timeout')), 30000);
         ws.onmessage = e => { clearTimeout(timer); resolve(e.data); };

@@ -9,6 +9,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import suppress
 import io
+import json
 import logging
 from pathlib import Path
 import tempfile
@@ -98,9 +99,12 @@ class Renderer:
             self.backgrounds = {key: torch.tensor(value, dtype=torch.float32, device="cuda")
                                 for key, value in BACKGROUNDS.items()}
             self.info = {
-                "name": self.path.name, "frame_count": frames, "gaussian_count": len(sequence.base_vertices),
+                "name": meta.get('name', self.path.name), "description": meta.get('description'),
+                "frame_count": frames, "gaussian_count": len(sequence.base_vertices),
                 "dynamic_gaussian_count": n, "motion_label": meta.get("motion_label"),
                 "default_stream_rate": meta.get("default_stream_rate", 60),
+                "default_stream_quality": meta.get("default_stream_quality", 78),
+                "default_still_quality": meta.get("default_still_quality", 85),
                 "default_resolution": meta.get("default_resolution", 768),
                 "fps": float(meta["fps"]), "duration_seconds": float(meta["duration_seconds"]),
                 "times_seconds": [f["time_seconds"] for f in meta["frames"]],
@@ -170,19 +174,70 @@ async def local_only(request, handler):
     return response
 
 
-def create_app(path, cache="auto", renderer_factory=None):
-    renderer = (renderer_factory or Renderer)(path, cache)
+def read_scene_catalog(path):
+    """Only an administrator's catalog can select files or renderer types."""
+    path = Path(path).resolve()
+    config = json.loads(path.read_text())
+    scenes = {}
+    for item in config['scenes']:
+        key = item['id']
+        if not isinstance(key, str) or not key or not all(c.isascii() and (c.isalnum() or c in '-_') for c in key) or key in scenes:
+            raise ValueError('Scene IDs must be unique ASCII names')
+        if item['type'] not in {'sequence', 'comparison', 'fan_mesh'}:
+            raise ValueError('Unknown scene renderer')
+        if not isinstance(item.get('name'), str) or not item['name'].strip():
+            raise ValueError('Scenes require a display name')
+        if item.get('cache', 'auto') not in {'auto', 'cpu', 'gpu'}:
+            raise ValueError('Unknown motion cache mode')
+        asset = (path.parent / item['path']).resolve()
+        if not asset.is_file():
+            raise ValueError(f'Missing scene asset: {asset}')
+        scenes[key] = {**item, 'path': asset}
+    default = config.get('default', next(iter(scenes), None))
+    if default not in scenes:
+        raise ValueError('Default scene must exist')
+    return scenes, default
+
+
+def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, default_scene=None):
+    if scenes is None:
+        default_scene = 'default'
+        scenes = {'default': {'path': path, 'name': '当前物件', 'factory': renderer_factory or Renderer}}
+    default_scene = default_scene or next(iter(scenes))
+    renderers = {}
+    for key, spec in scenes.items():
+        factory = spec.get('factory', Renderer)
+        if spec.get('type') == 'comparison':
+            from utils.comparison_renderer import ComparisonRenderer
+            factory = ComparisonRenderer
+        elif spec.get('type') == 'fan_mesh':
+            from utils.fan_renderer import FanRenderer
+            factory = FanRenderer
+        renderers[key] = factory(spec['path'], spec.get('cache', cache))
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gaussian-gpu")
     clients = set()
+    loading = {'id': None}
     app = web.Application(middlewares=[local_only], client_max_size=4096)
 
-    async def load():
+    async def load_one(renderer):
         try:
             await asyncio.get_running_loop().run_in_executor(executor, renderer.load)
         except Exception as error:
             LOG.exception("Failed to load sequence")
             renderer.status = {"ready": False, "error": True, "progress": 0,
                                "message": "加载失败，请查看服务器日志", "detail": type(error).__name__}
+
+    async def load():
+        for key, renderer in renderers.items():
+            loading['id'] = key
+            await load_one(renderer)
+        loading['id'] = None
+
+    def selected(request):
+        key = request.query.get('scene', default_scene)
+        if key not in renderers:
+            raise web.HTTPNotFound(text='Unknown scene')
+        return key, renderers[key]
 
     async def lifecycle(app):
         task = asyncio.create_task(load())
@@ -193,7 +248,15 @@ def create_app(path, cache="auto", renderer_factory=None):
         executor.shutdown(wait=True)
 
     async def status(request):
-        return web.json_response(renderer.status)
+        key, renderer = selected(request)
+        state = renderer.status
+        if state.get('ready') and loading['id'] is not None:
+            busy = loading['id']
+            state = {**state, 'ready': False, 'progress': renderers[busy].status.get('progress', 0),
+                     'message': f"正在初始化 {scenes[busy]['name']}，完成后即可切换物件"}
+        return web.json_response({**state, 'scene_id': key,
+            'objects': [{'id': name, 'name': scenes[name]['name'],
+                         'ready': value.status.get('ready', False)} for name, value in renderers.items()]})
 
     async def static(request):
         filename = request.match_info.get("file", "index.html")
@@ -202,7 +265,8 @@ def create_app(path, cache="auto", renderer_factory=None):
         return web.FileResponse(STATIC / filename)
 
     async def websocket(request):
-        if not renderer.status.get("ready"):
+        _, renderer = selected(request)
+        if not renderer.status.get("ready") or loading['id'] is not None:
             raise web.HTTPServiceUnavailable(text="Model is still loading")
         if len(clients) >= 4:
             raise web.HTTPServiceUnavailable(text="At most four viewer connections are allowed")
@@ -233,7 +297,9 @@ def create_app(path, cache="auto", renderer_factory=None):
                     sample = {**settings, "frame": frame,
                               "_stream": {"seq": seq, "rate": settings["rate"]}}
                     if frame in credit['cached_frames']:
-                        packet = cached_image_reference(sample, renderer.info.get('comparison', False))
+                        paired = (renderer.info.get('comparison', False)
+                                  or sample.get('render_mode') in renderer.info.get('comparison_modes', []))
+                        packet = cached_image_reference(sample, paired)
                     else:
                         packet = await asyncio.get_running_loop().run_in_executor(executor, renderer.render, sample)
                     credit['offered_frames'].add(frame)
@@ -282,8 +348,8 @@ def create_app(path, cache="auto", renderer_factory=None):
                     if kind not in {"frame", "stream"}:
                         raise ValueError("Unknown request type")
                     data = (validate_stream if kind == "stream" else validate_request)(raw, renderer.info["frame_count"])
-                    if data['render_mode'] == 'mesh' and not renderer.info.get('mesh', {}).get('available'):
-                        await ws.send_json({'type': 'error', 'message': '当前场景未提供可用的 Mesh'})
+                    if data['render_mode'] in {'mesh', 'hybrid'} and not renderer.info.get(data['render_mode'], {}).get('available'):
+                        await ws.send_json({'type': 'error', 'message': '当前场景未提供所选的 Mesh 或混合模式'})
                         continue
                 except (ValueError, TypeError, OverflowError):
                     await ws.send_json({"type": "error", "message": "无效的相机或帧参数"})
@@ -320,11 +386,12 @@ def main():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--sequence_path", type=Path)
     source.add_argument("--comparison_path", type=Path, help="Manifest for synchronized before/after views")
+    source.add_argument("--scenes_path", type=Path, help="JSON catalog of selectable objects")
     parser.add_argument("--port", type=int, default=8890)
     parser.add_argument("--host", choices=["127.0.0.1", "localhost"], default="127.0.0.1")
     parser.add_argument("--cache", choices=["auto", "gpu", "cpu"], default="auto")
     args = parser.parse_args()
-    path = args.sequence_path or args.comparison_path
+    path = args.sequence_path or args.comparison_path or args.scenes_path
     if not path.is_file():
         parser.error("Sequence file does not exist")
     factory = None
@@ -332,7 +399,8 @@ def main():
         from utils.comparison_renderer import ComparisonRenderer
         factory = ComparisonRenderer
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    web.run_app(create_app(path, args.cache, factory), host=args.host, port=args.port,
+    scenes, default = read_scene_catalog(path) if args.scenes_path else (None, None)
+    web.run_app(create_app(path, args.cache, factory, scenes=scenes, default_scene=default), host=args.host, port=args.port,
                 access_log=None)
 
 

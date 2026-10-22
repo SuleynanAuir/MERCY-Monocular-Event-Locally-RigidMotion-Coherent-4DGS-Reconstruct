@@ -13,6 +13,7 @@ class ViewerStateTests(unittest.TestCase):
         self.assertEqual(state["frame"], 0)
         self.assertEqual(state["background"], "dark")
         self.assertEqual(state['render_mode'], 'gaussian')
+        self.assertEqual(state['hybrid_quality'], 'surface')
 
     def test_bad_values(self):
         for data in ([], None, {"frame": -1}, {"frame": 360}, {"frame": 1.5},
@@ -20,7 +21,8 @@ class ViewerStateTests(unittest.TestCase):
                      {"yaw": float("nan")}, {"pitch": float("inf")},
                      {"pan_x": "1"}, {"background": []}, {"background": "red"},
                      {"quality": 1}, {"width": 1280, "height": 1280},
-                     {'render_mode': 'unknown'}, {'render_mode': []}):
+                     {'render_mode': 'unknown'}, {'render_mode': []},
+                     {'hybrid_quality': []}, {'hybrid_quality': 'ultra'}):
             with self.subTest(data=data), self.assertRaises(ValueError):
                 validate_request(data, 360)
 

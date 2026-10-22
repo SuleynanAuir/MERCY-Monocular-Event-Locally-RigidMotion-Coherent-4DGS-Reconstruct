@@ -39,6 +39,21 @@ class EncodedFrameCacheTests(unittest.TestCase):
         self.assertEqual(len(cache.entries), 1)
         self.assertIsNone(cache.get(requests[0]))
 
+    def test_hybrid_quality_isolated_but_does_not_change_gaussian_cache(self):
+        cache = EncodedFrameCache()
+        request = dict(self.request, render_mode='hybrid', hybrid_quality='balanced')
+        cache.put(request, b'previous')
+        self.assertIsNone(cache.get(dict(request, hybrid_quality='detail')))
+        cache.put(dict(request, hybrid_quality='detail'), b'detailed')
+        self.assertEqual(cache.get(request), b'previous')
+        cache.put(self.request, b'gaussian')
+        self.assertEqual(cache.get(dict(self.request, hybrid_quality='balanced')), b'gaussian')
+        implicit = dict(self.request, render_mode='hybrid')
+        implicit.pop('hybrid_quality')
+        cache.put(implicit, b'surface')
+        self.assertEqual(cache.get(dict(implicit, hybrid_quality='surface')), b'surface')
+        self.assertIsNone(cache.get(dict(implicit, hybrid_quality='native')))
+
 
 if __name__ == '__main__':
     unittest.main()

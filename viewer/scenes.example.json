@@ -1,0 +1,19 @@
+{
+  "default": "lego",
+  "scenes": [
+    {
+      "id": "fan",
+      "name": "Fan · 风扇",
+      "type": "sequence",
+      "path": "../outputs/fan-video-viewer/fan-motion.npz",
+      "cache": "cpu"
+    },
+    {
+      "id": "lego",
+      "name": "Lego · V1 / V3 对比",
+      "type": "comparison",
+      "path": "../outputs/lego-comparison/manifest.json",
+      "cache": "auto"
+    }
+  ]
+}

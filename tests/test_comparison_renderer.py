@@ -22,6 +22,42 @@ from utils.render_sampling import render_sampling_contract
 
 
 class ComparisonRendererTests(unittest.TestCase):
+    def test_hybrid_applies_mesh_bindings_and_has_its_own_sampling_and_cache(self):
+        renderer = ComparisonRenderer('unused.json', 'cpu')
+        renderer.base_pose = np.eye(4); renderer.base_pose[2, 3] = 2; renderer.target = np.zeros(3)
+        renderer.model = SimpleNamespace(value=0.)
+        renderer.pipe = None; renderer.backgrounds = {'dark': torch.zeros(3)}
+        renderer.apply_side_pose = lambda side, frame: setattr(renderer.model, 'value', .2 + .1 * side)
+        calls = []
+        def bind(model, frame):
+            calls.append(frame); model.value += .1
+        renderer.hybrid = [SimpleNamespace(apply=bind), SimpleNamespace(apply=bind)]
+        sizes = []
+        def camera(pose, width, height, fovy):
+            sizes.append((width, height)); return (width, height)
+        def pixels(camera, model, *args):
+            return {'render': torch.full((3, camera[1], camera[0]), model.value),
+                    'depth': torch.full((1, camera[1], camera[0]), 2.), 'alpha': torch.ones((1, camera[1], camera[0]))}
+        with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=pixels),
+                                     'render_ply': SimpleNamespace(make_camera=camera)}):
+            request=validate_request({'frame': 1, 'width': 128, 'height': 128}, 3)
+            original=renderer.render(request)
+            hybrid=renderer.render(dict(request,render_mode='hybrid'))
+            balanced=renderer.render(dict(request,render_mode='hybrid',hybrid_quality='balanced'))
+            repeated=renderer.render(dict(request,render_mode='hybrid'))
+            again=renderer.render(request)
+        self.assertEqual(calls,[1,1,1,1])
+        self.assertEqual(sizes,[(128,128),(128,128),(128,128),(128,128),(256,256),(256,256)])
+        def unpack(packet):
+            size=struct.unpack('<I',packet[:4])[0]
+            return json.loads(packet[4:4+size]),packet[4+size:]
+        self.assertEqual(unpack(hybrid)[0]['render_mode'],'hybrid')
+        self.assertEqual(unpack(hybrid)[0]['hybrid_quality'],'surface')
+        self.assertEqual(unpack(balanced)[0]['hybrid_quality'],'balanced')
+        self.assertTrue(unpack(repeated)[0]['cache_hit'])
+        self.assertNotEqual(unpack(original)[1],unpack(hybrid)[1])
+        self.assertEqual(unpack(original)[1],unpack(again)[1])
+
     def test_mesh_mode_renders_two_independent_meshes_without_gaussian_pixels(self):
         renderer = ComparisonRenderer('unused.json', 'cpu')
         renderer.base_pose = np.eye(4); renderer.base_pose[2, 3] = 2; renderer.target = np.zeros(3)

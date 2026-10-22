@@ -9,41 +9,62 @@
     id: 0, yaw: 0, pitch: 0, zoom: 1, pan_x: 0, pan_y: 0, background: "dark", speed: 1,
     lastReceived: 0, displayedFrame: -1, lastDrawnId: 0, delivered: [], retry: null,
     stream: null, minimumId: 0, interacting: false, lastStats: 0, lastLabels: 0, lastStreamStatus: 0,
-    autoRateCap: 60, renderMode: "gaussian"};
+    autoRateCap: 60, renderMode: "gaussian", hybridQuality: "surface"};
   let pointer = null, wheelTimer = null;
   const launchOptions = new URLSearchParams(window.location.search);
+  const sceneQuery = launchOptions.has('scene') ? `?scene=${encodeURIComponent(launchOptions.get('scene'))}` : '';
+  $('objectSelect').onchange = () => {
+    setPlaying(false);
+    const query = new URLSearchParams(window.location.search);
+    query.set('scene', $('objectSelect').value);
+    query.set('mode', state.renderMode);
+    query.set('quality', state.hybridQuality);
+    // A new document clears decoded frames, camera and time together. Other
+    // browser tabs retain their own object and WebSocket renderer.
+    window.location.search = query.toString();
+  };
   let autoStartPending = launchOptions.get("autoplay") === "1";
 
-  function comparisonView() {return !!state.scene?.comparison;}
+  function comparisonView() {
+    return !!state.scene?.comparison || (state.scene?.comparison_modes || []).includes(state.renderMode);
+  }
   function modeResolution(mode = state.renderMode) {
-    return (mode === "mesh" ? state.scene?.mesh?.default_resolution : null) || state.scene?.default_resolution || 768;
+    return (["mesh", "hybrid"].includes(mode) ? state.scene?.[mode]?.default_resolution : null) || state.scene?.default_resolution || 768;
   }
   function updateModeUI() {
     const scene = state.scene;
     if (!scene) return;
-    const mesh = state.renderMode === "mesh", paired = comparisonView();
+    const mesh = state.renderMode === "mesh", hybrid = state.renderMode === "hybrid", paired = comparisonView();
+    const modeInfo = hybrid ? scene.hybrid : scene.mesh;
+    const modeDescription = hybrid ? (scene.hybrid.quality_descriptions?.[state.hybridQuality] || scene.hybrid.description) : modeInfo?.description;
     $("renderMode").value = state.renderMode;
     $("renderMode").disabled = false;
     $("meshOption").disabled = !scene.mesh?.available;
-    $("meshNotice").textContent = scene.mesh?.available ? scene.mesh.description :
+    $("hybridOption").disabled = !scene.hybrid?.available;
+    $("ultraResolution").disabled = paired;
+    $("hybridQualityField").hidden = !hybrid;
+    $("hybridQuality").value = state.hybridQuality;
+    $("meshNotice").textContent = hybrid ? modeDescription : scene.mesh?.available ? scene.mesh.description :
       (scene.mesh?.description || "当前场景未生成高斯重建网格。");
     stage.classList.toggle("comparison", paired);
+    $("expandView").textContent = paired ? "放大对比" : "放大画面";
+    $("expandView").title = paired ? "全屏显示两个对比视窗" : "全屏显示当前物件";
     rightCanvas.hidden = !paired;
     $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
-    $("eventNotice").hidden = mesh || !scene.event_validation;
-    $("sceneKind").textContent = mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
-    $("sceneName").textContent = mesh ? "V1 / V3 Mesh 对比" : scene.name;
-    $("leftCompareLabel").textContent = mesh ? (scene.mesh.left_label || "V1 Mesh · 原始结果") : scene.left_label;
-    $("rightCompareLabel").textContent = mesh ? (scene.mesh.right_label || "V3 Mesh · 最新优化结果") : scene.right_label;
-    $("sequenceBadge").textContent = mesh ? "V1 / V3 Mesh · 同帧同视角" : paired ?
+    $("eventNotice").hidden = mesh || hybrid || !scene.event_validation;
+    $("sceneKind").textContent = hybrid ? "MESH + GAUSSIAN" : mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
+    $("sceneName").textContent = hybrid ? "V1 / V3 混合动态对比" : mesh ? "V1 / V3 Mesh 对比" : scene.name;
+    $("leftCompareLabel").textContent = mesh || hybrid ? (modeInfo.left_label || "V1 Mesh · 原始结果") : scene.left_label;
+    $("rightCompareLabel").textContent = mesh || hybrid ? (modeInfo.right_label || "V3 Mesh · 最新优化结果") : scene.right_label;
+    $("sequenceBadge").textContent = hybrid ? "Mesh＋Gaussian · 同帧同视角" : mesh ? "V1 / V3 Mesh · 同帧同视角" : paired ?
       "原始 / 优化 · 同帧同视角" : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
     $("gaussianCount").textContent = (mesh ? scene.mesh.triangle_count : scene.gaussian_count).toLocaleString("en-US");
     $("primitiveLabel").textContent = mesh ? "TRIANGLES / 三角面数量" : "GAUSSIANS / 高斯数量";
-    $("sceneDescription").textContent = mesh ? scene.mesh.description :
-      "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。";
-    $("snapshot").textContent = mesh ? "保存 V1 / V3 Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
-    canvas.setAttribute("aria-label", mesh ? "V1 原始高斯重建的 Mesh，与右侧同帧同视角" : "GPU 实时渲染的动态高斯");
-    rightCanvas.setAttribute("aria-label", mesh ? "V3 最新优化高斯重建的 Mesh，与左侧同帧同视角" : "优化高斯，同步右视窗");
+    $("sceneDescription").textContent = mesh || hybrid ? modeDescription :
+      (scene.description || "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。");
+    $("snapshot").textContent = hybrid ? "保存 Mesh＋Gaussian 动态对比图 ↓" : mesh ? "保存 V1 / V3 Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
+    canvas.setAttribute("aria-label", hybrid ? "V1 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V1 原始高斯重建的 Mesh，与右侧同帧同视角" : "GPU 实时渲染的动态高斯");
+    rightCanvas.setAttribute("aria-label", hybrid ? "V3 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V3 最新优化高斯重建的 Mesh，与左侧同帧同视角" : "优化高斯，同步右视窗");
   }
   function stopStream() {
     if (!state.stream) return;
@@ -93,7 +114,7 @@
     $("frameLabel").textContent = `帧 ${String(state.frame + 1).padStart(3, "0")} / ${scene.frame_count}`;
     const rpm = scene.rpm[state.frame];
     $("rpm").textContent = Number.isFinite(rpm) ? `${rpm.toFixed(1)} RPM` : "—";
-    $("motionLabel").textContent = state.renderMode === "mesh" ? "高斯重建 Mesh · 同步部件动画" : scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
+    $("motionLabel").textContent = state.renderMode === "hybrid" ? "Mesh 绑定运动 · Gaussian 外观" : state.renderMode === "mesh" ? "高斯重建 Mesh · 同步部件动画" : scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
       seconds === 0 ? "静止 · 起始状态" : seconds < scene.ramp_seconds ? "平滑加速" : "匀速旋转");
     if (scene.event_validation) {
       const check = scene.event_validation.interval_checks?.[state.frame - 1];
@@ -120,10 +141,17 @@
     const rect = stage.getBoundingClientRect(), longest = +$("resolution").value;
     // Keep the calibrated square view in both panels. A narrow panel with the
     // same vertical FOV would crop the bucket and look like missing geometry.
-    if (state.scene?.comparison) return {width: longest, height: longest};
-    const ratio = Math.max(0.2, Math.min(5, rect.width / (state.scene?.comparison ? 2 : 1) / rect.height));
-    return ratio >= 1 ? {width: longest, height: Math.max(128, Math.round(longest / ratio))} :
+    if (comparisonView()) return {width: Math.min(longest, 1024), height: Math.min(longest, 1024)};
+    // Preserve the calibrated horizontal field in portrait layouts: rendering
+    // a narrower camera would cut off the outer fan blades. CSS contains the
+    // square render in the taller canvas instead.
+    const ratio = Math.max(1, Math.min(5, rect.width / rect.height));
+    const size = ratio >= 1 ? {width: longest, height: Math.max(128, Math.round(longest / ratio))} :
       {width: Math.max(128, Math.round(longest * ratio)), height: longest};
+    // The 1280 preset follows the canvas aspect while respecting the server's
+    // pixel budget, including nearly square windows and portrait mobile views.
+    const scale = Math.min(1, Math.sqrt(1280 * 960 / (size.width * size.height)));
+    return {width: Math.floor(size.width * scale), height: Math.floor(size.height * scale)};
   }
   function requestFrame() {
     if (state.playing && !state.interacting) {
@@ -138,19 +166,20 @@
     const id = ++state.id;
     state.pending.add(id);
     state.socket.send(JSON.stringify({id, frame: state.frame, yaw, pitch, zoom, pan_x, pan_y,
-      background, render_mode: state.renderMode, fovy: state.scene.fovy,
+      background, render_mode: state.renderMode, hybrid_quality: state.hybridQuality, fovy: state.scene.fovy,
       quality: state.interacting ? 72 : (state.scene.default_still_quality ?? 85), ...dimensions()}));
   }
   function startStream() {
     if (!state.scene || state.socket?.readyState !== WebSocket.OPEN || document.hidden) return;
     stopStream(); state.pending.clear();
     const id = ++state.id;
-    const prewarmed = state.renderMode === "mesh" ? state.scene.mesh?.prewarmed_frames : state.scene.prewarmed_frames;
+    const prewarmed = ["mesh", "hybrid"].includes(state.renderMode) ? state.scene[state.renderMode]?.prewarmed_frames : state.scene.prewarmed_frames;
     const defaultView = prewarmed === state.scene.frame_count &&
+      (state.renderMode !== "hybrid" || (state.scene.hybrid.prewarmed_qualities || [state.scene.hybrid.default_quality || "surface"]).includes(state.hybridQuality)) &&
       state.yaw === 0 && state.pitch === 0 && state.zoom === 1 && state.pan_x === 0 && state.pan_y === 0 &&
       state.background === state.scene.default_background && +$("resolution").value === modeResolution();
     const rate = $("streamRate").value === 'auto' ? Math.min(state.autoRateCap,
-      state.scene.comparison && !defaultView ? 30 : 60) : +$("streamRate").value;
+      comparisonView() && !defaultView ? 30 : 60) : +$("streamRate").value;
     state.minimumId = id; state.dirty = false; state.delivered = [];
     const windowSize = state.scene.stream_window || 24;
     const warmup = Math.min(windowSize - 4, Math.ceil(rate * (state.scene.buffer_seconds || .4)));
@@ -160,7 +189,7 @@
       target_fps: rate, cache_hits: 0, client_cache_hits: 0, decode_ms: 0, draw_ms: 0};
     const {yaw, pitch, zoom, pan_x, pan_y, background} = state;
     state.socket.send(JSON.stringify({type: "stream", id, frame: state.frame, speed: state.speed,
-      rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background, render_mode: state.renderMode,
+      rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background, render_mode: state.renderMode, hybrid_quality: state.hybridQuality,
       fovy: state.scene.fovy, quality: state.scene.default_stream_quality ?? 78, ...dimensions()}));
     $("streamStatus").textContent = "预缓冲…";
   }
@@ -210,7 +239,7 @@
     state.retry = setTimeout(poll, 2000);
   }
   function connect() {
-    const socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/ws`);
+    const socket = new WebSocket(`${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/ws${sceneQuery}`);
     state.socket = socket; socket.binaryType = "arraybuffer";
     socket.onopen = () => {
       status("已连接", "ready"); state.pending.clear(); state.dirty = true;
@@ -285,9 +314,19 @@
   }
   async function poll() {
     try {
-      const response = await fetch("/api/status", {cache: "no-store", signal: AbortSignal.timeout(8000)});
+      const response = await fetch(`/api/status${sceneQuery}`, {cache: "no-store", signal: AbortSignal.timeout(8000)});
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
+      if (data.objects) {
+        const select = $('objectSelect');
+        select.replaceChildren(...data.objects.map(item => {
+          const option = document.createElement('option');
+          option.value = item.id; option.textContent = item.name;
+          return option;
+        }));
+        select.value = data.scene_id;
+        select.disabled = data.objects.length < 2;
+      }
       $("loadProgress").value = data.progress || 0;
       if (data.error) {
         overlay("场景加载失败", `${data.message}（${data.detail}）`, true);
@@ -340,9 +379,14 @@
       $("gpuName").textContent = scene.gpu;
       $("cacheInfo").textContent = `${scene.cache.toUpperCase()} ${scene.comparison ? "缓存上限" : "缓存"} · ${scene.cache_gib.toFixed(2)} GiB 运动数据`;
       $("gpuDot").className = "dot ready";
-      if (firstLoad && launchOptions.get("mode") === "mesh" && scene.mesh?.available) state.renderMode = "mesh";
-      if (state.renderMode === "mesh" && !scene.mesh?.available) state.renderMode = "gaussian";
-      if (firstLoad) $("resolution").value = String(modeResolution());
+      const launchMode = launchOptions.get("mode");
+      if (firstLoad && ["mesh", "hybrid"].includes(launchMode) && scene[launchMode]?.available) state.renderMode = launchMode;
+      if (["mesh", "hybrid"].includes(state.renderMode) && !scene[state.renderMode]?.available) state.renderMode = "gaussian";
+      if (firstLoad) {
+        $("resolution").value = String(modeResolution());
+        state.hybridQuality = ["surface", "native", "balanced", "detail"].includes(launchOptions.get("quality")) ?
+          launchOptions.get("quality") : (scene.hybrid?.default_quality || "surface");
+      }
       updateModeUI(); labels(); connect();
     } catch (error) {
       status("等待服务器", "error");
@@ -395,8 +439,8 @@
   $("resolution").onchange = () => state.dirty = true;
   $("renderMode").onchange = event => {
     const mode = event.target.value;
-    if (!state.scene || !["gaussian", "mesh"].includes(mode) ||
-        (mode === "mesh" && !state.scene.mesh?.available)) return;
+    if (!state.scene || !["gaussian", "mesh", "hybrid"].includes(mode) ||
+        (["mesh", "hybrid"].includes(mode) && !state.scene[mode]?.available)) return;
     stopStream(); state.pending.clear();
     state.minimumId = ++state.id;
     const wasDefaultResolution = +$("resolution").value === modeResolution();
@@ -404,8 +448,17 @@
     if (wasDefaultResolution) $("resolution").value = String(modeResolution());
     state.displayedFrame = -1;
     $("snapshot").disabled = true;
-    overlay("切换显示模式", mode === "mesh" ? "正在渲染高斯重建网格…" : "正在渲染高斯…");
+    overlay("切换显示模式", mode === "hybrid" ? "正在渲染 Mesh＋Gaussian 动态效果…" : mode === "mesh" ? "正在渲染高斯重建网格…" : "正在渲染高斯…");
     updateModeUI(); labels();
+  };
+  $("hybridQuality").onchange = event => {
+    const quality = event.target.value;
+    if (state.renderMode !== "hybrid" || !["surface", "native", "balanced", "detail"].includes(quality)) return;
+    stopStream(); state.pending.clear(); state.minimumId = ++state.id;
+    state.hybridQuality = quality; state.autoRateCap = 60; state.dirty = true;
+    state.displayedFrame = -1; $("snapshot").disabled = true;
+    overlay("切换混合画质", quality === "surface" ? "正在渲染表面柔化效果…" : quality === "native" ? "正在渲染 GS 原生外观…" : "正在渲染旧版效果…");
+    updateModeUI();
   };
   $("expandView").onclick = async () => {
     try {
@@ -467,7 +520,7 @@
   document.addEventListener("visibilitychange", () => {if (document.hidden) setPlaying(false); else state.dirty = true;});
   // Square calibrated comparison renders do not depend on CSS panel size.
   // Don't restart their stream when surrounding text or layout changes size.
-  new ResizeObserver(() => {if (!state.scene?.comparison) state.dirty = true;}).observe(stage);
+  new ResizeObserver(() => {if (!comparisonView()) state.dirty = true;}).observe(stage);
   $("snapshot").onclick = () => {
     if (state.displayedFrame < 0) return;
     let snapshot = canvas;
@@ -484,7 +537,7 @@
       const frame = state.displayedFrame;
       const stamp = `帧 ${frame + 1} / ${state.scene.frame_count} · ${state.scene.times_seconds[frame].toFixed(3)} s · 同帧同视角`;
       ctx.fillText(stamp, 12, 43);
-      ctx.fillText(state.renderMode === "mesh" ? "V1 与 V3 各自高斯重建的近似表面" : state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
+      ctx.fillText(state.renderMode === "hybrid" ? "Mesh 绑定驱动＋Gaussian 外观；混合渲染" : state.renderMode === "mesh" ? "V1 与 V3 各自高斯重建的近似表面" : state.scene.event_validation?.approved ? "粗尺度事件检查通过；新视角未经验证" :
         "尚未通过整段事件验收；背面完整性不保证", canvas.width + 12, 43, rightCanvas.width - 24);
       ctx.drawImage(canvas, 0, header); ctx.drawImage(rightCanvas, canvas.width, header);
     }

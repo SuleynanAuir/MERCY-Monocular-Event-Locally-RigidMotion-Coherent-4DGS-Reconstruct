@@ -5,6 +5,7 @@ import math
 import struct
 
 import numpy as np
+from utils.hybrid_sampling import DEFAULT_HYBRID_QUALITY, HYBRID_QUALITIES
 
 
 BACKGROUNDS = {"dark": (0.055, 0.067, 0.085), "light": (0.94, 0.95, 0.97),
@@ -61,9 +62,13 @@ def validate_request(data, frame_count):
         raise ValueError("Unknown background")
     result["background"] = background
     mode = data.get('render_mode', 'gaussian')
-    if not isinstance(mode, str) or mode not in {'gaussian', 'mesh'}:
+    if not isinstance(mode, str) or mode not in {'gaussian', 'mesh', 'hybrid'}:
         raise ValueError('Unknown render mode')
     result['render_mode'] = mode
+    quality = data.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)
+    if not isinstance(quality, str) or quality not in HYBRID_QUALITIES:
+        raise ValueError('Unknown hybrid quality')
+    result['hybrid_quality'] = quality
     return result
 
 
@@ -97,6 +102,8 @@ def cached_image_reference(request, comparison=False):
     frame = request['frame']
     return image_packet({'id': request['id'], 'frame': frame, 'stream': request['_stream'],
                          'render_mode': request.get('render_mode', 'gaussian'),
+                         **({'hybrid_quality': request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)}
+                            if request.get('render_mode') == 'hybrid' else {}),
                          'width': request['width'] * (2 if comparison else 1),
                          'height': request['height'], 'render_ms': 0., 'encode_ms': 0.,
                          'cache_hit': True, 'client_cache_hit': True,

@@ -48,8 +48,9 @@ class ViewerServerTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_unavailable_mesh_rejects_request_without_breaking_gaussian(self):
         ws = await self.client.ws_connect('/ws')
-        await ws.send_json({'render_mode': 'mesh'})
-        self.assertIn('Mesh', (await ws.receive_json())['message'])
+        for mode in ('mesh', 'hybrid'):
+            await ws.send_json({'render_mode': mode})
+            self.assertIn('Mesh', (await ws.receive_json())['message'])
         await ws.send_json({'frame': 5})
         self.assertEqual((await self.read_packet(ws))['frame'], 5)
         await ws.close()
@@ -162,6 +163,70 @@ class ViewerServerTests(unittest.IsolatedAsyncioTestCase):
                 await ws.send_json({'type': 'ack', 'id': 6, 'seq': seq})
         self.assertEqual(found, 24)
         await ws.close()
+
+
+class ObjectSelectionTests(unittest.IsolatedAsyncioTestCase):
+    async def test_mode_specific_comparison_keeps_both_panels_on_cached_loops(self):
+        class ModeRenderer(FakeRenderer):
+            def __init__(self, path, cache):
+                super().__init__(path, cache)
+                self.info.update(frame_count=2, comparison=False, comparison_modes=['mesh', 'hybrid'],
+                                 mesh={'available': True}, hybrid={'available': True})
+        scenes = {'fan': {'name': 'Fan', 'path': '', 'factory': ModeRenderer}}
+        async with TestClient(TestServer(viewer.create_app(scenes=scenes))) as client:
+            for mode in ('gaussian', 'mesh', 'hybrid'):
+                ws = await client.ws_connect('/ws?scene=fan')
+                await ws.send_json(dict(type='stream', id=1, frame=0, loop=True, render_mode=mode,
+                                        width=512, height=512))
+                for _ in range(24): await ws.receive()
+                await ws.send_json(dict(type='ack', id=1, seq=23, cached_frames=[0, 1]))
+                packet = (await ws.receive()).data
+                size = struct.unpack('<I', packet[:4])[0]
+                meta = json.loads(packet[4:4+size])
+                self.assertTrue(meta['client_cache_hit'])
+                self.assertEqual(meta.get('comparison', False), mode != 'gaussian')
+                self.assertEqual(meta['width'], 512 if mode == 'gaussian' else 1024)
+                if mode != 'gaussian': self.assertEqual(meta['left_frame'], meta['right_frame'])
+                await ws.close()
+
+    async def test_objects_are_scoped_to_each_connection(self):
+        class NamedRenderer(FakeRenderer):
+            def __init__(self, path, cache):
+                super().__init__(path, cache)
+                self.name = path
+            def render(self, request):
+                return image_packet({'object': self.name, 'frame': request['frame']}, b'jpeg')
+        scenes = {key: {'name': key.title(), 'path': key, 'factory': NamedRenderer}
+                  for key in ('fan', 'lego')}
+        async with TestClient(TestServer(viewer.create_app(scenes=scenes, default_scene='fan'))) as client:
+            response = await client.get('/api/status')
+            status = await response.json()
+            self.assertEqual(status['scene_id'], 'fan')
+            self.assertEqual([item['id'] for item in status['objects']], ['fan', 'lego'])
+            for url in ('/api/status?scene=missing', '/ws?scene=../secret'):
+                self.assertEqual((await client.get(url)).status, 404)
+            fan = await client.ws_connect('/ws?scene=fan')
+            lego = await client.ws_connect('/ws?scene=lego')
+            for socket, name in ((fan, 'fan'), (lego, 'lego'), (fan, 'fan')):
+                await socket.send_json({'frame': 9})
+                packet = (await socket.receive()).data
+                size = struct.unpack('<I', packet[:4])[0]
+                self.assertEqual(json.loads(packet[4:4+size]), {'object': name, 'frame': 9})
+            await fan.close()
+            await lego.close()
+
+    async def test_failed_object_does_not_hide_other_objects(self):
+        class Broken(FakeRenderer):
+            def load(self):
+                raise ValueError('bad asset')
+        scenes = {'bad': {'name': 'Bad', 'path': '', 'factory': Broken},
+                  'fan': {'name': 'Fan', 'path': '', 'factory': FakeRenderer}}
+        async with TestClient(TestServer(viewer.create_app(scenes=scenes, default_scene='fan'))) as client:
+            await asyncio.sleep(.05)
+            bad = await (await client.get('/api/status?scene=bad')).json()
+            good = await (await client.get('/api/status?scene=fan')).json()
+            self.assertTrue(bad['error'])
+            self.assertTrue(good['ready'])
 
 
 if __name__ == "__main__":

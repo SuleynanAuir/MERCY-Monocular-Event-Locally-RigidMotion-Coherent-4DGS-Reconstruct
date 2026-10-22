@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 const viewer = path.join(__dirname, '../viewer');
 
-async function client(overrides = {}) {
+async function client(overrides = {}, catalog = null, search = '?autoplay=1&loop=1') {
   const ids = [...fs.readFileSync(path.join(viewer, 'index.html'), 'utf8').matchAll(/id="([^"]+)"/g)].map(m => m[1]);
   const element = () => ({value: '', hidden: false, dataset: {}, checked: false, textContent: '',
     classList: {toggle() {}, remove() {}}, setAttribute() {}, replaceChildren() {}, append() {}, addEventListener() {},
@@ -25,7 +25,7 @@ async function client(overrides = {}) {
   let socket, resize, now = 0;
   class Socket {
     static OPEN = 1;
-    constructor() {socket = this; this.readyState = 1; this.sent = [];}
+    constructor(url) {this.url = url; socket = this; this.readyState = 1; this.sent = [];}
     send(data) {this.sent.push(JSON.parse(data));}
     close() {}
   }
@@ -33,8 +33,8 @@ async function client(overrides = {}) {
     document: {hidden: false, getElementById(id) {assert.ok(elements[id], `Missing HTML element ${id}`); return elements[id];},
       querySelectorAll(selector) {return selector === '.preset' ? presets : [];},
       createTextNode: text => text, createElement: element, addEventListener() {}},
-    location: {search: '?autoplay=1&loop=1', protocol: 'http:', host: '127.0.0.1:8892'},
-    fetch: async () => ({ok: true, json: async () => ({ready: true, scene})}),
+    location: {search, protocol: 'http:', host: '127.0.0.1:8892'},
+    fetch: async () => ({ok: true, json: async () => ({ready: true, scene, ...(catalog || {})})}),
     WebSocket: Socket, performance: {now: () => now},
     requestAnimationFrame: callback => callbacks.push(callback),
     ResizeObserver: class {constructor(callback) {resize = callback;} observe() {}},
@@ -251,6 +251,27 @@ test('scenes without a reconstructed mesh retain Gaussian mode', async () => {
   assert.equal(c.stream().render_mode, 'gaussian');
 });
 
+test('hybrid mode is explicit, synchronized, and isolated from Gaussian and pure Mesh streams', async () => {
+  const c = await client({hybrid: {available: true, default_resolution: 768, prewarmed_frames: 20,
+    left_label: 'V1 · Mesh＋Gaussian', right_label: 'V3 · Mesh＋Gaussian', description: '混合渲染，并非纯三角网格'}});
+  c.elements.play.onclick(); c.tick(16);
+  c.elements.timeline.oninput({target: {value: '7'}}); c.tick(32);
+  c.presets[1].onclick(); c.tick(48);
+  const oldId = c.stream()?.id;
+  c.elements.renderMode.onchange({target: {value: 'hybrid'}}); c.tick(64);
+  c.elements.play.onclick(); c.tick(80);
+  const stream = c.stream();
+  assert.equal(stream.render_mode, 'hybrid');
+  assert.equal(stream.frame, 7); assert.equal(stream.yaw, 35);
+  assert.equal(stream.width, 768); assert.notEqual(stream.id, oldId);
+  assert.equal(c.elements.leftCompareLabel.textContent, 'V1 · Mesh＋Gaussian');
+  assert.equal(c.elements.rightCompareLabel.textContent, 'V3 · Mesh＋Gaussian');
+  assert.match(c.elements.sceneDescription.textContent, /并非纯三角网格/);
+  assert.equal(c.elements.comparisonCanvas.hidden, false);
+  c.elements.renderMode.onchange({target: {value: 'gaussian'}}); c.tick(96);
+  assert.equal(c.stream().render_mode, 'gaussian');
+});
+
 test('expand comparison enters and exits fullscreen for the shared viewport', async () => {
   const c = await client();
   c.elements.viewerPanel.requestFullscreen = async () => {c.context.document.fullscreenElement = c.elements.viewerPanel;};
@@ -259,4 +280,115 @@ test('expand comparison enters and exits fullscreen for the shared viewport', as
   assert.equal(c.context.document.fullscreenElement, c.elements.viewerPanel);
   await c.elements.expandView.onclick();
   assert.equal(c.context.document.fullscreenElement, null);
+});
+
+test('hybrid quality changes restart streams without moving the camera or timeline', async () => {
+  const c = await client({hybrid: {available: true, default_resolution: 768, prewarmed_frames: 20,
+    default_quality: 'detail', description: '混合动态展示'}});
+  assert.equal(c.elements.hybridQualityField.hidden, true);
+  c.elements.renderMode.onchange({target: {value: 'hybrid'}}); c.tick(16);
+  assert.equal(c.stream().hybrid_quality, 'detail');
+  assert.equal(c.stream().rate, 60);
+  assert.equal(c.elements.hybridQualityField.hidden, false);
+  c.presets[1].onclick(); c.tick(32);
+  const before = c.stream();
+  c.elements.hybridQuality.onchange({target: {value: 'balanced'}}); c.tick(48);
+  assert.equal(c.stream().hybrid_quality, 'balanced');
+  assert.notEqual(c.stream().id, before.id);
+  assert.equal(c.stream().frame, before.frame);
+  assert.equal(c.stream().yaw, before.yaw);
+  assert.equal(c.stream().rate, 30);
+  c.elements.reset.onclick(); c.tick(64);
+  assert.equal(c.stream().rate, 30); // Only detail quality was prewarmed.
+  c.elements.hybridQuality.onchange({target: {value: 'detail'}}); c.tick(80);
+  assert.equal(c.stream().rate, 60);
+  c.elements.renderMode.onchange({target: {value: 'gaussian'}}); c.tick(96);
+  assert.equal(c.elements.hybridQualityField.hidden, true);
+  assert.equal(c.stream().render_mode, 'gaussian');
+  assert.deepEqual(c.errors, []);
+});
+
+test('surface and native hybrid use the same resolution as GS and both warmed qualities allow 60 FPS', async () => {
+  const c = await client({hybrid: {available: true, default_resolution: 640, prewarmed_frames: 20,
+    default_quality: 'surface', prewarmed_qualities: ['surface', 'native'], description: '表面柔化',
+    quality_descriptions: {surface: '内部轻度去噪', native: '关闭表面柔化', detail: '旧版高采样对照'}}});
+  c.elements.renderMode.onchange({target: {value: 'hybrid'}}); c.tick(16);
+  assert.equal(c.stream().hybrid_quality, 'surface');
+  assert.equal(c.stream().width, 640); assert.equal(c.stream().rate, 60);
+  assert.equal(c.elements.sceneDescription.textContent, '内部轻度去噪');
+  const before=c.stream();
+  c.elements.hybridQuality.onchange({target: {value: 'native'}}); c.tick(32);
+  assert.equal(c.stream().hybrid_quality, 'native'); assert.equal(c.stream().rate, 60);
+  assert.equal(c.elements.sceneDescription.textContent, '关闭表面柔化');
+  assert.equal(c.stream().frame, before.frame); assert.equal(c.stream().yaw, before.yaw);
+  c.elements.hybridQuality.onchange({target: {value: 'detail'}}); c.tick(48);
+  assert.equal(c.stream().rate, 30);
+  c.elements.renderMode.onchange({target: {value: 'gaussian'}}); c.tick(64);
+  assert.equal(c.stream().width, 640); assert.equal(c.stream().rate, 60);
+  assert.deepEqual(c.errors, []);
+});
+
+
+test('object picker scopes sockets and navigation and falls back when Mesh is unavailable', async () => {
+  const c = await client({comparison: false}, {scene_id: 'fan', objects: [
+    {id: 'fan', name: 'Fan'}, {id: 'lego', name: 'Lego'}]}, '?scene=fan&mode=hybrid&quality=surface');
+  assert.ok(c.socket.url.endsWith('/ws?scene=fan'));
+  assert.equal(c.elements.objectSelect.value, 'fan');
+  assert.equal(c.elements.objectSelect.disabled, false);
+  assert.equal(c.elements.renderMode.value, 'gaussian');
+  c.elements.objectSelect.value = 'lego';
+  c.elements.objectSelect.onchange();
+  const next = new URLSearchParams(c.context.location.search);
+  assert.equal(next.get('scene'), 'lego');
+  assert.equal(next.get('mode'), 'gaussian');
+  assert.equal(next.get('quality'), 'surface');
+});
+
+test('Fan ultra resolution uses real output pixels and stays within the server budget after resizing', async () => {
+  const c = await client({comparison: false, default_resolution: 1280,
+    default_stream_quality: 95, default_still_quality: 95});
+  assert.equal(c.elements.resolution.value, '1280');
+  assert.equal(c.elements.ultraResolution.disabled, false);
+  assert.equal(c.stream().width, 1280);
+  assert.equal(c.stream().height, 800);
+  assert.equal(c.stream().quality, 95);
+  c.elements.stage.getBoundingClientRect = () => ({width: 500, height: 500});
+  c.resize(); c.tick(16);
+  assert.equal(c.stream().width, 1108);
+  assert.equal(c.stream().height, 1108);
+  assert.ok(c.stream().width * c.stream().height <= 1280 * 960);
+  c.elements.stage.getBoundingClientRect = () => ({width: 390, height: 844});
+  c.resize(); c.tick(32);
+  assert.equal(c.stream().width, 1108);
+  assert.equal(c.stream().height, 1108, 'portrait keeps the complete calibrated square view');
+  assert.ok(c.stream().width * c.stream().height <= 1280 * 960);
+  const lego = await client();
+  assert.equal(lego.elements.ultraResolution.disabled, true);
+  assert.equal(lego.stream().width, 640);
+  assert.equal(lego.stream().height, 640);
+});
+
+test('Fan Mesh modes use paired square panels and return to the original HD GS view', async () => {
+  const c = await client({comparison: false, comparison_modes: ['mesh', 'hybrid'], default_resolution: 1280,
+    default_stream_rate: 30, mesh: {available: true, default_resolution: 1024, triangle_count: 100,
+      left_label: 'V1 修复前', right_label: 'V3 修复后'},
+    hybrid: {available: true, default_resolution: 1024, default_quality: 'native'}});
+  assert.equal(c.elements.comparisonCanvas.hidden, true);
+  assert.equal(c.stream().width, 1280);
+  c.elements.timeline.oninput({target: {value: '7'}}); c.tick(16);
+  c.presets[1].onclick(); c.tick(32);
+  for (const mode of ['mesh', 'hybrid']) {
+    c.elements.renderMode.onchange({target: {value: mode}}); c.tick(48);
+    c.elements.play.onclick(); c.tick(64);
+    assert.equal(c.elements.comparisonCanvas.hidden, false);
+    assert.equal(c.stream().width, 1024); assert.equal(c.stream().height, 1024);
+    assert.equal(c.stream().frame, 7); assert.equal(c.stream().yaw, 35);
+    assert.equal(c.stream().rate, 30);
+    c.elements.play.onclick();
+  }
+  c.elements.renderMode.onchange({target: {value: 'gaussian'}}); c.tick(80);
+  c.elements.play.onclick(); c.tick(96);
+  assert.equal(c.elements.comparisonCanvas.hidden, true);
+  assert.equal(c.stream().width, 1280); assert.equal(c.elements.ultraResolution.disabled, false);
+  assert.deepEqual(c.errors, []);
 });

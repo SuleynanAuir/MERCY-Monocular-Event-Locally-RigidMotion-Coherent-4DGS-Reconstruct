@@ -1,5 +1,6 @@
 """Bounded, lossless reuse of already encoded renders of an immutable scene."""
 from collections import OrderedDict
+from utils.hybrid_sampling import DEFAULT_HYBRID_QUALITY
 
 
 class EncodedFrameCache:
@@ -13,7 +14,8 @@ class EncodedFrameCache:
         self.entries, self.bytes = OrderedDict(), 0
 
     def key(self, request):
-        return tuple(request[field] for field in self.FIELDS)
+        hybrid_quality = request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY) if request.get('render_mode') == 'hybrid' else None
+        return tuple(request[field] for field in self.FIELDS) + (hybrid_quality,)
 
     def get(self, request):
         key = self.key(request)

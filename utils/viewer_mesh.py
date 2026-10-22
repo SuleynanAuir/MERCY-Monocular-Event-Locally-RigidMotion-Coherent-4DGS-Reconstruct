@@ -79,6 +79,7 @@ class MeshRenderer:
         self.vertex_groups = torch.from_numpy(data['vertex_groups'].astype(np.int64)).cuda()
         self.colors = torch.from_numpy(data['colors']).cuda()
         self.supersample = 2
+        self.edge_antialias = True
         self.image_cache = EncodedFrameCache(max_bytes=48 * 1024**2)
         self.info = dict(available=True, triangle_count=len(self.faces), vertex_count=len(self.vertices),
                          excluded_gaussians=data['metadata'].get('excluded_elastic_gaussians', 0),
@@ -113,7 +114,8 @@ class MeshRenderer:
             color, _ = self.dr.interpolate(self.colors.unsqueeze(0).contiguous(), raster, self.faces)
             background = color.new_tensor(BACKGROUNDS[request['background']])
             rgb = torch.where(visible[..., None], color[0], background)
-            rgb = self.dr.antialias(rgb.unsqueeze(0).contiguous(), raster, clip, self.faces)[0]
+            if self.edge_antialias:
+                rgb = self.dr.antialias(rgb.unsqueeze(0).contiguous(), raster, clip, self.faces)[0]
             # Integrate subpixel triangles before quantization to reduce speckle
             # and crawling edges during animation. Output framing stays identical.
             rgb = rgb.reshape(request['height'], self.supersample,

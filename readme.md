@@ -317,6 +317,25 @@ python scripts/reconstruct_viewer_mesh.py \
 也可通过 `http://127.0.0.1:8892/?mode=mesh&autoplay=1&loop=1` 直接打开。
 切换模式保留时间与相机；Mesh 加载失败时高斯仍可使用。重新生成高斯或校正参数后，需要重新生成匹配的网格。
 
+#### 网页动态混合展示（Mesh＋Gaussian）
+
+当目标是动态展示，单层网格加顶点颜色会损失原高斯的半透明边缘和细节，继续增面无法恢复这些外观信息。可额外启用明确标注的 `hybrid` 模式：每侧高斯绑定到该侧重建网格的三角面，保留重心坐标与规范帧中的偏移；网格自带的部件变换驱动高斯的位置与朝向，高斯继续绘制外观。这是混合表示，不是传统纯 Mesh，也不是 SuGaR 的训练实现。没有网格绑定的弹性部件沿用原高斯动画。静态偏移不被压缩，避免把体积外观拍扁或改变模型轮廓。
+
+```bash
+python scripts/bind_gaussians_to_viewer_mesh.py \
+  --comparison /path/to/comparison-manifest.json \
+  --left-binding /path/to/original/initial-binding.npz \
+  --output /path/to/new-hybrid-bindings
+```
+
+生成器逐侧核对源身份与网格哈希，并检查全部运动帧。通过检查后，在 manifest 添加 `"hybrid_paths": {"left": "/path/to/new-hybrid-bindings/left.npz", "right": "/path/to/new-hybrid-bindings/right.npz"}`，重启查看器。访问 `?mode=hybrid&quality=surface&autoplay=1&loop=1`。左右仍为 V1/V3，同帧同相机；默认输出分辨率与单独 GS 一致，页面中的双视图尺寸不变。
+
+混合画质默认“表面柔化”（`surface`）：沿用本侧 GS 的原生采样与外观，再根据透明度、归一化深度和颜色差异进行 3×3 联合双边去噪。透明度低于 0.98、明显颜色边缘及相对深度断裂超过 2% 的区域不进行平滑；邻近边界的强度连续衰减，每通道变化最多 0.035。它只处理显示图像，不改高斯属性、Mesh 绑定或运动，不使用跨帧图像混合，不能修复源几何的凹凸与缺失。
+
+“GS 原生外观”（`native`）关闭去噪，便于与单独 GS 对照；“旧版均衡”（`balanced`）和“旧版高采样”（`detail`）保留 2 倍与 3 倍采样。高采样会缩小原光栅器在最终像素中的滤波覆盖，可能让源噪点更明显，不能仅凭接近高采样参考就判断视觉质量提升。所有模式、画质的缓存隔离。默认视角的 `surface` 和 `native` 各预缓存全部 400 帧；新视角仍需实时渲染，不能保证任意分辨率实时 60 FPS。显示去噪不改变原事件验收结论。
+
+验收命令：`scripts/evaluate_hybrid_surface.py --comparison <manifest> --bindings <绑定目录> --output <新目录>`。三个视角各 48 个时刻直接比较同分辨率的单独 GS、旧版三倍混合和表面柔化；输出对比动画、原生绑定一致性、受保护区域变化、强边缘保留和局部高频变化。高频变化只是图像粗糙度代理，不能当作真实几何误差或感知质量真值。加 `--probe` 可先检查第 100 帧。旧版采样实验仍可用 `scripts/evaluate_viewer_hybrid.py --detail` 复现，其 4 倍采样参考只衡量采样接近程度。
+
 ### 4. 测试
 
 ```bash
@@ -495,3 +514,50 @@ v4 序列化重载后重新渲染的指标与训练审计一致，但铲斗仍�
 ## 许可证
 
 项目采用 [MIT License](LICENSE)。
+
+### Fan_data 与 UI 物件选择
+
+`data/Fan_data` 的新风扇场景使用 `fan_contrastive_g0.ply` 和给定相机；从 `Fan.mkv` 拟合右侧叶片的逐帧转角，左侧风扇及后方支架保持静止。网页呈现实际三维高斯，支持播放、逐帧查看和自由视角。它是具有世界 Z 轴、近似平面叶片和显式前层分组假设的**视频拟合刚体预览**，不是事件重建通过版。输入哈希、分组范围、旋转中心、转角和拟合误差保存在 `motion-report.json`。
+
+2026-10-22 收到的 `Fan_event.npy` 文件头声明 `(10327310, 4)` 个 float64，含文件头预期 330,474,048 字节，实际仅 46,923,776 字节，无法加载完整事件。本次预览未使用截断的事件作为训练或验证证据。Fan 尚未生成独立的 Mesh / Mesh＋GS，界面会禁用这两项；Lego 原有 V1 / V3 对比及显示模式继续保留。
+
+在已配置依赖的环境运行：
+
+```bash
+python scripts/prepare_fan_viewer.py --data data/Fan_data --output outputs/fan-video-viewer
+python viewer.py --scenes_path viewer/scenes.example.json --host 127.0.0.1 --port 8892
+```
+
+目录清单中路径相对于清单文件解析；运行前将示例中的两个路径改为各自产物的实际路径。`default` 决定未指定物件时的默认场景。模型常驻 GPU、Fan 运动缓存使用 CPU；部署前需为全部物件预留显存。服务按清单顺序加载，初次启动需等待模型加载和 Lego 预热完成。
+
+通过 SSH 转发后，打开 `http://127.0.0.1:8892/?scene=fan`，在右侧“物件选择”切换 **Fan · 风扇** 与 **Lego · V1 / V3 对比**。物件标识也用于状态接口和 WebSocket；页面之间独立选择，切换后重置相机与时间轴，防止复用上一物件的图像缓存。浏览器只能选择清单中的 ID，不能提交服务器文件路径。
+
+Fan 预览现默认使用 **超清 · 1280 px**，播放与静帧 JPEG 均为质量 95。宽屏示例从 640×400 提高为 1280×800，避免低分辨率画面被画布放大。宽屏输出按画布比例生成；竖屏保留标定的正方形视野，避免裁掉外侧叶片。接近正方形时自动缩放到服务器像素上限，防止窗口变化导致渲染请求失败。Lego 双视图仍使用其原有默认分辨率，超清 1280 档仅对单场景视图开放。该变化只提高实际渲染采样密度，不改变高斯属性或已拟合运动。
+
+风扇支架误绑定修复：最初仅按前层深度与半径划分旋转组，会把一部分支架前缘带着叶片旋转，形成叶片旁的灰色突出物。生成脚本现使用视频的多时刻前景支持度，对“静止位置持续吻合、旋转位置明显不吻合”的高斯恢复静止归属。只调整运动归属，保留全部高斯、颜色、尺度与不透明度；其余叶片的转角和轨迹保持原值。偶数帧用于选择，奇数帧检查分组支持度；由于转角拟合已使用完整视频，此检查不代表整套重建的独立测试，也不替代事件验证。
+
+已有的 Fan 序列可单独修复，无需重新拟合转角：
+
+```bash
+python scripts/repair_fan_motion_binding.py \
+  --sequence outputs/fan-video-viewer/fan-motion.npz \
+  --motion-report outputs/fan-video-viewer/motion-report.json \
+  --data data/Fan_data --output outputs/fan-binding-fixed
+```
+
+修复后将物件清单中的 Fan 路径指向新的 `fan-motion.npz` 并重启服务。`reassigned-static-indices.npy` 记录恢复静止的原始高斯行号，运动报告保留选择和检查帧及统计量。
+
+风扇的纯 Mesh 和 Mesh＋GS 对比：左侧 V1 为支架绑定修复前，右侧 V3 为修复后。两版初始高斯完全相同，网格规范几何可共享，但分别保存并校验各自 100 帧运动。旋转叶片、静止部分、改变归属的支架分别重建，三角面不跨运动组。Mesh＋GS 将全部高斯绑定到所属组的三角面，保留规范位置偏移、颜色、尺度和不透明度。
+
+```bash
+python scripts/prepare_fan_mesh.py \
+  --before outputs/fan-video-viewer/fan-motion.npz \
+  --after outputs/fan-binding-fixed/fan-motion.npz \
+  --output outputs/fan-mesh-pair
+
+python scripts/refine_fan_mesh.py \
+  --manifest outputs/fan-mesh-pair/manifest.json \
+  --output outputs/fan-mesh-refined
+```
+
+局部修补仅填充半径不超过 0.003、且有源高斯深度支持的小孔，并优先使用标定正视颜色；原顶点、三角面前缀和全部高斯绑定保持不变。将物件清单中 Fan 的 `type` 改为 `fan_mesh`，`path` 指向修补输出的 `manifest.json`。GS 模式继续显示修复后的单视图（1280 px）；Mesh 和 Mesh＋GS 为同步双视图（默认每侧 1024 px），支持拖动视角、逐帧检查、循环播放和全屏。Mesh＋GS 的“GS 原生外观”保留源高斯采样；默认“表面柔化”只做深度引导的轻度显示去噪。纯网格是高斯表面的近似重建，薄片、透明及遮挡处仍可能存在缺失；两版运动仍是视频拟合，未替代事件验证。

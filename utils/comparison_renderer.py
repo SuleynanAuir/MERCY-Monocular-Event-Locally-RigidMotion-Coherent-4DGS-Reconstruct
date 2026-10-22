@@ -16,6 +16,7 @@ from utils.event_refinement import correction_from_record
 from utils.viewer_cache import EncodedFrameCache
 from utils.viewer_state import BACKGROUNDS, STREAM_WINDOW, image_packet, orbit_pose, validate_request
 from utils.render_sampling import render_sampling_contract, require_same_sampling, resolve_rgb
+from utils.hybrid_sampling import DEFAULT_HYBRID_QUALITY, sampling_plan, resolve_hybrid_rgb, smooth_surface
 from utils.multiview_completion import (FORMAT as MULTIVIEW_FORMAT, CompactCompletion,
                                         completion_contract, validate_report_shape,
                                         verify_multiview_completion)
@@ -236,6 +237,8 @@ class ComparisonRenderer:
         self.completion = None
         self.mesh = None
         self.mesh_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
+        self.hybrid = None
+        self.hybrid_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
 
     def progress(self, value, message):
         self.status = {'ready': False, 'progress': value, 'message': message}
@@ -432,6 +435,7 @@ class ComparisonRenderer:
             self.info['geometry_repair_scope'] += (' 驾驶舱车顶的5个固定零件另按真实网格表面重建高斯；'
                 '可见面采用视频颜色，未观测面仍是先验。窗框、立柱和运动参数保留；结果另经完整事件复验。')
         self.info['mesh'] = {'available': False, 'description': '当前场景未生成高斯重建网格。'}
+        self.info['hybrid'] = {'available': False, 'description': '当前场景未生成 Mesh＋Gaussian 绑定。'}
         if not prewarm:
             self.status = {'ready': True, 'progress': 100, 'scene': self.info}
             return
@@ -452,6 +456,35 @@ class ComparisonRenderer:
                 self.mesh = None
                 self.info['mesh'] = {'available': False, 'description': 'Mesh 加载失败；高斯模式仍可使用。'}
                 logging.getLogger('gaussian-viewer').exception('Optional Mesh failed to load')
+        if self.mesh is not None and settings.get('hybrid_paths'):
+            try:
+                from utils.mesh_gaussian_binding import MeshGaussianBinding
+                if set(settings['hybrid_paths']) != {'left', 'right'}:
+                    raise ValueError('Hybrid comparison requires both source bindings')
+                bindings = []
+                for side, name in enumerate(('left', 'right')):
+                    value = Path(settings['hybrid_paths'][name])
+                    if not value.is_absolute(): value = self.path.parent / value
+                    self.apply_side_pose(side, 0)
+                    bindings.append(MeshGaussianBinding(value, paths[name], self.mesh.sides[side],
+                                                         self.model._xyz, self.model._rotation))
+                self.hybrid = bindings
+                self.info['hybrid'] = dict(available=True, default_resolution=self.info['default_resolution'],
+                    render_supersample=self.side_sampling[0]['render_supersample'],
+                    default_quality=DEFAULT_HYBRID_QUALITY, max_render_side=3072,
+                    reconstruction_filter='native_sampling_with_depth_alpha_guided_denoising',
+                    quality_descriptions={
+                        'surface': '保留 GS 原生外观，在表面内部轻度去噪，保护孔洞与轮廓。Mesh 绑定驱动运动；这是显示去噪，未修改源几何。',
+                        'native': '采用与单独 GS 一致的采样，关闭表面柔化；Mesh 绑定仍驱动运动。这是混合渲染，未修改源几何。',
+                        'balanced': '旧版均衡效果，仅供对照。高采样可能使细碎颗粒更明显，可切回表面柔化。',
+                        'detail': '旧版高采样效果，仅供对照。本场景中颗粒更明显，建议切回表面柔化。'},
+                    left_label='V1 · Mesh＋Gaussian', right_label='V3 · Mesh＋Gaussian',
+                    left=bindings[0].info, right=bindings[1].info,
+                    description='Mesh 绑定驱动运动，保留 GS 原生外观；表面柔化轻度抑制内部颗粒，并保护轮廓、孔洞边缘和透明区域。可切换 GS 原生外观对照。混合渲染，并非纯网格；这是显示去噪，未修复源模型几何。')
+            except Exception:
+                self.hybrid = None
+                self.info['hybrid'] = {'available': False, 'description': '混合模式绑定加载失败；可使用 Gaussian 或纯 Mesh。'}
+                logging.getLogger('gaussian-viewer').exception('Optional hybrid binding failed to load')
         self.progress(95, '预热双视图实时渲染')
         self.render(validate_request({'width': 512, 'height': 512, 'fovy': camera['fovy_degrees']}, frames))
         # Render every source frame of the initial view once, before autoplay.
@@ -477,6 +510,18 @@ class ComparisonRenderer:
                 if (index + 1) % 40 == 0 or index + 1 == frames:
                     self.progress(99, f'预缓存 V1 / V3 Mesh 对比 {index + 1}/{frames} 帧')
             self.info['mesh']['prewarmed_frames'] = frames
+        if self.hybrid is not None:
+            resolution = self.info['hybrid']['default_resolution']
+            for quality in ('surface', 'native'):
+                for index in range(frames):
+                    self.render(validate_request({'render_mode': 'hybrid', 'hybrid_quality': quality, 'frame': index,
+                        'width': resolution, 'height': resolution, 'quality': self.info['default_stream_quality'],
+                        'background': self.info['default_background'], 'fovy': camera['fovy_degrees']}, frames))
+                    if (index + 1) % 40 == 0 or index + 1 == frames:
+                        label = '表面柔化' if quality == 'surface' else 'GS 原生外观'
+                        self.progress(99, f'预缓存 {label} 动态对比 {index + 1}/{frames} 帧')
+            self.info['hybrid']['prewarmed_frames'] = frames
+            self.info['hybrid']['prewarmed_qualities'] = ['surface', 'native']
         self.status = {'ready': True, 'progress': 100, 'message': '就绪', 'scene': self.info}
         logging.getLogger('gaussian-viewer').info('Ready: %d paired frames cached, %.1f MiB JPEG',
                                                  frames, self.image_cache.bytes / 1024**2)
@@ -522,24 +567,38 @@ class ComparisonRenderer:
     @torch.no_grad()
     def render(self, request):
         mesh_mode = request.get('render_mode', 'gaussian') == 'mesh'
+        hybrid_mode = request.get('render_mode', 'gaussian') == 'hybrid'
         if mesh_mode and self.mesh is None:
             raise ValueError('Mesh is unavailable for this scene')
+        if hybrid_mode and self.hybrid is None:
+            raise ValueError('Hybrid Mesh bindings are unavailable for this scene')
         from gaussian_renderer import render
         from render_ply import make_camera
         start = time.perf_counter()
-        cache = self.mesh_comparison_cache if mesh_mode else self.image_cache
+        cache = self.mesh_comparison_cache if mesh_mode else self.hybrid_comparison_cache if hybrid_mode else self.image_cache
         jpeg = cache.get(request)
         if jpeg is not None:
             return self.packet(request, jpeg, 0., 0., cache_hit=True)
         pose = orbit_pose(self.base_pose, self.target, request)
         pixels = []
         for side in (() if mesh_mode else (0, 1)):
+            quality = request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)
             supersample = self.side_sampling[side]['render_supersample']
-            camera = make_camera(pose, request['width'] * supersample, request['height'] * supersample,
+            render_width, render_height = (sampling_plan(request['width'], request['height'], quality, supersample)
+                if hybrid_mode else (request['width'] * supersample, request['height'] * supersample))
+            camera = make_camera(pose, render_width, render_height,
                                  np.deg2rad(request['fovy']))
             self.apply_side_pose(side, request['frame'])
-            rgb = render(camera, self.model, self.pipe, self.backgrounds[request['background']], 0., 0., 0.)['render']
-            rgb = resolve_rgb(rgb, supersample)
+            if hybrid_mode:
+                self.hybrid[side].apply(self.model, request['frame'])
+            output = render(camera, self.model, self.pipe, self.backgrounds[request['background']], 0., 0., 0.)
+            rgb = (resolve_hybrid_rgb(output['render'], request['width'], request['height'], quality)
+                   if hybrid_mode else resolve_rgb(output['render'], supersample))
+            if hybrid_mode and quality == 'surface':
+                import torch.nn.functional as F
+                guides = [F.interpolate(output[key].unsqueeze(0), size=(request['height'], request['width']),
+                                        mode='area')[0] for key in ('depth', 'alpha')]
+                rgb = smooth_surface(rgb, *guides)
             pixels.append((rgb.permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
         if mesh_mode:
             pixels = self.mesh.render_panels(request)
@@ -553,6 +612,8 @@ class ComparisonRenderer:
     def packet(self, request, jpeg, render_ms, encode_ms, cache_hit=False):
         return image_packet({'id': request['id'], 'frame': request['frame'], 'comparison': True,
                              'render_mode': request.get('render_mode', 'gaussian'),
+                             **({'hybrid_quality': request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)}
+                                if request.get('render_mode') == 'hybrid' else {}),
                              'left_frame': request['frame'], 'right_frame': request['frame'],
                              **({'stream': request['_stream']} if '_stream' in request else {}),
                              'width': request['width'] * 2, 'height': request['height'],
