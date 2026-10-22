@@ -22,5 +22,7 @@ __pycache__/
 
 # Keep the repository's runnable shell scripts
 *.sh
+!scripts/setup/*.sh
+!scripts/viewer/*.sh
 !train_gui.sh
 !scripts/*.sh

@@ -212,7 +212,7 @@ def verify_static_surface_rebuild(cache, correction=None, audit=None, *, baselin
     parent_cache, parent_record, parent_audit = parents
     if cleanup_contract(*parents) is not None or static_surface_contract(*parents) is not None:
         raise ValueError('Static roof parent must have neither cleanup nor prior static rebuild')
-    from scripts.export_lego_event_preview import verify_candidate
+    from scripts.events.export_lego_event_preview import verify_candidate
     from utils.multiview_completion import completion_contract
     from utils.render_sampling import require_same_sampling
     verify_candidate(parent_baseline, parent_candidate, allow_unapproved=True)

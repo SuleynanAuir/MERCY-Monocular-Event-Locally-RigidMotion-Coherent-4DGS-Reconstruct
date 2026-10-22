@@ -390,7 +390,7 @@ def verify_protected_surface_detail(cache, correction=None, audit=None, *, basel
         'baseline_poses': parent_baseline/'poses.npy', 'dynamic_indices': parent_baseline/'dynamic_indices.npy'}
     if any(Path(paths[k]) != Path(v) for k, v in expected_paths.items()):
         raise ValueError('Protected surface parent paths do not match report')
-    from scripts.export_lego_event_preview import verify_candidate
+    from scripts.events.export_lego_event_preview import verify_candidate
     parent_cache, parent_record, parent_audit = verify_candidate(parent_baseline, parent_candidate, allow_unapproved=True)
     parents = [parent_cache, parent_record, parent_audit]
     if any(r.get(k) is not None for r in parents for k in
@@ -495,7 +495,7 @@ def verify_protected_surface_detail(cache, correction=None, audit=None, *, basel
                 or extra_meta.get('mesh') != paths['mesh'] or extra_meta.get('mesh_sha256') != hashes['mesh']
                 or extra_meta.get('objects') != part_meta['objects']):
             raise ValueError('Additional construction masks differ from inherited mesh, parts or exact cameras')
-        from scripts.render_lego_multiview import validate_mask_arrays, validate_view_plan, validate_motion_metadata
+        from scripts.geometry.render_lego_multiview import validate_mask_arrays, validate_view_plan, validate_motion_metadata
         validate_view_plan(extra_meta, extra_frames, cache)
         validate_mask_arrays(extra_parts, extra_depth, extra_meta)
         del extra_parts, extra_depth

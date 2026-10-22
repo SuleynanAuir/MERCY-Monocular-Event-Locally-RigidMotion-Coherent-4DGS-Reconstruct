@@ -174,7 +174,7 @@
 
 播放已恢复为少量帧预缓冲后开播，边接收边播放，不再要求浏览器先收齐当前视角的全部 400 帧。服务器已有的正视预热与逐帧缓存仍保留；视角、背景或清晰度改变时按需重新渲染，不修改模型、运动或默认 JPEG 画质。实际流畅度仍取决于渲染、传输与浏览器解码，撤销全量等待不等于任意连接下均能保证 60 FPS。
 
-所有常驻文字和按钮仍位于画布外，播放状态在时间轴上方显示，事件未通过警告继续保留。已撤回的完整缓存实验及其验收记录留作历史资料，不代表当前播放策略。
+所有常驻文字和按钮位于画布外，播放状态在时间轴上方显示。UI 已移除局部指标、事件检查及运动说明面板；原始审计数据和评估报告继续保留在服务数据与实验输出中。已撤回的完整缓存实验及其验收记录留作历史资料，不代表当前播放策略。
 
 <p align="center">
   <img src="assets/experiments/viewer-f100-yaw35.jpg" width="100%" alt="第 100 帧自由视角双视窗预览">
@@ -192,8 +192,8 @@ cd MonoEvent-RT3D-DMR
 AutoDL 环境可直接运行：
 
 ```bash
-bash scripts/setup_autodl.sh
-source scripts/autodl_env.sh
+bash scripts/setup/setup_autodl.sh
+source scripts/setup/autodl_env.sh
 ```
 
 手动安装时，先安装与本机 CUDA 匹配的 PyTorch，再安装项目依赖和两个 CUDA 子模块：
@@ -230,7 +230,7 @@ Lego_data/
 ### 1. 构建事件监督
 
 ```bash
-python scripts/prepare_lego_events.py \
+python scripts/events/prepare_lego_events.py \
   --data /path/to/Lego_data \
   --output outputs/lego-event-supervision
 ```
@@ -242,7 +242,7 @@ python scripts/prepare_lego_events.py \
 以下命令中的基础缓存、部件、绑定和关节报告由对应的 `cache_lego_initial_motion.py`、部件导出/绑定脚本及关节诊断脚本生成。输出目录必须不存在。
 
 ```bash
-python scripts/refine_lego_temporal.py \
+python scripts/events/refine_lego_temporal.py \
   --baseline outputs/lego-baseline \
   --supervision outputs/lego-event-supervision/supervision.npz \
   --parts outputs/lego-init/blender-surface-parts.npz \
@@ -259,7 +259,7 @@ python scripts/refine_lego_temporal.py \
 ### 3. 导出研究候选并启动浏览器
 
 ```bash
-python scripts/export_lego_event_preview.py \
+python scripts/events/export_lego_event_preview.py \
   --baseline outputs/lego-baseline \
   --candidate outputs/lego-event-hard-joint \
   --output outputs/lego-event-preview \
@@ -280,23 +280,23 @@ python viewer.py \
 Mesh 模式保持双视窗：左侧为 V1 Mesh（原始 GS），右侧为 V3 Mesh（最新优化 GS），两边同帧、同相机、同尺寸。此处 V1/V3 指查看器原有左右两份结果，并非历史实验目录的版本号。点击「放大对比」可将两个视窗一起全屏显示。
 两份 Mesh 分别来自各自高斯的多视角 RGB/深度 TSDF 融合，不读取原始三角网格。V1 仅复用原有部件绑定标签，并从自身逐帧高斯恢复刚体变换、检查全部帧的刚性误差；V3 沿用自身事件校正运动。两份运动独立存入网格，避免将 V3 的运动套用给 V1。
 细节版默认使用 1280 像素、90 个视角、0.0015 体素、0.65 透明度阈值和 4 体素截断距离；用受原始表面邻域限制的 Screened Poisson 重建改善细碎裂缝，并根据多视角高斯的空域证据剔除不受支持的表面，减少误填真实孔洞。颜色从可见的高分辨率高斯视角单独烘焙，显示时不再叠加光照。可使用 `--surface-method tsdf` 对照原始提取方法。
-当整体表面正则化降低细节相似度时，可用 `scripts/refine_viewer_mesh_gaps.py --base <同版本细节网格> --surface <同版本经空域筛查的连续网格> --output <新目录>` 仅添加边界附近的补片，完整保留细节网格原有顶点、三角面和颜色。两种网格必须来自同一份高斯，不能跨 V1/V3 混用。
-表面仍有细碎凸起时，可对左右两份网格分别运行 `python scripts/denoise_viewer_mesh.py --input <mesh.npz> --output <新目录>`，再将 manifest 指向处理后的文件。默认沿已有三角面连接进行 16 轮受限 Taubin 平滑，边界顶点最多移动 1 个体素，内部最多 2 个体素；不增删三角面、不跨部件或跨孔洞连接，并完整保留各自的运动。按实际保存的 float32 精度检查三角面朝向，对可能翻折的顶点局部回退。另做 3 轮保留颜色边界的顶点颜色去噪，输出报告记录每个部件的位移及局部起伏变化。查看器以宽高各 2 倍采样后缩回输出尺寸，改善微小三角面和轮廓的抗锯齿，画面大小和相机保持不变。
+当整体表面正则化降低细节相似度时，可用 `scripts/mesh/refine_viewer_mesh_gaps.py --base <同版本细节网格> --surface <同版本经空域筛查的连续网格> --output <新目录>` 仅添加边界附近的补片，完整保留细节网格原有顶点、三角面和颜色。两种网格必须来自同一份高斯，不能跨 V1/V3 混用。
+表面仍有细碎凸起时，可对左右两份网格分别运行 `python scripts/mesh/denoise_viewer_mesh.py --input <mesh.npz> --output <新目录>`，再将 manifest 指向处理后的文件。默认沿已有三角面连接进行 16 轮受限 Taubin 平滑，边界顶点最多移动 1 个体素，内部最多 2 个体素；不增删三角面、不跨部件或跨孔洞连接，并完整保留各自的运动。按实际保存的 float32 精度检查三角面朝向，对可能翻折的顶点局部回退。另做 3 轮保留颜色边界的顶点颜色去噪，输出报告记录每个部件的位移及局部起伏变化。查看器以宽高各 2 倍采样后缩回输出尺寸，改善微小三角面和轮廓的抗锯齿，画面大小和相机保持不变。
 需要进一步减少毛躁时使用 `--preset smooth`：本次处理采用 64 轮几何平滑和 10 轮颜色去噪，保持相同的位移限制及防翻折检查。左右两版使用相同参数，输出保留前次去噪报告与输入文件哈希；建议对当前结果运行一次后检查轮廓与孔洞，不要无检查地反复叠加。此预设偏重平顺度，细小纹理的对比度可能略降。
 
-需要增加三角面精细度时，可分别执行 `python scripts/subdivide_viewer_mesh.py --input <已去噪的 mesh.npz> --output <新目录>`。默认对超过 4/3 个体素的长边做一次自适应细分，每个部件的三角面最多增加至原来的 2 倍；相邻面共用边中点，过渡面同步拆分以避免裂缝。原有顶点和颜色保持不变，新增顶点按去噪后表面的切平面估计曲率，偏离线性中点最多 0.15 个体素且不超过边长的 8%；边界与锐边附近只做线性细分。原网格中的极薄面与重复面保持原样，按实际 float32 输出检查子面朝向，不安全区域回退或保持原面。左右独立处理并保留各自全部运动帧，新增顶点颜色沿边插值。细分改善曲面的离散精度，不会凭空恢复高斯源中缺失的真实结构或纹理；新增面数也会增加显存与渲染开销，切换 manifest 前应检查多视角效果和播放速度。
+需要增加三角面精细度时，可分别执行 `python scripts/mesh/subdivide_viewer_mesh.py --input <已去噪的 mesh.npz> --output <新目录>`。默认对超过 4/3 个体素的长边做一次自适应细分，每个部件的三角面最多增加至原来的 2 倍；相邻面共用边中点，过渡面同步拆分以避免裂缝。原有顶点和颜色保持不变，新增顶点按去噪后表面的切平面估计曲率，偏离线性中点最多 0.15 个体素且不超过边长的 8%；边界与锐边附近只做线性细分。原网格中的极薄面与重复面保持原样，按实际 float32 输出检查子面朝向，不安全区域回退或保持原面。左右独立处理并保留各自全部运动帧，新增顶点颜色沿边插值。细分改善曲面的离散精度，不会凭空恢复高斯源中缺失的真实结构或纹理；新增面数也会增加显存与渲染开销，切换 manifest 前应检查多视角效果和播放速度。
 低置信度表面、小碎片及弹性带会被略去，网格是高斯表面的近似，不代表重建精度或事件验收有所提升。
 
-细节颜色可在去噪后再拟合一次。`scripts/capture_viewer_mesh_views.cjs` 从正在运行的查看器采集 24 组训练视角和 6 组验证视角，每张图包含左右各自的高斯结果；拟合时严格按侧别裁切。`scripts/refine_viewer_mesh_colors.py` 仅优化顶点颜色，保持几何、三角面、部件归属及全部运动参数不变，限制 RGB 改变量，并通过随机表面邻域约束及递减学习率减少颗粒和单视角过拟合。已有颜色均匀区域的改动上限降至全局上限的 5%，避免白色平面新增斑点；沿已有颜色边缘逐步放宽限制。验证视角不参与梯度计算，候选应通过新视角对照后再部署；可以用采集脚本的 `check` 模式额外采集 4 组检查视角。颜色拟合不能补回缺失的几何或证明真实重建精度提高。
+细节颜色可在去噪后再拟合一次。`scripts/viewer/capture_viewer_mesh_views.cjs` 从正在运行的查看器采集 24 组训练视角和 6 组验证视角，每张图包含左右各自的高斯结果；拟合时严格按侧别裁切。`scripts/mesh/refine_viewer_mesh_colors.py` 仅优化顶点颜色，保持几何、三角面、部件归属及全部运动参数不变，限制 RGB 改变量，并通过随机表面邻域约束及递减学习率减少颗粒和单视角过拟合。已有颜色均匀区域的改动上限降至全局上限的 5%，避免白色平面新增斑点；沿已有颜色边缘逐步放宽限制。验证视角不参与梯度计算，候选应通过新视角对照后再部署；可以用采集脚本的 `check` 模式额外采集 4 组检查视角。颜色拟合不能补回缺失的几何或证明真实重建精度提高。
 
 ```bash
-node scripts/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-views
-python scripts/refine_viewer_mesh_colors.py \
+node scripts/viewer/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-views
+python scripts/mesh/refine_viewer_mesh_colors.py \
   --comparison /path/to/comparison-manifest.json \
   --input /path/to/v1-denoised/mesh.npz --views /path/to/color-views \
   --output /path/to/v1-color-refined
 # 对 V3 输入单独执行同一命令；不能将 V1 的颜色套给 V3。
-node scripts/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-check check
+node scripts/viewer/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-check check
 ```
 
 在现有 CUDA 环境安装可选依赖并生成一次网格：
@@ -304,11 +304,11 @@ node scripts/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to/color-
 ```bash
 pip install --no-deps --no-build-isolation -r requirements-mesh.txt
 pip install open3d-cpu==0.19.0 'numpy<2'
-python scripts/reconstruct_viewer_mesh.py \
+python scripts/mesh/reconstruct_viewer_mesh.py \
   --comparison /path/to/comparison-manifest.json \
   --side left --left-binding /path/to/original/initial-binding.npz \
   --output /path/to/v1-gaussian-mesh
-python scripts/reconstruct_viewer_mesh.py \
+python scripts/mesh/reconstruct_viewer_mesh.py \
   --comparison /path/to/comparison-manifest.json \
   --side right --output /path/to/v3-gaussian-mesh
 ```
@@ -322,7 +322,7 @@ python scripts/reconstruct_viewer_mesh.py \
 当目标是动态展示，单层网格加顶点颜色会损失原高斯的半透明边缘和细节，继续增面无法恢复这些外观信息。可额外启用明确标注的 `hybrid` 模式：每侧高斯绑定到该侧重建网格的三角面，保留重心坐标与规范帧中的偏移；网格自带的部件变换驱动高斯的位置与朝向，高斯继续绘制外观。这是混合表示，不是传统纯 Mesh，也不是 SuGaR 的训练实现。没有网格绑定的弹性部件沿用原高斯动画。静态偏移不被压缩，避免把体积外观拍扁或改变模型轮廓。
 
 ```bash
-python scripts/bind_gaussians_to_viewer_mesh.py \
+python scripts/mesh/bind_gaussians_to_viewer_mesh.py \
   --comparison /path/to/comparison-manifest.json \
   --left-binding /path/to/original/initial-binding.npz \
   --output /path/to/new-hybrid-bindings
@@ -334,16 +334,16 @@ python scripts/bind_gaussians_to_viewer_mesh.py \
 
 “GS 原生外观”（`native`）关闭去噪，便于与单独 GS 对照；“旧版均衡”（`balanced`）和“旧版高采样”（`detail`）保留 2 倍与 3 倍采样。高采样会缩小原光栅器在最终像素中的滤波覆盖，可能让源噪点更明显，不能仅凭接近高采样参考就判断视觉质量提升。所有模式、画质的缓存隔离。默认视角的 `surface` 和 `native` 各预缓存全部 400 帧；新视角仍需实时渲染，不能保证任意分辨率实时 60 FPS。显示去噪不改变原事件验收结论。
 
-验收命令：`scripts/evaluate_hybrid_surface.py --comparison <manifest> --bindings <绑定目录> --output <新目录>`。三个视角各 48 个时刻直接比较同分辨率的单独 GS、旧版三倍混合和表面柔化；输出对比动画、原生绑定一致性、受保护区域变化、强边缘保留和局部高频变化。高频变化只是图像粗糙度代理，不能当作真实几何误差或感知质量真值。加 `--probe` 可先检查第 100 帧。旧版采样实验仍可用 `scripts/evaluate_viewer_hybrid.py --detail` 复现，其 4 倍采样参考只衡量采样接近程度。
+验收命令：`scripts/mesh/evaluate_hybrid_surface.py --comparison <manifest> --bindings <绑定目录> --output <新目录>`。三个视角各 48 个时刻直接比较同分辨率的单独 GS、旧版三倍混合和表面柔化；输出对比动画、原生绑定一致性、受保护区域变化、强边缘保留和局部高频变化。高频变化只是图像粗糙度代理，不能当作真实几何误差或感知质量真值。加 `--probe` 可先检查第 100 帧。旧版采样实验仍可用 `scripts/viewer/evaluate_viewer_hybrid.py --detail` 复现，其 4 倍采样参考只衡量采样接近程度。
 
 ### 4. 测试
 
 ```bash
 python -m unittest discover -s tests -v
-node --test tests/test_viewer_playback.cjs
+node --test tests/viewer/test_viewer_playback.cjs
 ```
 
-浏览器端到端测试位于 `scripts/test_gaussian_viewer_ui.cjs`，需要额外安装 `playwright-core` 并配置 Chrome 路径。
+浏览器端到端测试位于 `scripts/viewer/test_gaussian_viewer_ui.cjs`，需要额外安装 `playwright-core` 并配置 Chrome 路径。
 
 ### 5. 车顶与固定背侧的受保护表面细化
 
@@ -361,7 +361,7 @@ node --test tests/test_viewer_playback.cjs
 运行各脚本的 `--help` 查看所需路径。发布检查示例（各目录须已完成实际渲染）：
 
 ```bash
-python scripts/check_lego_surface_detail_release.py \
+python scripts/appearance/check_lego_surface_detail_release.py \
   --parent /path/to/audited-parent \
   --candidate /path/to/packaged-detail \
   --supervision /path/to/supervision.npz \
@@ -381,11 +381,35 @@ python scripts/check_lego_surface_detail_release.py \
 gaussian_renderer/   CUDA 高斯渲染入口
 scene/               相机、数据读取、Gaussian 模型与形变模型
 utils/               事件监督、运动、关节、网格和序列工具
-scripts/             Lego 实验、诊断、审计、打包与多视角流程
+scripts/             按功能分类的实验与运行脚本
 viewer/              浏览器前端
 viewer.py            GPU 渲染服务
-tests/               Python 与 JavaScript 回归测试
+tests/               按功能分类的 Python 与 JavaScript 回归测试
 ```
+
+脚本和测试文件已移入功能子目录，顶层仅保留包入口。Python 包导入、源码快照路径、Shell 根目录、JavaScript 相对路径及下文命令均使用新位置。
+
+| 功能 | 脚本 | 测试 |
+| --- | --- | --- |
+| 局部 MLP 与变形 | `scripts/deformation/` | `tests/deformation/` |
+| 事件监督与事件重建 | `scripts/events/` | `tests/events/`、`tests/event_only/` |
+| 运动、绑定与关节 | `scripts/motion/` | `tests/motion/` |
+| 几何重建与补全 | `scripts/geometry/` | `tests/geometry/` |
+| 颜色、表面与细节 | `scripts/appearance/` | `tests/appearance/` |
+| 网格与高斯绑定 | `scripts/mesh/` | `tests/mesh/` |
+| 浏览器、播放与性能 | `scripts/viewer/` | `tests/viewer/` |
+| 风扇 | `scripts/fan/` | `tests/fan/` |
+| 数据诊断／环境配置 | `scripts/diagnostics/`、`scripts/setup/` | `tests/io/`（数据读写） |
+
+从项目根目录运行：
+
+```bash
+python -m unittest discover -s tests -t .
+node --test tests/viewer/*.cjs
+python scripts/deformation/train_v3_deformation.py --help
+```
+
+历史实验输出中的源码快照与审计哈希保留原样，当前可执行入口按上表定位。
 
 ## 独立探索：仅 G0 + 事件 + 相机
 
@@ -415,7 +439,7 @@ tests/               Python 与 JavaScript 回归测试
 `--motion-model camera_plane` 在刚体分支中显式假设每个 G0 高斯的相机深度固定，只允许绕相机光轴旋转与成像平面内平移；初始化及训练全程保持此约束。它可减少单目姿态歧义，但会排除真实的面外运动，因此不是物理规律保证。默认仍是未限制的 `se3`，所有原生事件门槛不变。
 
 ```bash
-python scripts/reconstruct_lego_event_only.py \
+python scripts/events/reconstruct_lego_event_only.py \
   --g0 /path/to/corrected_g0.ply \
   --events /path/to/Lego_event \
   --intrinsics /path/to/camera_intrinsics.json \
@@ -424,7 +448,7 @@ python scripts/reconstruct_lego_event_only.py \
   --fit-split all --nodes 256 --warmup-steps 32 --polish-steps 600 \
   --output /path/to/new-event-only-run
 
-python scripts/render_event_only_sequence.py \
+python scripts/events/render_event_only_sequence.py \
   --g0 /path/to/new-event-only-run/gaussians.ply \
   --checkpoint /path/to/new-event-only-run/deform.pth \
   --fps 30 --width 640 --output /path/to/new-preview
@@ -434,9 +458,214 @@ python scripts/render_event_only_sequence.py \
 
 输出包含原样复制的 `gaussians.ply`、自定义变形图 `deform.pth`、输入 SHA-256、训练记录和整段 `event-audit.json`。`deform.pth` **不是原版 SC-GS 网络权重**，须配合 `utils/event_only_checkpoint.py` 和 `utils/event_only_motion.py` 加载。导出器生成 `G0.ply`、`deform.pth`、预览视频与关键帧；可用 `--write-ply-times 0,6.65` 额外导出少量真正变形后的 PLY，不批量复制全序列百万点文件。
 
+### V3：集成 Blender 主运动与局部 MLP 辅助变形
+
+当前部署统一为 **V1／V3**，不再设置独立 V4 场景。原 V4 当前部署的整套方法已成为 V3 的辅助变形模块：姿态条件 MLP、多尺度时间残差、叠加后轨迹的平滑约束、关节层级与刚性约束、事件监督、局部增益校准，以及幅度／相位／关节闭合检查。Blender 仍负责主运动，MLP 只补偿局部小偏差。
+
+- `utils/v3_deformation.py` 加载已训练的网络，核验模型、事件审计、冻结基线和局部指标的来源。Gaussian 在原始 V3 位姿后叠加一次辅助变形；纯 Mesh 顶点应用同一关节残差；Mesh＋GS 在网格绑定后应用一次，覆盖已绑定和未绑定的受影响高斯。V1 保持原样。
+- 比较 manifest 增加 `"deformation": "/path/to/deformation.json"`。该文件格式为 `v3_deformation_v1`，包含 `checkpoint`、`audit`、各自 SHA256，以及可选 `local_metrics` 和 SHA256。不修改旧基线、网格文件或已训练权重。
+- 场景目录仅保留 `fan` 与 `lego`；`lego` 使用普通 `comparison` 类型和上述 manifest。三种展示共用 V3 局部辅助运动。
+- 局部指标在报告中保留为 **V3 内部辅助关闭／开启的消融对照**，UI 不再展示指标、事件检查和运动说明面板。这些指标不是画面左侧 V1 与右侧 V3 的指标。关闭时相当于合并前 V3，开启时相当于原已部署的局部 MLP 结果。此次集成未重新训练，既有指标不能解释为新增收益。
+- 新训练入口为 `python scripts/deformation/train_v3_deformation.py ...`，参数与原局部 MLP 训练器一致。旧模块名、权重格式及实验文件保留，供已有检查点和审计结果复现；它们不是独立产品版本。早期互斥的尺度场／非 MLP 实验保留为历史实现，不将它们的权重重复叠加到当前网络。
+
+部署目录：`/root/autodl-tmp/scgs-results/lego-v3-integrated-20261022/`；界面：`http://127.0.0.1:8892/?scene=lego`。
+
+以下为集成所沿用的训练与评估记录。记录中的 V3／V4 分别表示“辅助关闭／开启”，历史数值与文件名保持原样以便复核。
+
+### 局部关节 MLP 训练与评估记录（原 V4）
+
+**评估报告的主指标采用实际启用的局部范围；UI 不显示此表。** `scripts/deformation/evaluate_v4_focused_local.py` 在已冻结的同一 V4 权重上重新评估 6/8 两个关节与 4,665 个高斯点，保留全部 400 帧、399 个事件区间及原 320/79 划分。范围由已经部署的 MLP 支持集合决定，不按误差挑选关节或好看的时间片。该报告属于训练后的局部诊断，不是新训练收益，也不是预注册的独立基准。
+
+- 改善比例：`100 × (V3_local − V4_local) / V3_local`，两版使用相同局部样本。
+- 关节角指标：各关节三阶差分除以该关节的冻结 V3 角度范围，再仅对选定关节和全部时间求 RMS；不会用 V4 缩小后的幅度重新归一化。
+- 三维位置指标：使用两个局部零件的全部高斯，分别除以各自 V3 规范坐标包围盒对角线，按零件等权合并；不使用全局场景尺寸归一化。
+- 事件指标：每个区间的分子是局部 ROI 内预测／观测差的绝对值和，分母是**同一 ROI** 内观测事件的绝对幅值和。主表保留原来的区间相对误差均值，同时另报总误差／总事件幅值的聚合结果。零事件区间不强行除 epsilon，其伪变化仍纳入总量指标并单列。
+
+ROI 由 V3 原始渲染对 6/8 组的敏感性确定，沿用固定 0.5% 相对／0.001 绝对阈值与一个比较单元的扩张；两版共用连续帧区域的并集。平均覆盖约 1.281% 画面、9.007% 的比较尺度事件绝对幅值；原生渲染 640 px、事件比较 80 px。区域可能包含相邻或遮挡零件，不能解释为逐事件精确零件归属。
+
+| 当前局部口径 | V3 | 同一 V4 | 相对 V3 局部 |
+| --- | ---: | ---: | ---: |
+| 局部角 jerk ↓ | 2.634576 | 2.567584 | 下降 2.5428% |
+| 6 组角 jerk ↓ | 2.559734 | 2.449878 | 下降 4.2917% |
+| 8 组角 jerk ↓ | 2.707349 | 2.680125 | 下降 1.0056% |
+| 全段局部事件 L1，区间均值 ↓ | 0.606600885 | 0.606998945 | 上升 0.0656% |
+| 留出局部事件 L1，区间均值 ↓ | 0.495159320 | 0.495046465 | 下降 0.0228% |
+| 局部三维 jerk，局部尺寸归一化 ↓ | 2.975470 | 2.976073 | 上升 0.0203% |
+
+运动幅度仍不变。补充总量聚合的局部事件 L1：全段 0.410338851 → 0.410377213（上升 0.00935%），留出 0.398812359 → 0.398907211（上升 0.02378%）。区间权重不同会出现不同趋势，不能只引用有利的聚合方式。全画面 382/399 通过数仍仅是全画面验收，不能作为局部通过数。
+
+```bash
+python scripts/deformation/evaluate_v4_focused_local.py \
+  --run /path/to/lego-v4-local-mlp-refined-20261022 \
+  --output outputs/lego-v4-local-metrics-20261022
+```
+
+新报告、掩码、每区间分子／分母、范围示意图及独立 viewer manifest 保存在 `outputs/lego-v4-local-metrics-20261022/`。该入口只写评估文件，**不重写 MLP 权重**；加载时仍校验指标文件 SHA、模型 SHA、关节范围和帧数；结果保存在服务数据中。原全局结果继续作为参考保留。
+
+`utils/v4_local_mlp.py` 增加真正训练的 1,540 参数 MLP。输入为冻结的局部关节姿态、速度、关节位置和分支标识，预测四种时间尺度的小角度补偿权重；它是受约束的局部残差网络，不重新估计整物体运动，也不是原版 DeformableGS 的完整复现。首尾和转折点的残差严格为零，关节层级传递保持部件刚性与连接。根、闭环、主传动齿轮、支架、弹性带和高斯颜色／不透明度／尺度保持 V3。
+
+当前 Lego 仅开放 6/7/8 三个局部分支，最多影响 9,313 个高斯点。网络在冻结 V3 的多尺度时间先验上学习补偿，原生渲染有限差分提供事件训练代理，叠加后的局部角轨迹 jerk 进入训练损失。随后按分支校准辅助增益；这些增益只缩放小残差，不缩放 Blender 运动。候选使用完整 320 个训练事件区间重新渲染，必须同时改善上一版 V4 的角 jerk、全段训练事件 L1 和固定局部区域训练事件 L1，并限制相对 V3 的全段训练 L1 增加不超过 0.02%。逐关节 jerk、运动幅度、亚帧相位、关节闭合与空间偏移另行检查。
+
+训练仅读事件计数及冻结 V3 几何先验，不读 RGB 目标。79 个留出事件区间不参与梯度或候选选择；继承的 V3 和标定可能有历史数据暴露，因此不是从零训练整个方法的独立留出实验。局部评估区域由源渲染敏感性固定生成，不根据事件误差挑选。原生事件复核是必须步骤，代理损失下降不能代替真实渲染验收。
+
+```bash
+python scripts/deformation/train_v4_local_mlp.py \
+  --base-field /path/to/lego-v4-joint-stability/auxiliary-mlp.pth \
+  --steps 300 --output outputs/lego-v4-local-mlp
+python scripts/deformation/report_v4_local_mlp.py --run outputs/lego-v4-local-mlp \
+  --previous /path/to/lego-v4-joint-stability
+python scripts/deformation/report_v4_joint_stability.py --run outputs/lego-v4-local-mlp
+python scripts/deformation/render_scgs_v4_comparison.py \
+  --checkpoint outputs/lego-v4-local-mlp/auxiliary-mlp.pth \
+  --output outputs/lego-v4-local-mlp/comparison.mp4
+```
+
+权重格式为 `v4_local_joint_mlp_v1`，保存实际网络参数、冻结绑定与几何先验。加载时由 MLP 重新生成残差，再缓存固定序列的关节变换；把网络权重清零会精确退回 V3。该权重已集成至当前 V3；界面为左 V1／右 V3，局部消融仅保存在报告中，Mesh 与 Mesh＋GS 也使用相同辅助运动。
+
+2026-10-22 的本轮结果保存在 `outputs/lego-v4-local-mlp-refined-20261022/`。第一轮严格要求几乎不增加 V3 局部误差，全部候选被拒绝；第二轮明确以改善上一版 V4 的平滑／事件取舍为目标，用全部训练事件校准分支增益。最终只启用 6/8 两个局部关节，影响 4,665 个高斯点（完整模型约 0.253%），7 组补偿关闭；主传动、支架及其他保护行的位姿最大误差为 0。未用留出事件改选权重。
+
+| 同口径真实数据指标 | V3 | 上一版 V4（非 MLP） | 本轮局部 MLP |
+| --- | ---: | ---: | ---: |
+| 全部活动关节归一化角 jerk ↓ | 2.671927 | 2.661168 | 2.653229 |
+| 预先固定局部 6/7/8 组角 jerk ↓ | 2.781656 | 2.760604 | 2.739575 |
+| 全段事件相对 L1 ↓ | 0.375605970 | 0.375773662 | 0.375636513 |
+| 固定局部区域全段事件 L1 ↓ | 0.610010224 | 0.612979894 | 0.610465100 |
+| 固定局部区域留出事件 L1 ↓ | 0.512410736 | 0.512889052 | 0.512306817 |
+| 全画面留出事件 L1 ↓ | 0.341323772 | 0.341319961 | 0.341337712 |
+| 全段通过区间 | 382 / 399 | 382 / 399 | 382 / 399 |
+
+相对 V3，整体角 jerk 降低约 **0.700%**，固定局部角 jerk 降低约 **1.513%**；全段 L1 的增幅从上一版约 **0.0446%** 缩小到约 **0.00813%**。局部留出 L1 改善，但全画面留出 L1 增加约 **0.00408%**，不能宣称所有指标均改善。运动角度范围变化为 0，最大局部补偿约 0.001816°，全时间／所有受影响点最大位移约 3.21e-6；采样角度交点最大偏移约 0.00190 ms，最大关节闭合误差 1.42e-6，抽样部件内部距离误差 4.24e-8。静态几何与外观参数没有优化。
+
+本轮相关 **58 项测试通过**。报告包含实际网络重载后的指标、逐关节结果、全段及局部事件对照、原比例视频和同范围局部放大视频；局部放大不放大运动差值。改进仍属小幅数值收益，完整事件验收仍未通过，也没有证据表明真实画面已明显消除抖动。
+
+三维位置轨迹与关节角指标分开核算：全部部件采样三维 jerk 基本不变（36.263107393 → 36.263107742）；固定局部区域三维 jerk 从 0.541359559 增至 0.541455953，约增加 0.0178%，在 0.1% 的退化检查预算内，但不算改善。不能把关节角更平滑等同于所有三维轨迹指标都下降。
+
+### 上一版 V4：受约束关节轨迹优化（没有新 MLP）
+
+上一版使用 `utils/v4_joint_trajectory.py` 的**受约束关节轨迹优化**，没有训练新的 MLP；更早的 SC-GS MLP 实验保留在下节。V3 的模型、Blender 主轨迹、事件关节校正、颜色、透明度和尺度均作为冻结基线，每个刚性部件只接受统一的微小刚体修正，避免逐点变形把机械零件变软。
+
+优化以 V3 关节角为参照，用受限最小二乘惩罚叠加后关节轨迹的三阶差分（加速度变化），固定首尾与转折点，限制角度和三维位置偏移。闭环及其祖先关节不开放残差，其他关节通过完整层级传递修正以保持连接。当前 Lego 的 9/10/11/12 组在源曲线满足传动关系检查后共享成比例残差。候选还需通过最终三维轨迹 jerk、动作幅度、整数帧相位和关节闭合检查。
+
+使用全部 320 个训练事件区间筛选六组候选；79 个留出区间不参与筛选。事件计算仍为原生 640 px、先 log 再池化，沿用 V3 标定，不引入 RGB 训练。默认完整训练事件组合目标允许最多 0.1% 的增加，用作明确的平滑／保真预算；实际变化单独报告。新增候选按最终角轨迹与三维轨迹的平滑度综合选择，预算不代表留出误差或视觉质量保证。候选权重文件沿用导出接口的 `auxiliary-mlp.pth` 文件名，内部格式为 `v4_joint_trajectory_residual_v1`，不应据文件名称其为 MLP 权重。
+
+```bash
+python scripts/deformation/train_v4_joint_trajectory.py \
+  --base-field /path/to/lego-scgs-v4-pose/auxiliary-mlp.pth \
+  --max-angle-degrees 0.1 --max-position-fraction 0.0005 \
+  --event-budget-fraction 0.001 --output outputs/lego-v4-joint-stability
+
+python scripts/deformation/render_scgs_v4_comparison.py \
+  --checkpoint outputs/lego-v4-joint-stability/auxiliary-mlp.pth \
+  --output outputs/lego-v4-joint-stability/comparison.mp4
+python scripts/deformation/report_v4_joint_stability.py --run outputs/lego-v4-joint-stability
+```
+
+`--base-field` 仅提供已经校验的 V3 点绑定和来源，不继承旧 MLP 的尺度或位移残差。新权重可复用 V4 网页入口；页面增加平滑度、相位和幅度实测条目，原 Lego/Fan 的 Mesh 与混合模式继续保留。
+
+2026-10-22 的真实 Lego 结果：六组候选仅第二组通过事件预算，训练组合目标从 0.394774994 增至 0.394990569（增加约 0.055%）。规划角曲线的归一化 jerk 从 2.671927 降至 2.661132（下降约 0.404%）；重载后实际组合姿态为 2.661168（下降约 0.403%），最终三维位置轨迹 jerk 基本不变（36.263107 → 36.263106）。动作角度范围偏差为 0，整数帧相位偏移为 0；分段 1/4、1/2、3/4 角度交点的最大时间偏差约 0.000233 ms，这只是采样交点检查，不是连续时间全局上界。最大关节角修正约 0.001079°，所有运动高斯／帧的最大位移约 1.83e-7；最大关节闭合误差 1.42e-6，抽样部件内部距离误差约 3.07e-8。
+
+| 原生事件指标 | V3 | V4 关节防抖候选 |
+| --- | ---: | ---: |
+| 全段相对 L1 ↓ | 0.375605970 | 0.375773662 |
+| 留出区间相对 L1 ↓ | 0.341323772 | 0.341319961 |
+| 全段通过区间 | 382 / 399 | 382 / 399 |
+
+全段事件 L1 略升，留出误差几乎不变，整段严格验收仍未通过。真实 V3 的刚性部件和弹性带检查都没有明显的高频轨迹噪声证据，本次结果只能称为小幅数值平滑，不能宣称视觉抖动已经明显改善。
+
+另用 `scripts/deformation/stress_test_v4_joint_stability.py --run /path/to/run` 做**明确标注的人工微抖压力测试**：向源关节轨迹注入最高 0.02°、15 Hz 噪声，在保持动作幅度的情况下，角度误差降低约 91.9%。这是几何消噪能力验证，未对人工噪声序列重新做事件验收，不能当作真实 V3 的提升或替换网页候选。真实报告、400 帧对比视频、约束曲线、人工测试及源码归档于 `outputs/lego-v4-joint-stability-20261022/`。
+
+测试：`test_v4_joint_trajectory.py` 验证零残差精确还原、层级连接、刚性距离、保护行、幅度限制、齿轮联动和权重重载；本轮相关 52 项测试通过。
+
+### 前一版 V4：V3 主运动 + SC-GS 稀疏残差运动场
+
+`utils/scgs_v4_field.py` 参考本仓库 `utils/time_utils.py` 中的 `ControlNodeWarp` 和 `DeformNetwork`，使用部件内 K=3 的高斯距离权重、控制点局部坐标旋转与平移，以及独立的高斯朝向和尺度预测头。它是适配当前 V3 的残差实现，不是原版 SC-GS 的完整训练复现。固定 V3 的 Blender 主运动、事件关节校正、几何、颜色和不透明度；在 V3 姿态上叠加辅助场。
+
+网络输入为控制点规范坐标和**冻结 V3 在当前时刻的关节姿态**，不单独输入时钟：相同 V3 姿态产生相同辅助场，避免部件停下时仍产生与主运动无关的变形。输出减去首帧网络输出，使首帧严格保持 V3。控制点不跨部件，静态和既有弹性行保持原值，关节附近残差平滑衰减。默认最终位移范数不超过运动部件包围盒对角线的 0.05%，旋转向量不超过 0.005 rad，激活后的高斯尺度相对增加不超过 2%。空间约束包含局部 ARAP 项，并约束残差幅度及时间加速度。
+
+```bash
+python scripts/deformation/train_scgs_v4.py \
+  --baseline /path/to/lego-global-detail-v1/baseline \
+  --candidate /path/to/lego-global-detail-v1/candidate \
+  --supervision /path/to/lego-event-supervision/supervision.npz \
+  --optimizer guarded-sgd --steps 6 --shape-warmup-steps 3 \
+  --learning-rate 0.5 --output outputs/lego-scgs-v4-pose
+
+python scripts/deformation/render_scgs_v4_comparison.py \
+  --checkpoint outputs/lego-scgs-v4-pose/auxiliary-mlp.pth \
+  --output outputs/lego-scgs-v4-pose/comparison.mp4
+```
+
+`guarded-sgd` 使用全部 320 个训练事件区间计算梯度与回溯步长，仅保留训练事件目标下降的更新；79 个留出区间在训练结束后评估，不参与选模。前三步仅开放尺度头，之后位置和旋转头使用较小步长。新增网络不使用 RGB 训练，沿用 V3 的相机、标定和原生 640 px 渲染后先取 log 再池化的审计口径；既有 V3 与标定仍含历史先验。训练目标下降并不自动证明留出指标或视觉质量改善，需查看 `summary.json` 和完整审计。
+
+权重格式为 `v4_scgs_pose_residual_field_v2`，包含冻结的姿态条件和控制点绑定，并绑定原 V3 输入哈希。网页目录可在现有 `comparison` 类型的 Lego 场景之后增加 `scgs_v4` 场景，并用 `base_scene` 指向它；该场景左右分别为 V3 / V4，共用相机、时间及 V3 GPU 资产。新增场景仅展示高斯运动场，原 Lego 和 Fan 的纯 Mesh / Mesh＋GS 模式继续保留。测试：`python -m unittest tests.deformation.test_scgs_v4_field tests.viewer.test_scgs_v4_viewer tests.deformation.test_v3_auxiliary_mlp tests.viewer.test_viewer_server`。
+
+2026-10-22 在当前网页 Lego V3 上完成两组姿态驱动实验，使用 353 个控制点、151,766 个运动高斯和 73,484 个网络参数。仅按完整训练事件目标选择候选：尺度预热组为 0.394611888，直接开放全部分支组未找到超过接受精度的改进，保留零场 0.394774994。前者在第三步无法改善后停止，最终保留第二步；因此本次实际接受的更新只有尺度分支，位置和旋转残差仍为零，**还没有证明辅助微位移能提升效果**。
+
+| 指标 | 原 V3 | V4 实验候选 |
+| --- | ---: | ---: |
+| 全段事件相对 L1 ↓ | 0.375605970 | 0.375440952 |
+| 留出 79 区间相对 L1 ↓ | 0.341323772 | 0.341154768 |
+| 全段事件余弦 ↑ | 0.944258655 | 0.944295020 |
+| 留出区间极性一致性 ↑ | 0.928070142 | 0.928042000 |
+| 全段通过区间 | 382 / 399 | 382 / 399 |
+
+全段 L1 下降约 0.044%，留出 L1 下降约 0.050%，但留出极性一致性略降，通过数未增加；两者均未通过整段严格验收。抽样最大尺度变化为 0.8701%，位置残差及受保护行误差为零。这只是很小的指标收益，不能宣称画面明显更清晰或细微运动明显改善。网页以实验项提供对比，保留原 V3；候选选择依据、两个实验的报告、执行源码和对比视频归档于 `outputs/lego-scgs-v4-selected-20261022/`。
+
+轨迹抖动可用 `scripts/deformation/diagnose_scgs_v4_motion.py --checkpoint /path/to/auxiliary-mlp.pth --output /path/to/trajectory-stability.json` 单独诊断。脚本校验绑定的 V3 关节与时间元数据，按运动组采样实际高斯位置，比较速度、加速度、jerk、局部三次多项式残差和高频速度能量；在 CPU 上执行，不改动网页模型。2026-10-22 的 936 点、400 帧检查显示当前 V3/V4 位置逐值相同；10 Hz 以上速度能量占比约 4.39e-9，最大 jerk 集中在约第 50、150、250、350 帧。后者可能包含真实速度变化，不能单凭 jerk 判为噪声；诊断也不覆盖弹性带、表面闪烁或浏览器播放时序。
+
+当前 V4 的时间正则作用于网络原始残差，不能保证叠加后的 V3 轨迹更平滑。若确认需要改善轨迹微抖，应对最终组合轨迹增加时间约束，同时限制偏离 V3 的程度、保持关节连接并用事件监督保护运动相位。单纯平滑残差或提高约束权重，不等于解决基线轨迹抖动；本次仅完成定位，没有宣称已训练出防抖模型。诊断指标测试：`python -m unittest discover -s tests -p test_trajectory_stability.py`。
+
+### V3 上的辅助 MLP（早期独立时间残差实验）
+
+`scripts/deformation/train_v3_auxiliary_mlp.py` 直接加载当前网页 V3 的 `baseline` 与 `candidate`，保留 Blender 主运动、已有事件关节校正、补全几何和颜色增强。新增网络仅预测小幅局部位移和旋转，在 V3 的运动坐标系中叠加；不重新估计主轨迹、不训练外观。每个运动组最多 32 个控制点，控制点绑定不跨组，静态组和原有弹性行保持 V3 原值。首帧残差严格为零；关节附近平滑衰减至零，并加入幅度、空间和时间平滑约束。默认位移范数上限为运动部件包围盒对角线的 0.5%，局部旋转上限为 0.025 rad。
+
+```bash
+python scripts/deformation/train_v3_auxiliary_mlp.py \
+  --baseline /path/to/lego-global-detail-v1/baseline \
+  --candidate /path/to/lego-global-detail-v1/candidate \
+  --supervision /path/to/lego-event-supervision/supervision.npz \
+  --steps 400 --batch-size 8 --learning-rate 0.0001 \
+  --output outputs/lego-v3-auxiliary-mlp
+
+python scripts/deformation/render_v3_auxiliary_comparison.py \
+  --checkpoint outputs/lego-v3-auxiliary-mlp/auxiliary-mlp.pth \
+  --output outputs/lego-v3-auxiliary-mlp/comparison.mp4
+```
+
+新增 MLP 的训练和选模仅使用 320 个训练事件区间；79 个留出事件区间仅在训练完成后评估。沿用 V3 的相机、对比度标定与原生 640 px 渲染后 log-domain 8×8 平均的指标口径。既有 V3 和标定包含历史先验，因此这里检验的是新增 MLP 的收益，不能称为整套方法从未见过的独立测试。RGB 仅用于既有审计中的参考检查，不进入新增 MLP 的训练目标。
+
+训练前校验完整 V3 文件哈希，并抽样要求零初始化网络与原 V3 的渲染逐值相同；训练后重载权重再计算全部 399 个区间的指标。保存源代码快照、权重、基线及新模型审计、训练记录和约束检查；不会自动替换网页 V3。模型格式 `v3_blender_auxiliary_mlp_v1` 与下面的纯事件基线实验分开。测试：`python -m unittest discover -s tests -p 'test_v3_auxiliary_mlp.py'`。
+
+### 纯事件基线上的 MLP（独立实验）
+
+`scripts/deformation/train_event_mlp.py` 在仅由 G0、原始事件和相机建立的硬分组运动上，训练一个位置／时间编码 MLP。每个运动组默认增加 32 个局部控制点，预测小幅平移与旋转，再与基线变换组合。分组之间不混合控制点；基线轨迹恒为单位变换的静止／未知组保持原值。首帧通过网络输出差分固定为 G0，外观、尺度、不透明度和基线运动均冻结。默认位移上限为场景尺度的 1%，局部旋转上限为 0.08 rad，并加入幅度、局部 ARAP 和时间加速度约束。这是稀疏控制点残差 MLP，不是 DeformableGS 的完整复现。
+
+训练要求 `reconstruct_lego_event_only.py --rigid-feature-initialization` 生成的事件基线，拒绝直接加载网页融合版运动。原始事件哈希必须与基线一致。示例：
+
+```bash
+python scripts/deformation/train_event_mlp.py \
+  --base /path/to/event-only-baseline/deform.pth \
+  --g0 data/Lego_data/fan_contrastive_g0/contrastive_g0.ply \
+  --events data/Lego_data/Lego_event \
+  --steps 800 --output outputs/lego-event-mlp
+
+python scripts/deformation/render_event_mlp_comparison.py \
+  --checkpoint outputs/lego-event-mlp/deform-mlp.pth \
+  --g0 data/Lego_data/fan_contrastive_g0/contrastive_g0.ply \
+  --output outputs/lego-event-mlp/comparison.mp4
+```
+
+输出包含网络权重、冻结的基线、控制点绑定、训练记录、基线／MLP 原生 640 px 事件审计和并排关键帧。单模型导出可使用 `render_event_only_sequence.py --motion-format event-mlp`。每五个事件区间留出一个，不参与 MLP 梯度；若基线已使用完整事件，这些区间**不是整套方法的独立留出集**。报告明确保留这一限制，事件误差下降也不等于三维运动或视觉质量已通过验收。训练和导出不自动替换正式网页模型。
+
+G0 中 `opacity=+∞/-∞` 是 sigmoid 后恰为 1/0 的合法饱和 logit，加载器保留其源数据和精确不透明度；NaN 或非有限几何仍拒绝。大规模二进制 PLY 使用映射读取后复制，避免旧版 plyfile 逐标量解码。
+
+测试：`python -m unittest discover -s tests -p 'test_event_mlp.py'`，以及 `test_event_only_renderer.py`、`test_event_only_checkpoint.py`。
+
+2026-10-22 的 Lego 检测使用 1,841,816 个 G0 高斯、5,817,429 条原始事件和 266 个时间区间。短程基线为每节点时刻 4 步优化及 300 步联合优化；在冻结基线上训练 800 步 MLP（10,310 个参数、128 个运动控制点）。全段平均相对 L1 从 2.762804 降至 2.718331（下降 1.61%），余弦从 0.116905 升至 0.130743。53 个未参与 MLP 梯度的区间相对 L1 下降 1.74%，但极性一致性从 0.373928 略降至 0.373450；这些区间已参与基线初始化，不能视为独立测试。两者均为 0/266 区间通过严格事件检查，且对比度阈值未独立标定。静止组抽样位置／朝向误差为 0，视觉变化较小。因此这是残差网络跑通后的初步候选，不证明优于充分优化的基线，也未替换正式网页展示。权重、201 帧并排视频、原始审计和实际执行源码保存于本地 `outputs/lego-event-mlp-v2-20261022/`。
+
 `--fit-split all` 使用全部事件恢复整段运动，审计只能称为训练数据上的一致性检查，不能称为独立验证。若使用留出窗口，应选择 `--fit-split train --warmup-steps 0`；训练目标不跨越留出窗口，也不构建含留出事件的累计目标。未知触发阈值、未确认的 G0/时间对应关系和失败区间都会保留为验收阻碍。仅仅成功训练、保存或播放，不代表整段事件通过或单目不可见部分真实正确。
 
-`scripts/diagnose_event_only_run.py --run-dir /path/to/run` 可汇总实际优化覆盖、原生分辨率指标和未通过原因；缺少最终报告不会视为通过。`scripts/audit_event_only_checkpoint.py --checkpoint /path/to/run/deform.pth --g0 /path/to/run/gaussians.ply --events /path/to/Lego_event --output /path/to/new-consistency.json` 会重载模型并整段重渲染，补充时间累计诊断。后者保留原生严格门槛，额外报告理想事件模型的必要残差界 `C+ + C-`；不超界并不足以证明运动正确，正负抵消也不等于没有运动。
+`scripts/events/diagnose_event_only_run.py --run-dir /path/to/run` 可汇总实际优化覆盖、原生分辨率指标和未通过原因；缺少最终报告不会视为通过。`scripts/events/audit_event_only_checkpoint.py --checkpoint /path/to/run/deform.pth --g0 /path/to/run/gaussians.ply --events /path/to/Lego_event --output /path/to/new-consistency.json` 会重载模型并整段重渲染，补充时间累计诊断。后者保留原生严格门槛，额外报告理想事件模型的必要残差界 `C+ + C-`；不超界并不足以证明运动正确，正负抵消也不等于没有运动。
 
 新流程测试：`python -m unittest discover -s tests -p 'test_event_only*.py'`。本流程不使用上文融合实验中的模型、轨迹或标定结果。
 
@@ -460,7 +689,7 @@ v4 序列化重载后重新渲染的指标与训练审计一致，但铲斗仍�
 
 用户现已确认 `fan_contrastive_g0/contrastive_g0.ply` 是修正后的 G0，且对应事件 `t=0`。新运行显式记录 `--identity-time-confirmed` 和四个输入哈希；事件正负阈值 `0.2` 仍未独立标定。继续仅使用该 G0、原始事件流和相机内外参，不使用旧视频、Blender、部件标签、绑定或运动权重。
 
-`scripts/diagnose_event_feature_groups.py` 可先执行新特征/分组/绑定初始化诊断，接受同样的四个显式原始文件；加 `--make-binding` 输出 `initialization-only.pth`。它没有训练，不能当成最终 `deform.pth` 或通过验收的模型。派生代理图、跟踪数组和源码快照均仅用于同输入审计，不是新增观测模态。
+`scripts/events/diagnose_event_feature_groups.py` 可先执行新特征/分组/绑定初始化诊断，接受同样的四个显式原始文件；加 `--make-binding` 输出 `initialization-only.pth`。它没有训练，不能当成最终 `deform.pth` 或通过验收的模型。派生代理图、跟踪数组和源码快照均仅用于同输入审计，不是新增观测模态。
 
 诊断入口的 `--score-binding-photometry` 对 G0 可见表面的小块进行跨时光度评分。候选使用共同的有效时刻、原 G0 的绝对对数亮度和同一事件积分模型；目标可见性未被测量，低信息、相互冲突及高残差保留未知。该诊断仅输出建议标签和证据，不修改绑定，更不把背面当作已观测。
 
@@ -524,7 +753,7 @@ v4 序列化重载后重新渲染的指标与训练审计一致，但铲斗仍�
 在已配置依赖的环境运行：
 
 ```bash
-python scripts/prepare_fan_viewer.py --data data/Fan_data --output outputs/fan-video-viewer
+python scripts/fan/prepare_fan_viewer.py --data data/Fan_data --output outputs/fan-video-viewer
 python viewer.py --scenes_path viewer/scenes.example.json --host 127.0.0.1 --port 8892
 ```
 
@@ -539,7 +768,7 @@ Fan 预览现默认使用 **超清 · 1280 px**，播放与静帧 JPEG 均为质
 已有的 Fan 序列可单独修复，无需重新拟合转角：
 
 ```bash
-python scripts/repair_fan_motion_binding.py \
+python scripts/fan/repair_fan_motion_binding.py \
   --sequence outputs/fan-video-viewer/fan-motion.npz \
   --motion-report outputs/fan-video-viewer/motion-report.json \
   --data data/Fan_data --output outputs/fan-binding-fixed
@@ -550,12 +779,12 @@ python scripts/repair_fan_motion_binding.py \
 风扇的纯 Mesh 和 Mesh＋GS 对比：左侧 V1 为支架绑定修复前，右侧 V3 为修复后。两版初始高斯完全相同，网格规范几何可共享，但分别保存并校验各自 100 帧运动。旋转叶片、静止部分、改变归属的支架分别重建，三角面不跨运动组。Mesh＋GS 将全部高斯绑定到所属组的三角面，保留规范位置偏移、颜色、尺度和不透明度。
 
 ```bash
-python scripts/prepare_fan_mesh.py \
+python scripts/fan/prepare_fan_mesh.py \
   --before outputs/fan-video-viewer/fan-motion.npz \
   --after outputs/fan-binding-fixed/fan-motion.npz \
   --output outputs/fan-mesh-pair
 
-python scripts/refine_fan_mesh.py \
+python scripts/fan/refine_fan_mesh.py \
   --manifest outputs/fan-mesh-pair/manifest.json \
   --output outputs/fan-mesh-refined
 ```

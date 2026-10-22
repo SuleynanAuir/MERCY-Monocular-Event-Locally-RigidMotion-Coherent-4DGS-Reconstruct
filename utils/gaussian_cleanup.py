@@ -195,7 +195,7 @@ def verify_gaussian_cleanup(cache, correction=None, audit=None, *, baseline=None
     # Reject recursive overlays before invoking the shared candidate validator.
     if cleanup_contract(parent_cache, parent_record, parent_audit) is not None:
         raise ValueError('Gaussian cleanup parent must not already have a cleanup overlay')
-    from scripts.export_lego_event_preview import verify_candidate
+    from scripts.events.export_lego_event_preview import verify_candidate
     from utils.multiview_completion import completion_contract
     from utils.render_sampling import require_same_sampling
     verify_candidate(parent_baseline, parent_candidate, allow_unapproved=True)

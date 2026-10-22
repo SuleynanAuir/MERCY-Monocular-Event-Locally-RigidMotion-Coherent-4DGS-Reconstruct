@@ -111,7 +111,7 @@ def verify_color_residual(cache, correction=None, audit=None, *, baseline=None):
     if any(r.get(k) is not None for r in parent_records
            for k in ('color_residual', 'gaussian_cleanup', 'static_surface_rebuild')):
         raise ValueError('Residual parent must be the original audited completion, not an overlay chain')
-    from scripts.export_lego_event_preview import verify_candidate
+    from scripts.events.export_lego_event_preview import verify_candidate
     from utils.multiview_completion import completion_contract
     from utils.render_sampling import require_same_sampling
     verify_candidate(parent_baseline, parent_candidate, allow_unapproved=True)

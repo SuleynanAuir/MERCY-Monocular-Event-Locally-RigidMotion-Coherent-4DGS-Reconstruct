@@ -100,6 +100,9 @@ class MeshRenderer:
             q, t = (self.correction.group_transforms(request['frame']) if self.motion is None
                     else (values[request['frame']] for values in self.motion))
             xyz = qrotate(q[self.vertex_groups], self.vertices) + t[self.vertex_groups]
+            if getattr(self, 'deformation', None) is not None:
+                from utils.v3_deformation import deform_mesh_vertices
+                xyz = deform_mesh_vertices(self.deformation, xyz, self.vertex_groups, request['frame'])
             pose = orbit_pose(self.base_pose, self.target, request)
             camera = torch.as_tensor(pose, device='cuda')
             xyz_camera = (xyz - camera[:3, 3]) @ camera[:3, :3]

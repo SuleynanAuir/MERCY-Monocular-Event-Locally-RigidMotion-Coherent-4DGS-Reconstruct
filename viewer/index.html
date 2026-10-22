@@ -18,12 +18,6 @@
   <main class="workspace">
     <section id="viewerPanel" class="viewport" aria-label="三维高斯与网格对比视窗">
       <div class="viewport-top"><span id="sceneKind" class="eyebrow">GAUSSIAN SCENE</span><span id="sceneName">正在读取场景…</span><span id="sequenceBadge" class="badge">逐帧高斯 · 实时渲染</span></div>
-      <div id="eventNotice" class="event-notice" hidden>
-        <strong id="eventDecision"></strong><span id="eventSummary"></span>
-        <span id="eventInterval" role="status" aria-live="off" tabindex="0" aria-label="当前帧的事件检查结果"></span>
-        <small>仅原始单视角有事件约束；背面为先验补全，不保证完整。</small>
-        <details id="geometryDetails" hidden><summary>重建范围与限制</summary><small id="geometryNotice"></small></details>
-      </div>
       <div class="view-toolbar" aria-label="当前视角与渲染状态">
         <div class="view-badge"><span class="live-dot"></span><span id="viewLabel">透视视图</span></div>
         <div class="render-stats"><span><b id="displayFps">—</b> 显示 FPS</span><span><b id="renderMs">—</b> <span id="renderKind">ms 渲染</span></span></div>

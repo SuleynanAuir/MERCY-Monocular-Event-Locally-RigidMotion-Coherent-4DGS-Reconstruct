@@ -54,8 +54,12 @@ def load_g0(g0_path, device="cpu"):
     path = Path(g0_path)
     if not path.is_file():
         raise FileNotFoundError(path)
-    # mmap=False ensures the returned original data owns no open file mapping.
-    ply = PlyData.read(str(path), mmap=False)
+    # Binary PLY can be mapped in bulk; mmap=False in older plyfile releases
+    # decodes millions of rows through Python. Copy each element immediately
+    # so the returned source data owns no open file mapping.
+    ply = PlyData.read(str(path), mmap='c')
+    for element in ply.elements:
+        element.data = np.array(element.data, copy=True)
     if "vertex" not in ply:
         raise ValueError("G0 PLY is missing its vertex element")
     raw = ply["vertex"].data
@@ -80,11 +84,11 @@ def load_g0(g0_path, device="cpu"):
         raise ValueError("G0 SH coefficients must encode a complete degree 0, 1, 2, or 3")
     target = torch.device(device)
 
-    def columns(fields):
+    def columns(fields, *, allow_infinite_logits=False):
         if any(raw.dtype.fields[name][0].kind not in "fiu" for name in fields):
             raise ValueError(f"G0 properties must be numeric scalars: {fields}")
         values = np.stack([raw[name] for name in fields], axis=1).astype(np.float32)
-        if not np.isfinite(values).all():
+        if np.isnan(values).any() or (not allow_infinite_logits and not np.isfinite(values).all()):
             raise ValueError(f"G0 contains non-finite or unrepresentable values in {fields}")
         return torch.as_tensor(values, dtype=torch.float32, device=target).contiguous()
 
@@ -93,7 +97,10 @@ def load_g0(g0_path, device="cpu"):
     scaling = columns(scale_names).exp()
     if not bool(torch.isfinite(scaling).all()) or bool((scaling <= 0).any()):
         raise ValueError("G0 activated scales must be finite and strictly positive")
-    opacity = columns(["opacity"]).sigmoid()
+    # Saturated logit(+/-inf) represents exactly opaque/transparent G0 rows.
+    # Preserve the raw PLY and exact activated 1/0 values, never clip/re-fit.
+    # NaN is still invalid; no other attribute accepts infinite values.
+    opacity = columns(["opacity"], allow_infinite_logits=True).sigmoid()
     dc = columns(dc_names).unsqueeze(1)
     # Standard 3DGS PLY flattens all red coefficients, then green, then blue.
     rest = (columns(rest_names).reshape(len(raw), 3, -1).transpose(1, 2)

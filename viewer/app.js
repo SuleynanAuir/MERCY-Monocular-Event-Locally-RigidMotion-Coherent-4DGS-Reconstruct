@@ -51,7 +51,6 @@
     $("expandView").title = paired ? "全屏显示两个对比视窗" : "全屏显示当前物件";
     rightCanvas.hidden = !paired;
     $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
-    $("eventNotice").hidden = mesh || hybrid || !scene.event_validation;
     $("sceneKind").textContent = hybrid ? "MESH + GAUSSIAN" : mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
     $("sceneName").textContent = hybrid ? "V1 / V3 混合动态对比" : mesh ? "V1 / V3 Mesh 对比" : scene.name;
     $("leftCompareLabel").textContent = mesh || hybrid ? (modeInfo.left_label || "V1 Mesh · 原始结果") : scene.left_label;
@@ -116,19 +115,8 @@
     $("rpm").textContent = Number.isFinite(rpm) ? `${rpm.toFixed(1)} RPM` : "—";
     $("motionLabel").textContent = state.renderMode === "hybrid" ? "Mesh 绑定运动 · Gaussian 外观" : state.renderMode === "mesh" ? "高斯重建 Mesh · 同步部件动画" : scene.motion_label || (scene.ramp_seconds == null ? "逐帧高斯序列" :
       seconds === 0 ? "静止 · 起始状态" : seconds < scene.ramp_seconds ? "平滑加速" : "匀速旋转");
-    if (scene.event_validation) {
-      const check = scene.event_validation.interval_checks?.[state.frame - 1];
-      const names = {relative_l1: '变化幅度偏差', polarity_agreement: '事件极性不一致',
-        cosine: '变化分布不一致', unsupported_change_fraction: '存在事件未支持的变化',
-        insufficient_event_evidence: '事件证据不足'};
-      const intervalText = state.frame === 0 ? "当前：初始帧" : check ?
-        `当前：${check.passed ? '通过粗尺度检查' : check.reasons.map(reason => names[reason] || reason).join(' / ')}${check.reference_weak ? ' · 参考证据偏弱' : ''}` :
-        scene.event_validation.failed_intervals?.includes(state.frame - 1) ? "当前时间段：未通过事件检查" :
-          "当前时间段：通过粗尺度事件检查";
-      text("eventInterval", intervalText);
-      $("eventInterval").title = intervalText;
-    }
   }
+
   function reset(yaw = 0, pitch = 0) {
     Object.assign(state, {yaw, pitch, zoom: 1, pan_x: 0, pan_y: 0, dirty: true});
     document.querySelectorAll(".preset").forEach(button => button.classList.toggle("active",
@@ -356,18 +344,6 @@
         $("leftCompareLabel").textContent = scene.left_label;
         $("rightCompareLabel").textContent = scene.right_label;
         $("snapshot").textContent = "保存原始 / 优化对比图 ↓";
-      }
-      const event = scene.event_validation;
-      $("eventNotice").hidden = !event;
-      $("geometryNotice").hidden = !scene.geometry_repaired;
-      $("geometryDetails").hidden = !scene.geometry_repaired;
-      $("geometryNotice").textContent = scene.geometry_repaired ? scene.geometry_repair_scope : "";
-      $("sequenceBadge").textContent = scene.comparison ? "原始 / 优化 · 同帧同视角" : event ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
-      if (event) {
-        $("eventDecision").textContent = event.approved ? "事件校正候选 · 粗尺度检查通过" : "事件校正后 · 尚未通过整段验收";
-        $("eventSummary").textContent = `区间通过 ${event.summary.passed}/${event.summary.intervals} · 事件余弦 ${event.summary.cosine.toFixed(3)}` +
-          (event.validation_summary ? ` · 留出事件 ${event.validation_summary.passed}/${event.validation_summary.intervals}` : '') +
-          (event.reference_weak_intervals?.length ? ` · 参考弱证据 ${event.reference_weak_intervals.length} 段（仍计入验收）` : '');
       }
       $("gaussianCount").textContent = scene.gaussian_count.toLocaleString("en-US");
       $("frameCount").textContent = `${scene.frame_count} 帧`;

@@ -235,6 +235,7 @@ class ComparisonRenderer:
         self.image_cache = EncodedFrameCache()
         self.side_sampling = [render_sampling_contract({}), render_sampling_contract({})]
         self.completion = None
+        self.deformation = None
         self.mesh = None
         self.mesh_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
         self.hybrid = None
@@ -247,7 +248,7 @@ class ComparisonRenderer:
     @torch.no_grad()
     def load(self, prewarm=True):
         from scene import GaussianModel
-        from scripts.export_lego_event_preview import verify_candidate
+        from scripts.events.export_lego_event_preview import verify_candidate
         from utils.rigid_checkpoint import sha256_file
         settings = json.loads(self.path.read_text())
         if settings.get('format') != 'lego_event_comparison_v1':
@@ -255,6 +256,8 @@ class ComparisonRenderer:
         left, right, candidate = [Path(settings[k]) for k in ('baseline', 'right_baseline', 'candidate')]
         self.progress(5, '校验事件校正、初始模型及运动数据')
         right_meta, correction, audit = verify_candidate(right, candidate, allow_unapproved=True)
+        self.verified_v3 = {'baseline': str(right.resolve()), 'candidate': str(candidate.resolve()),
+                            'artifact_sha256': dict(audit['artifact_sha256'])}
         left_meta = json.loads((left / 'cache.json').read_text())
         self.side_sampling = [render_sampling_contract(meta) for meta in (left_meta, right_meta)]
         geometry_report = None
@@ -436,6 +439,13 @@ class ComparisonRenderer:
                 '可见面采用视频颜色，未观测面仍是先验。窗框、立柱和运动参数保留；结果另经完整事件复验。')
         self.info['mesh'] = {'available': False, 'description': '当前场景未生成高斯重建网格。'}
         self.info['hybrid'] = {'available': False, 'description': '当前场景未生成 Mesh＋Gaussian 绑定。'}
+        if settings.get('deformation'):
+            from utils.v3_deformation import load_v3_deformation
+            deformation_path = Path(settings['deformation'])
+            if not deformation_path.is_absolute():
+                deformation_path = self.path.parent / deformation_path
+            self.deformation, deformation_info = load_v3_deformation(deformation_path, self)
+            self.info.update(deformation_info)
         if not prewarm:
             self.status = {'ready': True, 'progress': 100, 'scene': self.info}
             return
@@ -449,6 +459,7 @@ class ComparisonRenderer:
                                               dynamic_indices_sha256=sha256_file(left / 'dynamic_indices.npy')),
                                 'right': audited_source_fingerprints(audit)}
                 self.mesh = MeshPairRenderer(paths, fingerprints, self.correction, self.base_pose, self.target)
+                self.mesh.sides[1].deformation = self.deformation
                 self.mesh.render_panels(validate_request({'render_mode': 'mesh', 'width': 512, 'height': 512,
                                                           'fovy': camera['fovy_degrees']}, frames))
                 self.info['mesh'] = self.mesh.info
@@ -485,6 +496,13 @@ class ComparisonRenderer:
                 self.hybrid = None
                 self.info['hybrid'] = {'available': False, 'description': '混合模式绑定加载失败；可使用 Gaussian 或纯 Mesh。'}
                 logging.getLogger('gaussian-viewer').exception('Optional hybrid binding failed to load')
+        if self.deformation is not None:
+            for mode in ('mesh', 'hybrid'):
+                if self.info[mode]['available']:
+                    self.info[mode]['deformation_enabled'] = True
+                    self.info[mode]['description'] += ' 右侧 V3 同步叠加局部 MLP 关节残差；主运动和刚性保持。'
+                    for quality in self.info[mode].get('quality_descriptions', {}):
+                        self.info[mode]['quality_descriptions'][quality] += ' V3 已启用局部 MLP 辅助运动。'
         self.progress(95, '预热双视图实时渲染')
         self.render(validate_request({'width': 512, 'height': 512, 'fovy': camera['fovy_degrees']}, frames))
         # Render every source frame of the initial view once, before autoplay.
@@ -544,7 +562,7 @@ class ComparisonRenderer:
         return pose
 
     @torch.no_grad()
-    def apply_side_pose(self, side, index):
+    def apply_side_pose(self, side, index, auxiliary=True):
         # Reset ALL rows and scales, including static rows. Repaired geometry
         # and different motion masks must not leak from right into the left.
         xyz, rotation, scaling = self.side_geometry[side]
@@ -563,6 +581,17 @@ class ComparisonRenderer:
             start, end = self.completion.prefix_count, self.completion.prefix_count + len(suffix)
             self.model._xyz[start:end] = suffix[:, :3]
             self.model._rotation[start:end] = suffix[:, 3:]
+        if auxiliary:
+            self.apply_deformation(side, index)
+
+    @torch.no_grad()
+    def apply_deformation(self, side, index):
+        field = getattr(self, 'deformation', None)
+        if side == 1 and field is not None:
+            group_q = self.correction.group_transforms(index)[0]
+            self.model._xyz, self.model._rotation = field.deform(
+                self.model._xyz, self.model._rotation, group_q, index)
+            self.model._scaling = field.deform_scaling(self.model._scaling, index)
 
     @torch.no_grad()
     def render(self, request):
@@ -588,9 +617,11 @@ class ComparisonRenderer:
                 if hybrid_mode else (request['width'] * supersample, request['height'] * supersample))
             camera = make_camera(pose, render_width, render_height,
                                  np.deg2rad(request['fovy']))
-            self.apply_side_pose(side, request['frame'])
+            self.apply_side_pose(side, request['frame'], auxiliary=not hybrid_mode)
             if hybrid_mode:
                 self.hybrid[side].apply(self.model, request['frame'])
+                # Binding rewrites positions: deform only after it, exactly once.
+                self.apply_deformation(side, request['frame'])
             output = render(camera, self.model, self.pipe, self.backgrounds[request['background']], 0., 0., 0.)
             rgb = (resolve_hybrid_rgb(output['render'], request['width'], request['height'], quality)
                    if hybrid_mode else resolve_rgb(output['render'], supersample))

@@ -183,8 +183,11 @@ def read_scene_catalog(path):
         key = item['id']
         if not isinstance(key, str) or not key or not all(c.isascii() and (c.isalnum() or c in '-_') for c in key) or key in scenes:
             raise ValueError('Scene IDs must be unique ASCII names')
-        if item['type'] not in {'sequence', 'comparison', 'fan_mesh'}:
+        if item['type'] not in {'sequence', 'comparison', 'fan_mesh', 'scgs_v4'}:
             raise ValueError('Unknown scene renderer')
+        if item['type'] == 'scgs_v4' and (item.get('base_scene') not in scenes
+                or scenes[item['base_scene']]['type'] != 'comparison'):
+            raise ValueError('V4 requires an earlier V3 comparison scene')
         if not isinstance(item.get('name'), str) or not item['name'].strip():
             raise ValueError('Scenes require a display name')
         if item.get('cache', 'auto') not in {'auto', 'cpu', 'gpu'}:
@@ -207,6 +210,13 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
     renderers = {}
     for key, spec in scenes.items():
         factory = spec.get('factory', Renderer)
+        if spec.get('type') == 'scgs_v4':
+            from utils.scgs_v4_viewer import SCGSV4ComparisonRenderer
+            if spec.get('base_scene') not in renderers:
+                raise ValueError('V4 base scene must load first')
+            renderers[key] = SCGSV4ComparisonRenderer(spec['path'], spec.get('cache', cache),
+                                                     renderers[spec['base_scene']])
+            continue
         if spec.get('type') == 'comparison':
             from utils.comparison_renderer import ComparisonRenderer
             factory = ComparisonRenderer
