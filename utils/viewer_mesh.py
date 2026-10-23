@@ -16,6 +16,7 @@ def load_mesh_data(path, group_count, fingerprints):
         vertices, faces, colors, groups = [archive[k] for k in
                                          ('vertices', 'triangles', 'colors', 'vertex_groups')]
         meta = json.loads(str(archive['metadata_json']))
+        clay_normals = archive['clay_normals'] if 'clay_normals' in archive else None
         motion = ({k: archive[k] for k in ('motion_quaternions', 'motion_translations')}
                   if meta.get('format') == 'gaussian_tsdf_mesh_v2' else {})
     if (meta.get('format') not in ('gaussian_tsdf_mesh_v1', 'gaussian_tsdf_mesh_v2')
@@ -30,6 +31,11 @@ def load_mesh_data(path, group_count, fingerprints):
             or np.any(groups < 0) or np.any(groups >= group_count)):
         raise ValueError('Invalid reconstructed mesh geometry, colors or groups')
     face_groups = groups[faces]
+    if clay_normals is not None and (
+            not meta.get('clay_regularization', {}).get('feature_reconstruction')
+            or clay_normals.shape != vertices.shape or not np.isfinite(clay_normals).all()
+            or np.any(np.abs(np.linalg.norm(clay_normals, axis=1)-1) > 1e-3)):
+        raise ValueError('Invalid canonical Clay normal field')
     if np.any(face_groups != face_groups[:, :1]):
         raise ValueError('A mesh face crosses independent motion groups')
     if motion:
@@ -46,7 +52,8 @@ def load_mesh_data(path, group_count, fingerprints):
     return dict(vertices=np.ascontiguousarray(vertices, dtype=np.float32),
                 faces=np.ascontiguousarray(faces, dtype=np.int32),
                 colors=np.ascontiguousarray(colors, dtype=np.float32), vertex_groups=groups,
-                face_groups=face_groups[:, 0], metadata=meta, **motion)
+                face_groups=face_groups[:, 0], metadata=meta,
+                clay_normals=None if clay_normals is None else np.ascontiguousarray(clay_normals, dtype=np.float32), **motion)
 
 
 def projection_matrix(width, height, fovy, near=.01, far=100.):
@@ -71,6 +78,7 @@ class MeshRenderer:
                 raise ValueError('Mesh timeline differs from Gaussian comparison')
             self.motion = tuple(torch.from_numpy(data[k].astype(np.float32)).cuda()
                                 for k in ('motion_quaternions', 'motion_translations'))
+        self.source_path, self.fingerprints = Path(path), fingerprints
         self.dr, self.correction = dr, correction
         self.base_pose, self.target = base_pose, target
         self.context = dr.RasterizeCudaContext()
@@ -78,6 +86,7 @@ class MeshRenderer:
         self.faces = torch.from_numpy(data['faces']).cuda()
         self.vertex_groups = torch.from_numpy(data['vertex_groups'].astype(np.int64)).cuda()
         self.colors = torch.from_numpy(data['colors']).cuda()
+        self.clay_normals = (None if data['clay_normals'] is None else torch.from_numpy(data['clay_normals']).cuda())
         self.supersample = 2
         self.edge_antialias = True
         self.image_cache = EncodedFrameCache(max_bytes=48 * 1024**2)
@@ -89,10 +98,11 @@ class MeshRenderer:
                          color_refined=bool(data['metadata'].get('color_refinement')),
                          surface_subdivided=bool(data['metadata'].get('surface_subdivision')),
                          render_supersample=self.supersample,
+                         clay_regularization=data['metadata'].get('clay_regularization'),
                          description='由本侧高斯的多视角深度融合生成，使用本侧运动；低置信度表面和弹性带未包含。')
 
     def render_pixels(self, request):
-        """Baked Gaussian color already contains lighting; do not shade it twice."""
+        """Shade clay geometry separately; retain baked color in the texture mode."""
         import torch
         from utils.event_refinement import qrotate
 
@@ -114,7 +124,18 @@ class MeshRenderer:
                                          [request['height'] * self.supersample,
                                           request['width'] * self.supersample], grad_db=False)
             visible = raster[0, ..., 3] > 0
-            color, _ = self.dr.interpolate(self.colors.unsqueeze(0).contiguous(), raster, self.faces)
+            if request.get('render_mode') in {'clay', 'clay_mesh'}:
+                from utils.clay_shading import vertex_normals, studio_clay, posed_clay_normals
+                if self.clay_normals is None:
+                    normals = vertex_normals(xyz_camera, self.faces)
+                else:
+                    normals = posed_clay_normals(self.clay_normals, q, self.vertex_groups,
+                        camera[:3, :3], request['frame'], getattr(self, 'deformation', None))
+                attributes = torch.cat((normals, xyz_camera), dim=-1)
+                surface, _ = self.dr.interpolate(attributes.unsqueeze(0).contiguous(), raster, self.faces)
+                color = studio_clay(surface[..., :3], surface[..., 3:])
+            else:
+                color, _ = self.dr.interpolate(self.colors.unsqueeze(0).contiguous(), raster, self.faces)
             background = color.new_tensor(BACKGROUNDS[request['background']])
             rgb = torch.where(visible[..., None], color[0], background)
             if self.edge_antialias:
@@ -140,7 +161,7 @@ class MeshRenderer:
             jpeg = stream.getvalue()
             self.image_cache.put(request, jpeg)
             render_ms, encode_ms = (rendered - start) * 1000, (time.perf_counter() - rendered) * 1000
-        return image_packet(dict(id=request['id'], frame=request['frame'], render_mode='mesh', comparison=False,
+        return image_packet(dict(id=request['id'], frame=request['frame'], render_mode=request.get('render_mode', 'mesh'), comparison=False,
                                  width=request['width'], height=request['height'], cache_hit=cache_hit,
                                  render_ms=round(render_ms, 2), encode_ms=round(encode_ms, 2),
                                  **({'stream': request['_stream']} if '_stream' in request else {})), jpeg)
@@ -162,3 +183,35 @@ class MeshPairRenderer:
 
     def render_panels(self, request):
         return [side.render_pixels(request) for side in self.sides]
+
+
+def load_clay_pair(paths, source_pair):
+    """Only accept display repairs tied to the exact source geometry and motion."""
+    import torch
+    from utils.rigid_checkpoint import sha256_file
+    first = source_pair.sides[0]
+    pair = MeshPairRenderer(paths, dict(zip(('left', 'right'),
+                           (side.fingerprints for side in source_pair.sides))),
+                           first.correction, first.base_pose, first.target)
+    for side, source in zip(pair.sides, source_pair.sides):
+        record = side.info.get('clay_regularization') or {}
+        if record.get('source_mesh_sha256') != sha256_file(source.source_path):
+            raise ValueError('Clay repair belongs to a different source mesh')
+        if side.motion is None or source.motion is None or any(
+                not torch.equal(a, b) for a, b in zip(side.motion, source.motion)):
+            raise ValueError('Clay repair changed the original group motion')
+        if set(torch.unique(side.vertex_groups).cpu().tolist()) != set(torch.unique(source.vertex_groups).cpu().tolist()):
+            raise ValueError('Clay repair introduced an unknown motion group')
+        side.deformation = getattr(source, 'deformation', None)
+        side.context = first.context
+        side.edge_antialias = False
+        side.info['edge_antialias'] = '2x2 supersampled coverage'
+    for field in ('vertices', 'faces', 'colors', 'vertex_groups'):
+        if torch.equal(getattr(pair.sides[0], field), getattr(pair.sides[1], field)):
+            setattr(pair.sides[1], field, getattr(pair.sides[0], field))
+    pair.info['surface_regularized'] = True
+    if all(getattr(side, 'clay_normals', None) is not None for side in pair.sides):
+        if torch.equal(pair.sides[0].clay_normals, pair.sides[1].clay_normals):
+            pair.sides[1].clay_normals = pair.sides[0].clay_normals
+        pair.info['feature_reconstructed'] = True
+    return pair

@@ -76,4 +76,86 @@ html{scrollbar-gutter:stable}
  .view-toolbar .render-stats{grid-column:1/-1;grid-row:2}
 }
 
-#hybridQualityField[hidden]{display:none}
+.field[hidden]{display:none}
+
+/* Four cells share a single clock. Titles stay outside the image area. */
+.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:1px;background:var(--line)}
+.stage.comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--line)}
+.viewport{container-type:inline-size}
+.stage.quad{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr);height:calc((100cqw - 3px)/4 + 28px);min-height:0;max-height:none}
+.view-cell{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;background:#080b10}
+.view-cell[hidden]{display:none}
+.view-cell>.compare-label{flex:none;height:42px;border-bottom:1px solid var(--line);border-left:0;display:flex;align-items:center;gap:8px;font-weight:500}
+.view-cell>.compare-label[hidden]{display:none}
+.cell-image{position:relative;flex:1;min-height:0;overflow:hidden}
+.stage .cell-image canvas,.stage.comparison .cell-image #canvas,.stage.comparison .cell-image #comparisonCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.reference-cell{cursor:default;touch-action:pan-x pan-y}
+.reference-label{justify-content:space-between}
+.reference-label strong{font-weight:500;color:#c4cfde}
+.reference-label span{font-size:10px;color:#8398ac;white-space:nowrap}
+.stage.quad #leftRenderCell{grid-column:1;grid-row:1}
+.stage.quad #rightRenderCell{grid-column:2;grid-row:1}
+.stage.quad #rgbCell{grid-column:3;grid-row:1}
+.stage.quad #eventCell{grid-column:4;grid-row:1}
+.viewport:fullscreen .stage.quad{flex:1;height:auto;min-height:0}
+@media(max-width:760px){
+ .stage.quad{grid-template-columns:repeat(4,minmax(220px,1fr));height:252px;min-height:0;overflow-x:auto}
+ .view-cell>.compare-label{height:44px;font-size:10px;padding:5px 8px;line-height:1.4}
+ .reference-label{align-items:flex-start!important;flex-direction:column;justify-content:center;gap:0!important}
+ .reference-label span{font-size:9px}
+ .viewport>#viewHint{white-space:normal;text-align:center;line-height:1.4;height:38px}
+}
+
+/* A white comparison sheet: one hairline between cells, compact labels,
+   and four centered images arranged in a single row. */
+.stage.quad{gap:1px;background:#dfe4e8;touch-action:pan-x pan-y}
+.stage.quad .view-cell,.stage.quad .cell-image{background:#fff}
+.stage.quad .render-cell .cell-image{touch-action:none}
+.stage.quad .view-cell>.compare-label{height:28px;padding:3px 9px;background:#fff;color:#263543;border-color:#e6e9ec;font-size:11px;gap:5px}
+.stage.quad .view-cell>.compare-label.right{color:#147f75}
+.stage.quad .reference-label strong{color:#263543}
+.stage.quad .reference-label span{color:#677987}
+.stage.quad .cell-image #canvas,.stage.quad .cell-image #rgbCanvas{object-position:center}
+.stage.quad .cell-image #comparisonCanvas,.stage.quad .cell-image #eventCanvas{object-position:center}
+.swatch.light{background:#fff}
+@media(max-width:760px){
+ .stage.quad .view-cell>.compare-label{height:32px;padding:2px 6px;font-size:10px}
+ .stage.quad .reference-label span{font-size:9px}
+}
+
+/* Synchronized detail lenses use source pixels without changing the camera. */
+.detail-tools{display:flex;align-items:center;gap:12px;padding:7px 12px;min-height:42px;background:#f7fafb;color:#374c5a;border-bottom:1px solid #dfe4e8;font-size:11px;flex-wrap:wrap;flex:none}
+.detail-tools[hidden],.detail-options[hidden],.stage .detail-overlay[hidden]{display:none}
+.detail-tools button{padding:4px 10px;color:#176d76;border-color:#b9d4d8;background:#fff;white-space:nowrap}
+.detail-tools button[aria-pressed="true"]{background:#e3f4f2;border-color:#34958e}
+.detail-options{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.detail-options label{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.detail-options select{background:#fff;color:#243b49;border-color:#c7d5da;font-size:11px;padding:2px 5px}
+.detail-options span{color:#617580;font-size:10px}
+.stage .cell-image .detail-overlay{pointer-events:none;z-index:1;object-fit:fill;object-position:center}
+.stage.detail-active .render-cell .cell-image{cursor:crosshair}
+@media(max-width:760px){.detail-tools{gap:6px;padding:6px 8px}.detail-options{gap:8px}.detail-options span{flex-basis:100%}}
+
+/* Each ROI contributes two equally sized crops in one row below the overview. */
+.comparison-rows{display:flex;flex-direction:column;min-width:0;gap:1px;background:#dfe4e8}
+.detail-row{display:grid;grid-template-columns:repeat(var(--detail-count,2),minmax(0,1fr));gap:1px;overflow-x:auto;background:#dfe4e8;height:calc((100cqw - 3px)/4 + 28px);flex:none}
+.detail-row[hidden]{display:none}
+.detail-cell{display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff;overflow:hidden}
+.detail-title{flex:none;height:28px;padding:3px 9px;color:var(--roi-color);border-top:2px solid var(--roi-color);font-size:11px;font-weight:600}
+.detail-image{position:relative;flex:1;min-height:0}
+.detail-image canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.viewport:fullscreen .comparison-rows{flex:1;min-height:0}
+.viewport:fullscreen .comparison-rows>.stage,.viewport:fullscreen .comparison-rows>.detail-row{flex:1 1 0;height:0;min-height:0}
+@media(max-width:760px){.detail-row{height:252px;grid-template-columns:repeat(var(--detail-count,2),minmax(180px,1fr))}.detail-title{height:32px;padding:2px 6px;font-size:10px}}
+
+/* Content-sized rows: fullscreen may scroll instead of stretching white margins. */
+.stage.quad,.viewport:fullscreen .comparison-rows>.stage.quad{height:var(--overview-height,calc((100cqw - 3px)/4 + 28px));flex:none;min-height:0}
+.detail-row,.viewport:fullscreen .comparison-rows>.detail-row{height:calc(var(--detail-image-height,180px) + 28px);flex:none;min-height:0}
+.viewport:fullscreen{overflow-y:auto;display:block}
+.viewport:fullscreen .comparison-rows{flex:none;min-height:0}
+@media(max-width:760px){.detail-row,.viewport:fullscreen .comparison-rows>.detail-row{height:calc(var(--detail-image-height,180px) + 32px)}}
+
+#cancelExport[hidden],#exportDownload[hidden]{display:none}
+#exportVideo,#cancelExport,#exportDownload{margin-top:10px}
+#exportStatus{min-height:3em;overflow-wrap:anywhere}
+.play-options{max-width:100%;flex-wrap:wrap;justify-content:flex-end}

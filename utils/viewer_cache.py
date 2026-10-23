@@ -15,7 +15,8 @@ class EncodedFrameCache:
 
     def key(self, request):
         hybrid_quality = request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY) if request.get('render_mode') == 'hybrid' else None
-        return tuple(request[field] for field in self.FIELDS) + (hybrid_quality,)
+        clay_style = request.get('clay_style', 'solid') if request.get('render_mode') == 'clay' else None
+        return tuple(request[field] for field in self.FIELDS) + (request.get('render_mode', 'gaussian'), hybrid_quality, clay_style)
 
     def get(self, request):
         key = self.key(request)

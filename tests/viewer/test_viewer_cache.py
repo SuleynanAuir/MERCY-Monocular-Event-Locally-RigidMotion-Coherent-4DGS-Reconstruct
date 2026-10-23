@@ -21,6 +21,33 @@ class EncodedFrameCacheTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.assertIsNone(cache.get({**self.request, field: value}))
 
+    def test_display_modes_never_reuse_other_material_pixels(self):
+        cache = EncodedFrameCache()
+        for mode in ('mesh', 'clay', 'gaussian', 'hybrid', 'pseudocolor'):
+            request = validate_request(dict(self.request, render_mode=mode), 400)
+            self.assertIsNone(cache.get(request))
+            cache.put(request, mode.encode())
+        for mode in ('mesh', 'clay', 'gaussian', 'hybrid', 'pseudocolor'):
+            self.assertEqual(cache.get(dict(self.request, render_mode=mode)), mode.encode())
+
+    def test_white_wire_and_solid_are_isolated_and_do_not_change_gs(self):
+        cache = EncodedFrameCache()
+        wire = validate_request({'render_mode': 'clay', 'clay_style': 'wire'}, 3)
+        solid = dict(wire, clay_style='solid')
+        self.assertEqual(validate_request({'render_mode': 'clay'}, 3)['clay_style'], 'solid')
+        cache.put(wire, b'wire')
+        self.assertIsNone(cache.get(solid))
+        cache.put(solid, b'solid')
+        self.assertEqual(cache.get(wire), b'wire')
+        gs = dict(wire, render_mode='gaussian')
+        cache.put(gs, b'original')
+        self.assertEqual(cache.get(dict(gs, clay_style='solid')), b'original')
+        for value in ('quad', None, 4):
+            with self.assertRaises(ValueError):
+                validate_request(dict(wire, clay_style=value), 3)
+        with self.assertRaises(ValueError):
+            validate_request({'render_mode': 'clay_mesh'}, 3)
+
     def test_lru_is_bounded_by_bytes_and_count(self):
         cache = EncodedFrameCache(max_bytes=6, max_entries=2)
         requests = [{**self.request, 'frame': i} for i in range(3)]

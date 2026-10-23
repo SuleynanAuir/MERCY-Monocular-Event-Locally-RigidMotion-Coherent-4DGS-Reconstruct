@@ -8,6 +8,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/style.css">
   <script src="/playback.js" defer></script>
+  <script src="/references.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
@@ -24,16 +25,38 @@
         <button id="expandView" class="expand-button" title="全屏显示两个对比视窗">放大对比</button>
         <button id="resetFloating" class="floating-button" title="重置视角 (R)" aria-label="重置视角">↺</button>
       </div>
-      <div class="comparison-headings" aria-label="左右对照说明">
-        <div id="leftCompareLabel" class="compare-label left" hidden>最原始结果</div>
-        <div id="rightCompareLabel" class="compare-label right" hidden>进一步优化后</div>
+      <div id="detailTools" class="detail-tools" hidden>
+        <button id="detailToggle" aria-pressed="false" aria-controls="detailOptions">细节放大镜</button>
+        <div id="detailOptions" class="detail-options" hidden>
+          <button id="detailAdd">＋ 添加选区</button>
+          <label>当前选区 <select id="detailSelect" aria-label="当前选区"></select></label>
+          <button id="detailRemove">删除选区</button><button id="detailClear">清空</button>
+          <span>拖动框内移动 · 拖动边框 / 角点调整大小</span>
+        </div>
       </div>
-      <div id="stage" class="stage" tabindex="0" aria-label="三维视图：拖动旋转，Shift 拖动平移，滚轮缩放">
-        <canvas id="canvas" aria-label="GPU 实时渲染的动态高斯"></canvas>
-        <canvas id="comparisonCanvas" aria-label="经过事件校正的高斯，同步右视窗" hidden></canvas>
+      <div class="comparison-rows">
+      <div id="stage" class="stage" tabindex="0" aria-label="同步对比视图；拖动 V1 / V3 画面旋转，Shift 拖动平移，滚轮缩放">
+        <section id="leftRenderCell" class="view-cell render-cell" aria-label="第 1 列 V1">
+          <div id="leftCompareLabel" class="compare-label left" hidden>V1 · 原始结果</div>
+          <div class="cell-image"><canvas id="canvas" aria-label="V1 动态渲染"></canvas><canvas id="detailLeft" class="detail-overlay" aria-hidden="true" hidden></canvas></div>
+        </section>
+        <section id="rightRenderCell" class="view-cell render-cell" aria-label="第 2 列 V3" hidden>
+          <div id="rightCompareLabel" class="compare-label right" hidden>V3 · 优化结果</div>
+          <div class="cell-image"><canvas id="comparisonCanvas" aria-label="V3 动态渲染" hidden></canvas><canvas id="detailRight" class="detail-overlay" aria-hidden="true" hidden></canvas></div>
+        </section>
+        <section id="rgbCell" class="view-cell reference-cell" aria-label="第 3 列 RGB 视频" hidden>
+          <div class="compare-label reference-label"><strong>RGB 视频</strong><span title="仅替换展示背景；原视频与相机坐标保持不变">白底 · 固定相机</span></div>
+          <div class="cell-image"><canvas id="rgbCanvas" aria-label="RGB 相机原始视频，与 V1 / V3 同一时刻"></canvas></div>
+        </section>
+        <section id="eventCell" class="view-cell reference-cell" aria-label="第 4 列事件相机视频，对齐 RGB 相机" hidden>
+          <div class="compare-label reference-label"><strong>事件相机视频</strong><span id="referenceAlignment">对齐 RGB</span></div>
+          <div class="cell-image"><canvas id="eventCanvas" aria-label="事件视频，使用 RGB 相机像素坐标和时间轴"></canvas></div>
+        </section>
         <div id="overlay" class="overlay"><div class="loader"></div><h1 id="loadTitle">连接渲染服务器</h1><p id="loadMessage">模型保留在 GPU 上，浏览器接收实时渲染画面。</p><progress id="loadProgress" max="100" value="0"></progress></div>
       </div>
-      <div class="viewport-hint">拖动旋转 <span>·</span> Shift + 拖动平移 <span>·</span> 滚轮缩放</div>
+      <div id="detailRow" class="detail-row" aria-label="选区细节 V1 与 V3 同步对比" hidden></div>
+      </div>
+      <div class="viewport-hint" id="viewHint">拖动旋转 <span>·</span> Shift + 拖动平移 <span>·</span> 滚轮缩放</div>
       <section class="transport" aria-label="动画播放控制">
         <div class="playback-preparation" aria-label="播放状态"><span class="preparation-label">播放状态</span><p id="streamStatus" role="status" aria-atomic="true" tabindex="0">逐帧查看</p></div>
         <div class="transport-top"><span class="eyebrow">TIMELINE</span><span id="motionLabel" class="motion-label">等待序列</span><span id="timeLabel" class="time-label"><span id="timeCurrent">0.00</span> <small id="timeTotal">/ — s</small></span></div>
@@ -41,7 +64,7 @@
         <div class="timeline-ticks"><span>0 s</span><span id="tickMid">3 s</span><span id="tickEnd">6 s</span></div>
         <div class="transport-bottom">
           <div class="play-controls"><button id="restart" class="icon-button" title="从头播放" aria-label="回到第一帧" disabled>↤</button><button id="previous" class="icon-button" title="上一帧" aria-label="上一帧" disabled>‹</button><button id="play" class="play-button" aria-label="播放" disabled>▶ <span>播放</span></button><button id="next" class="icon-button" title="下一帧" aria-label="下一帧" disabled>›</button><span id="frameLabel" class="frame-label">帧 — / —</span></div>
-          <div class="play-options"><label for="speed">速度</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><select id="streamRate" aria-label="连续播放帧率"><option value="auto">自动 · 流畅优先</option><option value="60" selected>60 FPS</option><option value="30">30 FPS · 节流</option></select><label class="check-label"><input id="loop" type="checkbox">循环</label></div>
+          <div class="play-options"><label class="check-label"><input id="smoothPlayback" type="checkbox" checked>整段缓存后播放</label><label for="speed">速度</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><select id="streamRate" aria-label="连续播放帧率"><option value="auto">自动 · 流畅优先</option><option value="60" selected>60 FPS</option><option value="30">30 FPS · 节流</option></select><label class="check-label"><input id="loop" type="checkbox">循环</label></div>
         </div>
       </section>
     </section>
@@ -49,9 +72,15 @@
       <section class="panel"><h2>物件选择</h2><div class="field"><label for="objectSelect">当前物件</label><select id="objectSelect" disabled><option>正在读取物件…</option></select></div></section>
       <section class="panel"><div class="panel-title"><h2>场景信息</h2><span class="small-badge">BAKED</span></div><p id="sceneDescription" class="scene-description">真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。</p><div class="big-number" id="gaussianCount">—</div><div id="primitiveLabel" class="number-label">GAUSSIANS / 高斯数量</div><dl class="scene-stats"><div><dt>序列帧数</dt><dd id="frameCount">—</dd></div><div><dt>采样频率</dt><dd id="sourceFps">—</dd></div><div><dt>持续时间</dt><dd id="duration">—</dd></div><div><dt>当前转速</dt><dd id="rpm">—</dd></div></dl></section>
       <section class="panel"><h2>视角</h2><div class="preset-row"><button class="preset active" data-yaw="0" data-pitch="0">正视</button><button class="preset" data-yaw="35" data-pitch="20">斜视</button><button class="preset" data-yaw="80" data-pitch="0">侧视</button></div><div class="preset-row"><button class="preset" data-yaw="180" data-pitch="0">背面</button><button class="preset" data-yaw="0" data-pitch="35">俯视</button><button class="preset" data-yaw="0" data-pitch="-35">仰视</button></div><button id="reset" class="secondary-button">重置视角 <kbd>R</kbd></button></section>
-      <section class="panel"><h2>渲染设置</h2><div class="field"><label for="renderMode">显示模式</label><select id="renderMode" disabled><option value="gaussian">Gaussian · 高斯</option><option id="meshOption" value="mesh" disabled>V1 / V3 纯 Mesh</option><option id="hybridOption" value="hybrid" disabled>Mesh＋GS · 动态</option></select></div><div id="hybridQualityField" class="field" hidden><label for="hybridQuality">混合画质</label><select id="hybridQuality"><option value="surface" selected>表面柔化</option><option value="native">GS 原生外观</option><option value="balanced">旧版均衡</option><option value="detail">旧版高采样</option></select></div><p id="meshNotice" class="setting-note" role="status">正在检查 Mesh…</p><div class="field"><label for="resolution">画面清晰度</label><select id="resolution"><option value="512">流畅 · 512 px</option><option value="640">标准 · 640 px</option><option value="768" selected>均衡 · 768 px</option><option value="1024">精细 · 1024 px</option><option id="ultraResolution" value="1280">超清 · 1280 px</option></select></div><div class="field"><span id="backgroundLabel">背景</span><div class="swatches" role="group" aria-labelledby="backgroundLabel"><button class="swatch black" data-background="black" aria-label="黑色背景（事件参考）" aria-pressed="false"></button><button class="swatch dark active" data-background="dark" aria-label="深色背景" aria-pressed="true"></button><button class="swatch gray" data-background="gray" aria-label="灰色背景" aria-pressed="false"></button><button class="swatch light" data-background="light" aria-label="浅色背景" aria-pressed="false"></button></div></div><button id="snapshot" class="secondary-button" disabled>保存当前画面 <span>↓</span></button><p class="setting-note">清晰度越高，网络传输量越大。显示帧率与序列采样频率不同。</p></section>
+      <section class="panel"><h2>渲染设置</h2><div class="field"><label for="renderMode">显示模式</label><select id="renderMode" disabled><option value="gaussian">Gaussian · 高斯</option><option id="meshOption" value="mesh" disabled>V1 / V3 纯 Mesh</option><option id="clayOption" value="clay" disabled>V1 / V3 白模 · 清晰柔光</option><option id="pseudocolorOption" value="pseudocolor" disabled>V1 / V3 伪彩色 · 柔光</option><option id="hybridOption" value="hybrid" disabled>Mesh＋GS · 动态</option></select></div><div id="clayStyleField" class="field" hidden><label for="clayWire">显示表面线框</label><input id="clayWire" type="checkbox"></div><div id="hybridQualityField" class="field" hidden><label for="hybridQuality">混合画质</label><select id="hybridQuality"><option value="surface" selected>表面柔化</option><option value="native">GS 原生外观</option><option value="balanced">旧版均衡</option><option value="detail">旧版高采样</option></select></div><p id="meshNotice" class="setting-note" role="status">正在检查 Mesh…</p><div class="field"><label for="resolution">画面清晰度</label><select id="resolution"><option value="512">流畅 · 512 px</option><option value="640">标准 · 640 px</option><option value="768" selected>均衡 · 768 px</option><option value="1024">精细 · 1024 px</option><option id="ultraResolution" value="1280">超清 · 1280 px</option></select></div><div class="field"><span id="backgroundLabel">背景</span><div class="swatches" role="group" aria-labelledby="backgroundLabel"><button class="swatch black" data-background="black" aria-label="黑色背景（事件参考）" aria-pressed="false"></button><button class="swatch dark active" data-background="dark" aria-label="深色背景" aria-pressed="true"></button><button class="swatch gray" data-background="gray" aria-label="灰色背景" aria-pressed="false"></button><button class="swatch light" data-background="light" aria-label="白色背景" aria-pressed="false"></button></div></div><button id="snapshot" class="secondary-button" disabled>保存当前画面 <span>↓</span></button><p class="setting-note">清晰度越高，网络传输量越大。显示帧率与序列采样频率不同。</p></section>
+      <section class="panel"><h2>完整视频</h2><p class="setting-note">完整时段 · 同视角 · 彩色选框＋细节 · 五种模式打包为 ZIP</p>
+        <button id="exportVideo" class="secondary-button">保存全部模式完整视频 ↓</button>
+        <button id="cancelExport" class="secondary-button" hidden>取消导出</button>
+        <a id="exportDownload" class="secondary-button" hidden download>下载完整视频 ZIP ↓</a>
+        <p id="exportStatus" class="setting-note" role="status">导出 WebM 视频，保留源帧率。</p>
+      </section>
       <section class="gpu-card"><span class="chip-icon">▦</span><div><strong id="gpuName">等待 GPU</strong><p id="cacheInfo">正在初始化渲染器</p></div><span class="dot" id="gpuDot"></span></section>
-      <div class="shortcuts"><span><kbd>Space</kbd> 播放 / 暂停</span><span><kbd>←</kbd><kbd>→</kbd> 逐帧查看</span><p>收到少量帧后开始播放，边接收边播放，无需等待完整序列。拖动视角时暂缓运动，松开继续；播放状态显示在时间轴上方。</p></div>
+      <div class="shortcuts"><span><kbd>Space</kbd> 播放 / 暂停</span><span><kbd>←</kbd><kbd>→</kbd> 逐帧查看</span><p>默认先缓存完整序列，再在本地播放；首次准备需要等待，后续同视角播放复用缓存。拖动视角时暂缓运动，松开继续；播放状态显示在时间轴上方。</p></div>
     </aside>
   </main>
   <footer><span>SC–GS MOTION LAB</span><span>浏览器交互 · 服务器 GPU 渲染 · 原始输入另行保留</span></footer>

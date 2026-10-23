@@ -1,7 +1,7 @@
 """Loopback-only browser UI: render baked Gaussian states on the server GPU.
 
-No deformation network, training, or video playback is involved. The NPZ stores
-each Gaussian's actual position and orientation at every frame.
+The NPZ stores each Gaussian's position and orientation at every frame.
+Optional RGB/event references share the exact animation timeline.
 """
 
 import argparse
@@ -196,6 +196,8 @@ def read_scene_catalog(path):
         if not asset.is_file():
             raise ValueError(f'Missing scene asset: {asset}')
         scenes[key] = {**item, 'path': asset}
+        if item.get('reference_path'):
+            scenes[key]['reference_path'] = (path.parent / item['reference_path']).resolve()
     default = config.get('default', next(iter(scenes), None))
     if default not in scenes:
         raise ValueError('Default scene must exist')
@@ -225,13 +227,19 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             factory = FanRenderer
         renderers[key] = factory(spec['path'], spec.get('cache', cache))
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gaussian-gpu")
+    references = {}
     clients = set()
     loading = {'id': None}
     app = web.Application(middlewares=[local_only], client_max_size=4096)
 
-    async def load_one(renderer):
+    async def load_one(key, renderer):
         try:
             await asyncio.get_running_loop().run_in_executor(executor, renderer.load)
+            if scenes[key].get('reference_path'):
+                from utils.viewer_reference import ReferenceSequence
+                reference = await asyncio.to_thread(ReferenceSequence, scenes[key]['reference_path'], renderer.info)
+                references[key] = reference
+                renderer.info['reference'] = reference.info
         except Exception as error:
             LOG.exception("Failed to load sequence")
             renderer.status = {"ready": False, "error": True, "progress": 0,
@@ -240,7 +248,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
     async def load():
         for key, renderer in renderers.items():
             loading['id'] = key
-            await load_one(renderer)
+            await load_one(key, renderer)
         loading['id'] = None
 
     def selected(request):
@@ -268,9 +276,21 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             'objects': [{'id': name, 'name': scenes[name]['name'],
                          'ready': value.status.get('ready', False)} for name, value in renderers.items()]})
 
+    async def reference_frame(request):
+        key, _ = selected(request)
+        reference = references.get(key)
+        index = request.match_info["frame"]
+        if reference is None or not index.isascii() or not index.isdigit() or len(index) > 8:
+            raise web.HTTPNotFound()
+        try:
+            path = reference.frame_path(int(index))
+        except IndexError:
+            raise web.HTTPNotFound()
+        return web.FileResponse(path, headers={"Cache-Control": "private, max-age=0, must-revalidate"})
+
     async def static(request):
         filename = request.match_info.get("file", "index.html")
-        if filename not in {"index.html", "style.css", "app.js", "playback.js"}:
+        if filename not in {"index.html", "style.css", "app.js", "playback.js", "references.js"}:
             raise web.HTTPNotFound()
         return web.FileResponse(STATIC / filename)
 
@@ -358,7 +378,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
                     if kind not in {"frame", "stream"}:
                         raise ValueError("Unknown request type")
                     data = (validate_stream if kind == "stream" else validate_request)(raw, renderer.info["frame_count"])
-                    if data['render_mode'] in {'mesh', 'hybrid'} and not renderer.info.get(data['render_mode'], {}).get('available'):
+                    if data['render_mode'] in {'mesh', 'hybrid', 'clay', 'pseudocolor'} and not renderer.info.get(data['render_mode'], {}).get('available'):
                         await ws.send_json({'type': 'error', 'message': '当前场景未提供所选的 Mesh 或混合模式'})
                         continue
                 except (ValueError, TypeError, OverflowError):
@@ -385,6 +405,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
 
     app.cleanup_ctx.append(lifecycle)
     app.router.add_get("/api/status", status)
+    app.router.add_get("/api/reference/{frame}", reference_frame)
     app.router.add_get("/ws", websocket)
     app.router.add_get("/", static)
     app.router.add_get("/{file}", static)

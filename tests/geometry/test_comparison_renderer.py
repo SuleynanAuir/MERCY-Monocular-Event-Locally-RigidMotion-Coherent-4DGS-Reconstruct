@@ -22,6 +22,35 @@ from utils.render_sampling import render_sampling_contract
 
 
 class ComparisonRendererTests(unittest.TestCase):
+    def test_native_clay_needs_no_mesh_and_uses_both_source_poses_and_auxiliary_motion(self):
+        renderer = ComparisonRenderer('unused.json', 'cpu')
+        renderer.base_pose = np.eye(4); renderer.base_pose[2, 3] = 2; renderer.target = np.zeros(3)
+        renderer.model = SimpleNamespace(value=.2)
+        renderer.clay_coordinates = [torch.full((1, 3), .2), torch.full((1, 3), .8)]
+        renderer.pipe = None
+        renderer.backgrounds = {'black': torch.zeros(3), 'light': torch.ones(3)}
+        poses, backgrounds = [], []
+        def pose(side, frame, auxiliary=True):
+            poses.append((side, frame, auxiliary)); renderer.model.value = .2+.6*side
+        renderer.apply_side_pose = pose
+        def render(camera, model, pipe, background, *args, override_color=None):
+            backgrounds.append(background.clone())
+            alpha = torch.ones(1, 128, 128); alpha[:, 55:65, 55:65] = 0
+            return {'render': torch.full((3, 128, 128), model.value)*alpha,
+                    'depth': 2*alpha, 'alpha': alpha}
+        with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=render),
+                                     'render_ply': SimpleNamespace(make_camera=lambda *args: None)}):
+            req = validate_request(dict(render_mode='clay', frame=1, width=128, height=128, background='light'), 3)
+            packet = renderer.render(req); cached = renderer.render(req)
+        self.assertEqual(poses, [(0, 1, True), (1, 1, True)])
+        self.assertTrue(all(torch.equal(b, torch.zeros(3)) for b in backgrounds))
+        size = struct.unpack('<I', packet[:4])[0]
+        pixels = np.asarray(Image.open(io.BytesIO(packet[4+size:])))
+        self.assertGreater(float(pixels[:, 128:].mean()), float(pixels[:, :128].mean())+10)
+        self.assertGreater(pixels[60, 60].min(), 250)
+        size = struct.unpack('<I', cached[:4])[0]
+        self.assertTrue(json.loads(cached[4:4+size])['cache_hit'])
+
     def test_hybrid_applies_mesh_bindings_and_has_its_own_sampling_and_cache(self):
         renderer = ComparisonRenderer('unused.json', 'cpu')
         renderer.base_pose = np.eye(4); renderer.base_pose[2, 3] = 2; renderer.target = np.zeros(3)

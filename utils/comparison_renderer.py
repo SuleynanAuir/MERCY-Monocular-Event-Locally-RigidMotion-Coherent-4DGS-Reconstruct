@@ -238,6 +238,11 @@ class ComparisonRenderer:
         self.deformation = None
         self.mesh = None
         self.mesh_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
+        # Both 400-frame white styles total about 235 MiB at 1024px/quality 95.
+        # Keep both complete loops resident; a 192 MiB shared cache evicts the
+        # first wire frames while warming the solid style and stalls playback.
+        self.clay_comparison_cache = EncodedFrameCache(max_bytes=384 * 1024**2)
+        self.pseudocolor_cache = EncodedFrameCache(max_bytes=256 * 1024**2)
         self.hybrid = None
         self.hybrid_comparison_cache = EncodedFrameCache(max_bytes=192 * 1024**2)
 
@@ -388,7 +393,7 @@ class ComparisonRenderer:
                      'times_seconds': [i / left_meta['fps'] for i in range(frames)], 'rpm': [None] * frames,
                      'motion_label': '左右同帧 · 同相机 · 真实高斯渲染', 'default_stream_rate': 30,
                      'default_stream_quality': 95, 'default_still_quality': 95,
-                     'default_resolution': 640, 'default_background': 'black', 'fovy': camera['fovy_degrees'],
+                     'default_resolution': 640, 'default_background': 'light', 'fovy': camera['fovy_degrees'],
                      'cache': 'gpu-lru' if self.cache_limit else 'cpu',
                      'cache_gib': self.cache_limit * max(len(v) for v in self.indices) * 28 / 1024**3,
                      'gpu': torch.cuda.get_device_name(), 'baked': False, 'streaming': True, 'stream_window': STREAM_WINDOW,
@@ -437,6 +442,15 @@ class ComparisonRenderer:
                 'part_ids': rebuilt_static['report']['allowed_part_ids']}
             self.info['geometry_repair_scope'] += (' 驾驶舱车顶的5个固定零件另按真实网格表面重建高斯；'
                 '可见面采用视频颜色，未观测面仍是先验。窗框、立柱和运动参数保留；结果另经完整事件复验。')
+        from utils.gs_clay import gs_clay_info, canonical_coordinates
+        bounds_xyz = torch.cat([geometry[0] for geometry in self.side_geometry])
+        _, bounds = canonical_coordinates(bounds_xyz)
+        self.clay_coordinates = [canonical_coordinates(geometry[0], bounds)[0] for geometry in self.side_geometry]
+        del bounds_xyz
+        self.info['clay'] = gs_clay_info()
+        from utils.gs_pseudocolor import pseudocolor_materials, pseudocolor_info
+        self.pseudocolor_materials = pseudocolor_materials([geometry[0] for geometry in self.side_geometry])
+        self.info['pseudocolor'] = pseudocolor_info()
         self.info['mesh'] = {'available': False, 'description': '当前场景未生成高斯重建网格。'}
         self.info['hybrid'] = {'available': False, 'description': '当前场景未生成 Mesh＋Gaussian 绑定。'}
         if settings.get('deformation'):
@@ -497,7 +511,7 @@ class ComparisonRenderer:
                 self.info['hybrid'] = {'available': False, 'description': '混合模式绑定加载失败；可使用 Gaussian 或纯 Mesh。'}
                 logging.getLogger('gaussian-viewer').exception('Optional hybrid binding failed to load')
         if self.deformation is not None:
-            for mode in ('mesh', 'hybrid'):
+            for mode in ('mesh', 'hybrid', 'clay', 'pseudocolor'):
                 if self.info[mode]['available']:
                     self.info[mode]['deformation_enabled'] = True
                     self.info[mode]['description'] += ' 右侧 V3 同步叠加局部 MLP 关节残差；主运动和刚性保持。'
@@ -517,17 +531,18 @@ class ComparisonRenderer:
             if (index + 1) % 40 == 0 or index + 1 == frames:
                 self.progress(95 + int(4 * (index + 1) / frames), f'预缓存双视图 {index + 1}/{frames} 帧')
         self.info['prewarmed_frames'] = frames
-        if self.mesh is not None:
-            resolution = self.info['mesh']['default_resolution']
-            for index in range(frames):
-                self.render(validate_request({'render_mode': 'mesh', 'frame': index,
-                                              'width': resolution, 'height': resolution,
-                                              'quality': self.info['default_stream_quality'],
-                                              'background': self.info['default_background'],
-                                              'fovy': camera['fovy_degrees']}, frames))
-                if (index + 1) % 40 == 0 or index + 1 == frames:
-                    self.progress(99, f'预缓存 V1 / V3 Mesh 对比 {index + 1}/{frames} 帧')
-            self.info['mesh']['prewarmed_frames'] = frames
+        for mode, clay_style in (('clay', 'wire'), ('clay', 'solid'), ('pseudocolor', 'solid'), ('mesh', 'wire')):
+            if self.info[mode]['available']:
+                resolution = self.info[mode]['default_resolution']
+                for index in range(frames):
+                    self.render(validate_request({'render_mode': mode, 'clay_style': clay_style, 'frame': index,
+                                                  'width': resolution, 'height': resolution,
+                                                  'quality': self.info['default_stream_quality'],
+                                                  'background': self.info['default_background'],
+                                                  'fovy': camera['fovy_degrees']}, frames))
+                    if (index + 1) % 40 == 0 or index + 1 == frames:
+                        self.progress(99, f'预缓存 V1 / V3 {mode} 对比 {index + 1}/{frames} 帧')
+                self.info[mode]['prewarmed_frames'] = frames
         if self.hybrid is not None:
             resolution = self.info['hybrid']['default_resolution']
             for quality in ('surface', 'native'):
@@ -596,6 +611,8 @@ class ComparisonRenderer:
     @torch.no_grad()
     def render(self, request):
         mesh_mode = request.get('render_mode', 'gaussian') == 'mesh'
+        clay_mode = request.get('render_mode') == 'clay'
+        color_mode = request.get('render_mode') == 'pseudocolor'
         hybrid_mode = request.get('render_mode', 'gaussian') == 'hybrid'
         if mesh_mode and self.mesh is None:
             raise ValueError('Mesh is unavailable for this scene')
@@ -604,7 +621,7 @@ class ComparisonRenderer:
         from gaussian_renderer import render
         from render_ply import make_camera
         start = time.perf_counter()
-        cache = self.mesh_comparison_cache if mesh_mode else self.hybrid_comparison_cache if hybrid_mode else self.image_cache
+        cache = self.pseudocolor_cache if color_mode else self.clay_comparison_cache if clay_mode else self.mesh_comparison_cache if mesh_mode else self.hybrid_comparison_cache if hybrid_mode else self.image_cache
         jpeg = cache.get(request)
         if jpeg is not None:
             return self.packet(request, jpeg, 0., 0., cache_hit=True)
@@ -622,7 +639,7 @@ class ComparisonRenderer:
                 self.hybrid[side].apply(self.model, request['frame'])
                 # Binding rewrites positions: deform only after it, exactly once.
                 self.apply_deformation(side, request['frame'])
-            output = render(camera, self.model, self.pipe, self.backgrounds[request['background']], 0., 0., 0.)
+            output = render(camera, self.model, self.pipe, self.backgrounds['black' if clay_mode or color_mode else request['background']], 0., 0., 0.)
             rgb = (resolve_hybrid_rgb(output['render'], request['width'], request['height'], quality)
                    if hybrid_mode else resolve_rgb(output['render'], supersample))
             if hybrid_mode and quality == 'surface':
@@ -630,6 +647,25 @@ class ComparisonRenderer:
                 guides = [F.interpolate(output[key].unsqueeze(0), size=(request['height'], request['width']),
                                         mode='area')[0] for key in ('depth', 'alpha')]
                 rgb = smooth_surface(rgb, *guides)
+            if clay_mode:
+                import torch.nn.functional as F
+                from utils.gs_clay import gray_gaussians
+                guides = [F.avg_pool2d(output[key], supersample) for key in ('depth', 'alpha')]
+                coordinates = None
+                if request.get('clay_style', 'solid') == 'wire':
+                    attributes = render(camera, self.model, self.pipe, self.backgrounds['black'],
+                                        0., 0., 0., override_color=self.clay_coordinates[side])
+                    coordinates = F.avg_pool2d(attributes['render'], supersample)
+                rgb = gray_gaussians(rgb, *guides, request['fovy'], self.backgrounds[request['background']],
+                                     coordinates=coordinates)
+            if color_mode:
+                import torch.nn.functional as F
+                from utils.gs_pseudocolor import color_gaussians
+                material = render(camera, self.model, self.pipe, self.backgrounds['black'],
+                                  0., 0., 0., override_color=self.pseudocolor_materials[side])['render']
+                guides = [F.avg_pool2d(output[key], supersample) for key in ('depth', 'alpha')]
+                rgb = color_gaussians(rgb, *guides, F.avg_pool2d(material, supersample),
+                                      request['fovy'], self.backgrounds[request['background']])
             pixels.append((rgb.permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
         if mesh_mode:
             pixels = self.mesh.render_panels(request)

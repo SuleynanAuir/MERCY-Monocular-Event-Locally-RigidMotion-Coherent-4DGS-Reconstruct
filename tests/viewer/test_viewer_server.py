@@ -48,7 +48,7 @@ class ViewerServerTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_unavailable_mesh_rejects_request_without_breaking_gaussian(self):
         ws = await self.client.ws_connect('/ws')
-        for mode in ('mesh', 'hybrid'):
+        for mode in ('mesh', 'hybrid', 'clay', 'pseudocolor'):
             await ws.send_json({'render_mode': mode})
             self.assertIn('Mesh', (await ws.receive_json())['message'])
         await ws.send_json({'frame': 5})
@@ -170,11 +170,11 @@ class ObjectSelectionTests(unittest.IsolatedAsyncioTestCase):
         class ModeRenderer(FakeRenderer):
             def __init__(self, path, cache):
                 super().__init__(path, cache)
-                self.info.update(frame_count=2, comparison=False, comparison_modes=['mesh', 'hybrid'],
-                                 mesh={'available': True}, hybrid={'available': True})
+                self.info.update(frame_count=2, comparison=False, comparison_modes=['mesh', 'hybrid', 'clay', 'pseudocolor'],
+                                 mesh={'available': True}, hybrid={'available': True}, clay={'available': True}, pseudocolor={'available': True})
         scenes = {'fan': {'name': 'Fan', 'path': '', 'factory': ModeRenderer}}
         async with TestClient(TestServer(viewer.create_app(scenes=scenes))) as client:
-            for mode in ('gaussian', 'mesh', 'hybrid'):
+            for mode in ('gaussian', 'mesh', 'hybrid', 'clay', 'pseudocolor'):
                 ws = await client.ws_connect('/ws?scene=fan')
                 await ws.send_json(dict(type='stream', id=1, frame=0, loop=True, render_mode=mode,
                                         width=512, height=512))

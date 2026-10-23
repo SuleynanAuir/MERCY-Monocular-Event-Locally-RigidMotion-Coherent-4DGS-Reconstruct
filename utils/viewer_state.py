@@ -8,7 +8,7 @@ import numpy as np
 from utils.hybrid_sampling import DEFAULT_HYBRID_QUALITY, HYBRID_QUALITIES
 
 
-BACKGROUNDS = {"dark": (0.055, 0.067, 0.085), "light": (0.94, 0.95, 0.97),
+BACKGROUNDS = {"dark": (0.055, 0.067, 0.085), "light": (1., 1., 1.),
                "gray": (0.3, 0.32, 0.35), "black": (0., 0., 0.)}
 STREAM_WINDOW = 24
 
@@ -62,9 +62,13 @@ def validate_request(data, frame_count):
         raise ValueError("Unknown background")
     result["background"] = background
     mode = data.get('render_mode', 'gaussian')
-    if not isinstance(mode, str) or mode not in {'gaussian', 'mesh', 'hybrid'}:
+    if not isinstance(mode, str) or mode not in {'gaussian', 'mesh', 'hybrid', 'clay', 'pseudocolor'}:
         raise ValueError('Unknown render mode')
     result['render_mode'] = mode
+    style = data.get('clay_style', 'solid')
+    if not isinstance(style, str) or style not in {'wire', 'solid'}:
+        raise ValueError('Unknown clay style')
+    result['clay_style'] = style
     quality = data.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)
     if not isinstance(quality, str) or quality not in HYBRID_QUALITIES:
         raise ValueError('Unknown hybrid quality')

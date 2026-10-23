@@ -12,6 +12,25 @@ from utils.viewer_state import cached_image_reference, validate_stream
 
 
 class MeshTests(unittest.TestCase):
+    def test_canonical_clay_normals_require_provenance_and_unit_length(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'mesh.npz'
+            meta = dict(format='gaussian_tsdf_mesh_v1', source_fingerprints={})
+            data = dict(vertices=np.eye(3, dtype=np.float32), triangles=np.array([[0, 1, 2]], np.int32),
+                        colors=np.ones((3, 3), np.float32), vertex_groups=np.zeros(3, np.int32),
+                        clay_normals=np.tile([0., 0., 1.], (3, 1)))
+            def save():
+                np.savez(path, **data, metadata_json=np.asarray(json.dumps(meta)))
+            save()
+            with self.assertRaisesRegex(ValueError, 'Clay normal'): load_mesh_data(path, 1, {})
+            meta['clay_regularization'] = {'feature_reconstruction': {'canonical_normals': True}}
+            save()
+            np.testing.assert_array_equal(load_mesh_data(path, 1, {})['clay_normals'], data['clay_normals'])
+            for bad in (0., float('nan'), 2.):
+                data['clay_normals'][0, 2] = bad
+                save()
+                with self.assertRaisesRegex(ValueError, 'Clay normal'): load_mesh_data(path, 1, {})
+
     def test_column_major_mesh_arrays_are_packed_for_cuda_rasterization(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'mesh.npz'

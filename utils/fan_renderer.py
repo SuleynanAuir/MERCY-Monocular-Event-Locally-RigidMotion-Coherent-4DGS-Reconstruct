@@ -14,7 +14,7 @@ class FanRenderer:
     def __init__(self, path, cache):
         self.path, self.cache = Path(path), cache
         self.status = dict(ready=False, progress=0, message='加载风扇 Mesh / GS 场景')
-        self.caches = {mode: EncodedFrameCache(max_bytes=192*1024**2) for mode in ('mesh', 'hybrid')}
+        self.caches = {mode: EncodedFrameCache(max_bytes=192*1024**2) for mode in ('gaussian', 'mesh', 'hybrid', 'clay', 'pseudocolor')}
 
     def progress(self, percent, message):
         self.status = dict(ready=False, progress=percent, message=message)
@@ -70,7 +70,8 @@ class FanRenderer:
             if torch.equal(getattr(first, field), getattr(second, field)):
                 setattr(second, field, getattr(first, field))
         with torch.no_grad():
-            self.native_rest = (right.model._xyz.clone(), right.model._rotation.clone())
+            self.native_rests = [(side.model._xyz.clone(), side.model._rotation.clone()) for side in self.sides]
+            self.native_rest = self.native_rests[1]
             self.bindings = [MeshGaussianBinding(paths['hybrid_paths'][name], paths['mesh_paths'][name],
                               self.mesh.sides[i], side.model._xyz, side.model._rotation)
                              for i, (name, side) in enumerate(zip(('left', 'right'), self.sides))]
@@ -79,8 +80,9 @@ class FanRenderer:
         mesh_info = dict(self.mesh.info, default_resolution=1024,
             left_label='V1 Mesh · 修复前', right_label='V3 Mesh · 支架绑定修复后',
             description='左右为修复前 V1／修复后 V3：同一初始高斯表面重建，各自驱动部件运动。V3 支架保持静止；薄片与遮挡表面是高斯推得的近似网格。')
-        self.info = dict(right.info, comparison=False, comparison_modes=['mesh', 'hybrid'],
-            name='Fan · 风扇', mesh=mesh_info, cache='cpu',
+        self.info = dict(right.info, comparison=True, comparison_modes=['gaussian', 'mesh', 'hybrid', 'clay', 'pseudocolor'],
+            left_label='V1 · 修复前', right_label='V3 · 支架绑定修复后',
+            name='Fan · 风扇', mesh=mesh_info, cache='cpu', default_resolution=1024, default_background='light',
             cache_gib=sum(side.info['cache_gib'] for side in self.sides),
             hybrid=dict(available=True, default_resolution=1024, default_quality='surface',
                 left_label='V1 Mesh＋GS · 修复前', right_label='V3 Mesh＋GS · 支架绑定修复后',
@@ -91,27 +93,32 @@ class FanRenderer:
                     'native': 'V1 修复前／V3 修复后。Mesh 驱动全部高斯，保留 GS 原生外观，不做表面柔化。',
                     'balanced': 'Mesh 驱动高斯，2 倍采样后缩小；用于效果对照。',
                     'detail': 'Mesh 驱动高斯，3 倍采样后缩小；渲染成本较高，用于效果对照。'}))
+        from utils.gs_clay import gs_clay_info, canonical_coordinates
+        _, bounds = canonical_coordinates(torch.cat([rest[0] for rest in self.native_rests]))
+        self.clay_coordinates = [canonical_coordinates(rest[0], bounds)[0] for rest in self.native_rests]
+        self.info['clay'] = gs_clay_info()
+        from utils.gs_pseudocolor import pseudocolor_materials, pseudocolor_info
+        self.pseudocolor_materials = pseudocolor_materials([rest[0] for rest in self.native_rests])
+        self.info['pseudocolor'] = pseudocolor_info()
         if prewarm:
-            for mode, quality in (('mesh', 'surface'), ('hybrid', 'surface'), ('hybrid', 'native')):
+            for mode, quality, clay_style in (('gaussian', 'surface', 'solid'), ('mesh', 'surface', 'wire'), ('clay', 'surface', 'wire'),
+                                              ('clay', 'surface', 'solid'), ('pseudocolor', 'surface', 'solid'), ('hybrid', 'surface', 'wire'),
+                                              ('hybrid', 'native', 'wire')):
                 for frame in range(frames):
-                    self.render(validate_request(dict(render_mode=mode, hybrid_quality=quality, frame=frame,
-                        width=1024, height=1024, quality=95, fovy=self.info['fovy'], background='black'), frames))
+                    self.render(validate_request(dict(render_mode=mode, hybrid_quality=quality, clay_style=clay_style, frame=frame,
+                        width=1024, height=1024, quality=95, fovy=self.info['fovy'], background=self.info['default_background']), frames))
                     if (frame+1) % 25 == 0:
                         self.progress(60+int(35*(frame+1)/frames), f'预缓存风扇 {mode}/{quality} {frame+1}/{frames}')
+            self.info['prewarmed_frames'] = frames
             self.info['mesh']['prewarmed_frames'] = frames
+            self.info['clay']['prewarmed_frames'] = frames
+            self.info['pseudocolor']['prewarmed_frames'] = frames
             self.info['hybrid'].update(prewarmed_frames=frames, prewarmed_qualities=['surface', 'native'])
         self.status = dict(ready=True, progress=100, message='就绪', scene=self.info)
 
     def render(self, request):
         import torch
         mode = request.get('render_mode', 'gaussian')
-        if mode == 'gaussian':
-            # Switching out of hybrid must restore exact source static rows as
-            # well; barycentric float rounding must not accumulate in GS mode.
-            with torch.no_grad():
-                self.sides[1].model._xyz.copy_(self.native_rest[0])
-                self.sides[1].model._rotation.copy_(self.native_rest[1])
-            return self.sides[1].render(request)
         if mode not in self.caches: raise ValueError('Unknown Fan display mode')
         from PIL import Image
         from gaussian_renderer import render
@@ -125,6 +132,39 @@ class FanRenderer:
             with torch.no_grad():
                 if mode == 'mesh':
                     panels = self.mesh.render_panels(request)
+                elif mode in ('gaussian', 'clay', 'pseudocolor'):
+                    from utils.gs_clay import gray_gaussians
+                    panels = []
+                    for side, rest, material, color_material in zip(self.sides, self.native_rests, self.clay_coordinates, self.pseudocolor_materials):
+                        # Restore native static rows after any hybrid render;
+                        # apply this side's own baked trajectory exactly once.
+                        side.model._xyz.copy_(rest[0]); side.model._rotation.copy_(rest[1])
+                        motion = side.poses[request['frame']].to('cuda')
+                        if side.dynamic_indices is None:
+                            side.model._xyz = motion[:, :3].contiguous()
+                            side.model._rotation = motion[:, 3:7].contiguous()
+                        else:
+                            side.model._xyz[side.dynamic_indices] = motion[:, :3]
+                            side.model._rotation[side.dynamic_indices] = motion[:, 3:7]
+                        camera = make_camera(orbit_pose(side.base_pose, side.target, request),
+                            request['width'], request['height'], np.deg2rad(request['fovy']))
+                        output = render(camera, side.model, side.pipe, side.backgrounds[request['background'] if mode == 'gaussian' else 'black'], 0., 0., 0.)
+                        coordinates = None
+                        if mode == 'clay' and request.get('clay_style', 'solid') == 'wire':
+                            coordinates = render(camera, side.model, side.pipe, side.backgrounds['black'],
+                                                 0., 0., 0., override_color=material)['render']
+                        if mode == 'pseudocolor':
+                            from utils.gs_pseudocolor import color_gaussians
+                            color = render(camera, side.model, side.pipe, side.backgrounds['black'],
+                                           0., 0., 0., override_color=color_material)['render']
+                            rgb = color_gaussians(output['render'], output['depth'], output['alpha'], color,
+                                request['fovy'], side.backgrounds[request['background']])
+                        elif mode == 'gaussian':
+                            rgb = output['render'].clamp(0, 1)
+                        else:
+                            rgb = gray_gaussians(output['render'], output['depth'], output['alpha'],
+                                request['fovy'], side.backgrounds[request['background']], coordinates=coordinates)
+                        panels.append((rgb.permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
                 else:
                     quality = request.get('hybrid_quality', 'surface')
                     width, height = sampling_plan(request['width'], request['height'], quality)
