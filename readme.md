@@ -1,13 +1,21 @@
-# MonoEvent-RT3D-DMR
+# MERCY: Monocular Event-boosted Locally RigidMotion Coherent 4DGS Reconstruction Dynamics
 
 面向 Lego 机械结构的动态三维高斯重建：从早期运动不稳定、局部断臂的问题出发，结合视频帧、事件流与结构约束，改善运动连续性、部件完整性和多视角细节。
 
 本项目按照三阶段对比展开：
 
-**原始 SC-GS：运动不稳定 → 改进版 1：增加视频帧监督，仍有断臂 → 改进版 2：视频帧 + 事件流，并结合结构约束，追求细节清晰、全方位结构完整、关节运动连续。**
+**原始 SC-GS：运动不稳定 → 改进版 1：稀疏视频帧监督，仍有断臂 → 改进版 2：视频帧 + 事件流，并结合结构约束，追求细节清晰、全方位结构完整、关节运动连续。**
 
-这里的“乱动”“断臂”描述本项目早期运行中的定性观察，不是对原始 SC-GS 在所有场景下的结论。“增加视频帧监督”指本项目的改进配置，并非声称原始 SC-GS 不使用图像。三组统一配置的定量消融尚待补齐；下面明确区分已有结果、方法目标和额外先验。
+“乱动”“断臂”描述本项目早期运行中的定性观察，不是对原始 SC-GS 在所有场景下的结论。“增加视频帧监督”指本项目的改进配置，并非声称原始 SC-GS 不使用图像。三组统一配置的定量消融尚待补齐；下面明确区分已有结果、方法目标和额外先验。
 
+
+<p align="center">
+  <img src="assets/demo/demo1.png" width="100%" alt="多视角渲染伪色彩">
+</p>
+
+<p align="center">
+  <img src="assets/demo/demo2.png" width="100%" alt="多视角渲染">
+</p>
 
 <p align="center">
   <img src="assets/experiments/multiview-f100.png" width="100%" alt="第 100 帧多视角渲染">
