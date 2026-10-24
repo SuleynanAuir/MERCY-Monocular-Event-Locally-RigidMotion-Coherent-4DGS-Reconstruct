@@ -77,6 +77,44 @@ class FanRenderer:
                              for i, (name, side) in enumerate(zip(('left', 'right'), self.sides))]
         if any(binding.info['unbound_gaussians'] for binding in self.bindings):
             raise ValueError('Fan hybrid requires every Gaussian to be bound')
+        from utils.gs_clay import gs_clay_info, canonical_coordinates
+        from utils.gs_pseudocolor import pseudocolor_materials, pseudocolor_info
+        _, material_bounds = canonical_coordinates(torch.cat([rest[0] for rest in self.native_rests]))
+        color_materials = pseudocolor_materials([rest[0] for rest in self.native_rests])
+        self.surface_refinement = None
+        if config.get('surface_refinement'):
+            from utils.fan_surface import validate_refinement
+            path = (self.path.parent/config['surface_refinement']).resolve()
+            with np.load(path, allow_pickle=False) as archive:
+                data = {key: archive[key] for key in archive.files}
+            expected = dict(source_sha256=config['source_fingerprints']['right']['sequence_sha256'],
+                            binding_sha256=sha256_file(paths['hybrid_paths']['right']),
+                            mesh_sha256=sha256_file(paths['mesh_paths']['right']),
+                            source_base_sha256=meta[1]['base_vertices_sha256'])
+            record = validate_refinement(data, self.bindings[1].groups.cpu().numpy(),
+                                         right.model._xyz.detach().cpu().numpy(), expected)
+            base, parents = data['base_vertices'], torch.from_numpy(data['parent_rows'].astype(np.int64)).cuda()
+            # Inherit higher-order SH channels from the parent. Canonical
+            # geometry, opacity and DC color come from the audited refinement.
+            with torch.no_grad():
+                right.model._features_rest = right.model._features_rest[parents].contiguous()
+                for field, names in [('_xyz', ['x', 'y', 'z']), ('_rotation', [f'rot_{i}' for i in range(4)]),
+                                     ('_scaling', [f'scale_{i}' for i in range(3)]), ('_opacity', ['opacity'])]:
+                    setattr(right.model, field, torch.from_numpy(np.column_stack([base[k] for k in names]).copy()).cuda())
+                right.model._features_dc = torch.from_numpy(np.column_stack([base[f'f_dc_{i}'] for i in range(3)]).copy()).cuda()[:, None, :]
+                binding = self.bindings[1]
+                binding.rows = torch.arange(len(base), device='cuda')
+                binding.groups = torch.from_numpy(data['groups'].astype(np.int64)).cuda()
+                binding.centers, binding.rotation = right.model._xyz.clone(), right.model._rotation.clone()
+                binding.info = dict(binding.info, bound_gaussians=len(base),
+                    representation='part-local refined Gaussian offsets; unchanged rigid Mesh motion')
+                self.native_rests[1] = (right.model._xyz.clone(), right.model._rotation.clone())
+                self.native_rest = self.native_rests[1]
+                color_materials[1] = color_materials[1][parents].contiguous()
+            right.info['gaussian_count'] = len(base)
+            right.info['dynamic_gaussian_count'] = int((data['groups'] == 1).sum())
+            self.surface_refinement = record['report']
+            del data, base, parents
         mesh_info = dict(self.mesh.info, default_resolution=1024,
             left_label='V1 Mesh · 修复前', right_label='V3 Mesh · 支架绑定修复后',
             description='左右为修复前 V1／修复后 V3：同一初始高斯表面重建，各自驱动部件运动。V3 支架保持静止；薄片与遮挡表面是高斯推得的近似网格。')
@@ -93,13 +131,17 @@ class FanRenderer:
                     'native': 'V1 修复前／V3 修复后。Mesh 驱动全部高斯，保留 GS 原生外观，不做表面柔化。',
                     'balanced': 'Mesh 驱动高斯，2 倍采样后缩小；用于效果对照。',
                     'detail': 'Mesh 驱动高斯，3 倍采样后缩小；渲染成本较高，用于效果对照。'}))
-        from utils.gs_clay import gs_clay_info, canonical_coordinates
-        _, bounds = canonical_coordinates(torch.cat([rest[0] for rest in self.native_rests]))
-        self.clay_coordinates = [canonical_coordinates(rest[0], bounds)[0] for rest in self.native_rests]
+        self.clay_coordinates = [canonical_coordinates(rest[0], material_bounds)[0] for rest in self.native_rests]
         self.info['clay'] = gs_clay_info()
-        from utils.gs_pseudocolor import pseudocolor_materials, pseudocolor_info
-        self.pseudocolor_materials = pseudocolor_materials([rest[0] for rest in self.native_rests])
+        self.pseudocolor_materials = color_materials
         self.info['pseudocolor'] = pseudocolor_info()
+        if self.surface_refinement:
+            self.info['surface_refinement'] = self.surface_refinement
+            self.info.update(right_label='V3 · 表面优化',
+                description='V3：部件内保边表面规整与局部高斯增密，继承原始刚体运动；未新增事件监督。')
+            self.info['hybrid'].update(right_label='V3 Mesh＋GS · 表面优化')
+            self.info['mesh'].update(right_label='V3 Mesh · 表面优化',
+                description='V1 保留原模型；V3 使用有界表面去噪，保持三角面拓扑及独立部件运动。')
         if prewarm:
             for mode, quality, clay_style in (('gaussian', 'surface', 'solid'), ('mesh', 'surface', 'wire'), ('clay', 'surface', 'wire'),
                                               ('clay', 'surface', 'solid'), ('pseudocolor', 'surface', 'solid'), ('hybrid', 'surface', 'wire'),
@@ -135,12 +177,14 @@ class FanRenderer:
                 elif mode in ('gaussian', 'clay', 'pseudocolor'):
                     from utils.gs_clay import gray_gaussians
                     panels = []
-                    for side, rest, material, color_material in zip(self.sides, self.native_rests, self.clay_coordinates, self.pseudocolor_materials):
+                    for index, (side, rest, material, color_material) in enumerate(zip(self.sides, self.native_rests, self.clay_coordinates, self.pseudocolor_materials)):
                         # Restore native static rows after any hybrid render;
                         # apply this side's own baked trajectory exactly once.
                         side.model._xyz.copy_(rest[0]); side.model._rotation.copy_(rest[1])
-                        motion = side.poses[request['frame']].to('cuda')
-                        if side.dynamic_indices is None:
+                        motion = None if index == 1 and self.surface_refinement else side.poses[request['frame']].to('cuda')
+                        if motion is None:
+                            self.bindings[index].apply(side.model, request['frame'])
+                        elif side.dynamic_indices is None:
                             side.model._xyz = motion[:, :3].contiguous()
                             side.model._rotation = motion[:, 3:7].contiguous()
                         else:
@@ -164,6 +208,8 @@ class FanRenderer:
                         else:
                             rgb = gray_gaussians(output['render'], output['depth'], output['alpha'],
                                 request['fovy'], side.backgrounds[request['background']], coordinates=coordinates)
+                        if index == 1 and self.surface_refinement:
+                            rgb = smooth_surface(rgb, output['depth'], output['alpha'])
                         panels.append((rgb.permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
                 else:
                     quality = request.get('hybrid_quality', 'surface')
