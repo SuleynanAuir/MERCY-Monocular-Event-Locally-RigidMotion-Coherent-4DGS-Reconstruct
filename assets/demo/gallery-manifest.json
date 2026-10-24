@@ -1,0 +1,103 @@
+{
+  "description": "Original screenshots arranged without cropping or pixel modification. Labels retain source meaning.",
+  "layouts": {
+    "lego": {
+      "columns": 3,
+      "rows": 2
+    },
+    "fan": {
+      "columns": 2,
+      "rows": 1
+    }
+  },
+  "images": [
+    {
+      "scene": "lego",
+      "order": 1,
+      "file": "pseudocolor-frame-0109.png",
+      "size": [
+        4096,
+        1565
+      ],
+      "sha256": "c7242a59261f54a69b613ec198ea6b38145e27386f2bb0d4789331491fae2266"
+    },
+    {
+      "scene": "lego",
+      "order": 2,
+      "file": "pseudocolor-frame-0149.png",
+      "size": [
+        4096,
+        1499
+      ],
+      "sha256": "2ba3df42c4a09dfacd59125384313ea1b57004671ea348e320d40876ff7149b6"
+    },
+    {
+      "scene": "lego",
+      "order": 3,
+      "file": "pseudocolor-frame-0207.png",
+      "size": [
+        4096,
+        1762
+      ],
+      "sha256": "edb35c99cabf737449a64c575db26ec22f66e053232a23e5cd3bd342241cfeba"
+    },
+    {
+      "scene": "lego",
+      "order": 4,
+      "file": "pseudocolor-frame-0214.png",
+      "size": [
+        4096,
+        1703
+      ],
+      "sha256": "2f463b0e07fade06b263869957d53de90d105699c803417b58a2de5265ff02ad"
+    },
+    {
+      "scene": "lego",
+      "order": 5,
+      "file": "pseudocolor-frame-0214 (1).png",
+      "size": [
+        4096,
+        1592
+      ],
+      "sha256": "bb3cb14ecdcbbf9a570a950753e74056f66ecb53b8221b63876805df83bb555d"
+    },
+    {
+      "scene": "lego",
+      "order": 6,
+      "file": "pseudocolor-frame-0274.png",
+      "size": [
+        4096,
+        1591
+      ],
+      "sha256": "20aa836f208c79efc14d44af842043711b82c8c66c806958ff96e492d56244a2"
+    },
+    {
+      "scene": "fan",
+      "order": 1,
+      "file": "pseudocolor-frame-0025.png",
+      "size": [
+        4096,
+        1546
+      ],
+      "sha256": "4fb0486256a2fc36898f615c6535a8c2328de2df8a8e4593d535a1254b6bff53"
+    },
+    {
+      "scene": "fan",
+      "order": 2,
+      "file": "pseudocolor-frame-0025 (1).png",
+      "size": [
+        4096,
+        1720
+      ],
+      "sha256": "94b88b2a06f0c4b8190925072f05206bd2fe51597eed08fde2441d8591f55956"
+    }
+  ],
+  "display_frame": {
+    "width_px": 240,
+    "height_px": 120,
+    "alignment": "center",
+    "fit": "contain",
+    "source_pixels_modified": false,
+    "caption_outside_frame": true
+  }
+}
