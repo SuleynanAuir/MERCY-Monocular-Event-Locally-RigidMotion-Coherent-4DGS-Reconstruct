@@ -25,7 +25,10 @@ class ReferenceSequence:
             raise ValueError('Invalid reference dimensions')
         if data['alignment'].get('space') != 'rgb_image':
             raise ValueError('References must be prepared in RGB image coordinates')
-        self.paths = [(self.root / f'{i:04d}.jpg').resolve() for i in range(count)]
+        extension = data.get('frame_extension', '.jpg')
+        if extension not in ('.jpg', '.png'):
+            raise ValueError('Unsupported reference image format')
+        self.paths = [(self.root / f'{i:04d}{extension}').resolve() for i in range(count)]
         if any(p.parent != self.root or not p.is_file() for p in self.paths):
             raise ValueError('Incomplete reference frames')
         self.info = {k: data[k] for k in ('width', 'height', 'frame_count', 'fps', 'alignment')}

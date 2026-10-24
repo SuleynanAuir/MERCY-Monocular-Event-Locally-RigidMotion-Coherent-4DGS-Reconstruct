@@ -591,21 +591,86 @@ test('overview fits a shared content envelope and does not shrink on later anima
   assert.equal(c.elements.stage.style['--overview-height'],height);
 });
 
-test('complete local playback needs no stream or ACK packets and camera changes invalidate its cache',async()=>{
+async function answerStill(c,req) {
+ const header=Buffer.from(JSON.stringify({id:req.id,frame:req.frame,width:1280,height:640,panel_width:640,comparison:true,right_frame:req.frame,render_ms:0}));
+ const data=new ArrayBuffer(4+header.length+4);new DataView(data).setUint32(0,header.length,true);new Uint8Array(data,4,header.length).set(header);await c.socket.onmessage({data});
+}
+function memoryViewStore(c,failWrite=()=>false) {
+ const records=new Map();
+ c.context.GaussianPlayback.Media.ExportFrameStore.open=async()=>({
+  async save(key,entry){if(failWrite())throw new Error('disk full');for(const [frame,record] of entry.frames)records.set(`${key}:${frame}`,record);},
+  async get(key,frame){return records.get(`${key}:${frame}`);},close(){}
+ });return records;
+}
+const flush=()=>new Promise(r=>setImmediate(r));
+
+test('all six complete views gate presentation and stay locally playable after RAM eviction and disconnect',async()=>{
  const c=await client({frame_count:4,prewarmed_frames:4,times_seconds:[0,1/60,2/60,3/60],rpm:[null,null,null,null]},null,'');
- c.elements.smoothPlayback.checked=true;c.elements.streamRate.value='60';c.elements.loop.checked=true;c.elements.play.onclick();
- await new Promise(r=>setImmediate(r));
- const requests=c.socket.sent.slice(-4);assert.deepEqual(requests.map(r=>r.frame),[0,1,2,3]);
- for(const req of requests){
-  const header=Buffer.from(JSON.stringify({id:req.id,frame:req.frame,width:1280,height:640,panel_width:640,comparison:true,right_frame:req.frame,render_ms:0}));
-  const data=new ArrayBuffer(4+header.length+4);new DataView(data).setUint32(0,header.length,true);new Uint8Array(data,4,header.length).set(header);await c.socket.onmessage({data});
+ const records=memoryViewStore(c);c.elements.smoothPlayback.checked=true;
+ // Force a one-view RAM budget: completed disk views must survive eviction.
+ c.context.GaussianPlayback.Media.SequenceCache.prototype.put=function(entry,index,record){
+  for(const [key,e] of this.entries)if(e!==entry)this.entries.delete(key);
+  entry.frames.set(index,record);entry.complete=entry.frames.size===entry.count;
+ };
+ let offset=c.socket.sent.length;c.tick(16);await flush();
+ assert.equal(c.elements.loadTitle.textContent,'渲染中');
+ for(let view=0;view<6;view++) {
+  const requests=c.socket.sent.slice(offset).filter(m=>m.frame!==undefined);offset=c.socket.sent.length;
+  assert.equal(requests.length,4);assert.equal(c.elements.canvas.dataset.frame,undefined,'no partial group is presented');
+  for(const req of requests)await answerStill(c,req);
+  await flush();
  }
- await new Promise(r=>setImmediate(r));c.tick(100);await new Promise(r=>setImmediate(r));
- const sent=c.socket.sent.length;c.tick(116);c.tick(133);c.tick(150);
- assert.equal(c.context.gaussianViewerStats.local,true);assert.ok(c.context.gaussianViewerStats.presented>0);
- assert.equal(c.socket.sent.length,sent);assert.equal(c.stream(),undefined,'local playback never opens a server stream');
- c.presets[1].onclick();c.tick(166);await new Promise(r=>setImmediate(r));
- assert.equal(c.socket.sent.at(-1).yaw,35,'a new view requests its own complete sequence');
+ assert.equal(records.size,24);assert.equal(c.elements.loadProgress.value,100);
+ c.tick(32);await flush();assert.equal(c.elements.canvas.dataset.frame,'0');assert.equal(c.elements.overlay.hidden,true);
+ c.socket.readyState=3;c.socket.onclose();
+ c.elements.streamRate.value='60';c.elements.loop.checked=true;c.elements.play.onclick();
+ const sent=c.socket.sent.length;
+ for(let view=0;view<6;view++) {
+  c.presets[view].onclick();c.tick(100+view*100);await flush();c.tick(116+view*100);await flush();
+  assert.equal(c.context.gaussianViewerStats.local,true);assert.ok(c.context.gaussianViewerStats.presented>0);
+ }
+ assert.equal(c.socket.sent.length,sent);assert.equal(c.stream(),undefined);
+ // A quality change must prepare a new group, not reuse mismatched images.
+ c.socket.readyState=1;c.elements.resolution.value='512';c.elements.resolution.onchange();c.tick(800);await flush();
+ assert.equal(c.elements.loadTitle.textContent,'渲染中');assert.equal(c.socket.sent.at(-1).width,512);
+});
+
+test('failed disk writes never publish a ready group and retry reuses downloaded frames',async()=>{
+ const c=await client({frame_count:4,prewarmed_frames:4,times_seconds:[0,1/60,2/60,3/60],rpm:[null,null,null,null]},null,'');
+ let fail=true;const records=memoryViewStore(c,()=>fail);c.elements.smoothPlayback.checked=true;
+ c.tick(16);await flush();for(const req of c.socket.sent.slice(-4))await answerStill(c,req);await flush();
+ assert.equal(c.elements.loadTitle.textContent,'渲染未完成');assert.equal(c.elements.canvas.dataset.frame,undefined);
+ assert.equal(c.elements.retryViews.hidden,false);assert.equal(records.size,0);
+ await answerStill(c,c.socket.sent.at(-1));
+ assert.equal(c.elements.canvas.dataset.frame,undefined,'late preparation replies cannot reveal an incomplete group');
+ assert.equal(c.elements.loadTitle.textContent,'渲染未完成');
+ fail=false;const sent=c.socket.sent.length;c.elements.retryViews.onclick();c.tick(32);await flush();
+ assert.equal(records.size,4,'retry commits the retained front sequence');
+ assert.equal(c.socket.sent.slice(sent).filter(m=>m.frame!==undefined).length,4,'only the next view is requested');
+ assert.equal(c.socket.sent.at(-1).yaw,35);
+});
+
+test('each display mode prepares six isolated views and returning to a completed mode reuses disk',async()=>{
+ const mode={available:true,default_resolution:640,triangle_count:100,description:''};
+ const c=await client({frame_count:2,prewarmed_frames:2,times_seconds:[0,1/60],rpm:[null,null],
+  mesh:mode,clay:mode,pseudocolor:mode,hybrid:mode},null,'');
+ const records=memoryViewStore(c);c.elements.smoothPlayback.checked=true;
+ let now=10;
+ for(const mode of ['gaussian','mesh','clay','pseudocolor','hybrid']) {
+  if(mode!=='gaussian')c.elements.renderMode.onchange({target:{value:mode}});
+  let offset=c.socket.sent.length;c.tick(now+=10);await flush();
+  for(let view=0;view<6;view++) {
+   const requests=c.socket.sent.slice(offset).filter(m=>m.frame!==undefined);offset=c.socket.sent.length;
+   assert.equal(requests.length,2);assert.ok(requests.every(r=>r.render_mode===mode));
+   for(const request of requests)await answerStill(c,request);await flush();
+  }
+  assert.equal(c.elements.loadProgress.value,100);c.tick(now+=10);await flush();
+  assert.equal(c.elements.overlay.hidden,true);
+ }
+ assert.equal(records.size,60);
+ const sent=c.socket.sent.length;c.elements.renderMode.onchange({target:{value:'gaussian'}});
+ c.tick(now+=10);await flush();c.tick(now+=10);await flush();
+ assert.equal(c.socket.sent.length,sent);assert.equal(c.elements.overlay.hidden,true);
 });
 
 test('cancelling whole render preparation cannot restart playback when in-flight frames arrive',async()=>{
@@ -618,4 +683,24 @@ test('cancelling whole render preparation cannot restart playback when in-flight
  }
  await new Promise(r=>setImmediate(r));c.tick(100);
  assert.equal(c.context.gaussianViewerStats,undefined);assert.equal(c.stream(),undefined);
+});
+
+test('ROI sets are independent per camera view and shared across render modes of that view',async()=>{
+ const c=await client({mesh:{available:true,triangle_count:100,default_resolution:640}});
+ await c.packet(0,0);c.elements.detailToggle.onclick();c.elements.detailAdd.onclick();
+ const regions=()=>JSON.parse(c.elements.detailLeft.dataset.regions);
+ const front=regions();assert.equal(front.length,2);
+ c.presets[2].onclick();c.tick(16);await c.packet(0,0);
+ assert.deepEqual(regions(),[],'side view starts with its own empty selection set');
+ c.elements.detailAdd.onclick();const side=regions();assert.equal(side[0].label,'A');
+ c.presets[0].onclick();c.tick(32);await c.packet(0,0);assert.deepEqual(regions(),front);
+ c.elements.renderMode.onchange({target:{value:'mesh'}});c.tick(48);await c.packet(0,0);
+ assert.deepEqual(regions(),front,'a mode change keeps the current camera selections');
+ c.elements.detailAdd.onclick();const frontMesh=regions();assert.equal(frontMesh[2].label,'C');
+ c.elements.renderMode.onchange({target:{value:'gaussian'}});c.tick(64);await c.packet(0,0);
+ assert.deepEqual(regions(),frontMesh,'edits in Mesh also appear in Gaussian for this view');
+ c.presets[2].onclick();c.tick(80);await c.packet(0,0);assert.deepEqual(regions(),side);
+ c.elements.detailClear.onclick();assert.deepEqual(regions(),[]);
+ c.presets[0].onclick();c.tick(96);await c.packet(0,0);assert.deepEqual(regions(),frontMesh,'clearing side does not clear front');
+ assert.equal(c.elements.detailSelect.value,'2','selected ROI is restored with the view');
 });

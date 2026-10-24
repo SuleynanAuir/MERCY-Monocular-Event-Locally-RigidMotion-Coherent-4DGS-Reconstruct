@@ -11,6 +11,19 @@ from utils.viewer_reference import ReferenceSequence
 
 
 class ReferenceTests(unittest.IsolatedAsyncioTestCase):
+    def test_lossless_png_sequence_and_extension_allowlist(self):
+        self.data['frame_extension'] = '.png'
+        self.path.write_text(json.dumps(self.data))
+        for i in range(3):
+            (self.root / f'{i:04d}.png').write_bytes(b'png-frame')
+        sequence = ReferenceSequence(self.path, self.scene)
+        self.assertEqual(sequence.frame_path(1).suffix, '.png')
+        self.assertEqual(sequence.frame_path(1).read_bytes(), b'png-frame')
+        self.data['frame_extension'] = '/../../private'
+        self.path.write_text(json.dumps(self.data))
+        with self.assertRaisesRegex(ValueError, 'format'):
+            ReferenceSequence(self.path, self.scene)
+
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)

@@ -15,6 +15,14 @@
   const eventContext = eventCanvas.getContext("2d", {alpha: false});
   // ROIs are shared image coordinates. Crops always read the displayed frame.
   const detail = {enabled:false, regions:[], selected:null, next:0, drag:null, views:[]};
+  const detailByView=new Map();
+  function selectDetailView(key) {
+    if(detail.scope===key)return;
+    if(detail.scope)detailByView.set(detail.scope,{regions:detail.regions,selected:detail.selected,next:detail.next});
+    const saved=detailByView.get(key)||{regions:[],selected:null,next:0};
+    Object.assign(detail,saved,{scope:key,drag:null});
+    rebuildDetail();
+  }
   const detailPairs = [[canvas,$("detailLeft")],[rightCanvas,$("detailRight")]];
   const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
   // Shared vertical framing preserves RGB/event alignment and ROI coordinates.
@@ -241,6 +249,9 @@
     window.location.search = query.toString();
   };
   const sequences=new GaussianPlayback.Media.SequenceCache();
+  const presetViews=new GaussianPlayback.Media.PresetViews();
+  const presetButtons=[...document.querySelectorAll('.preset')];
+  let viewPreparation=null,preparedViewGroup=null,failedViewGroup=null;
   const frameRequests=new Map();
   let exportJob=null;
   function sequenceSettings(mode=state.renderMode) {
@@ -250,7 +261,80 @@
       quality:state.scene.default_stream_quality??95,...dimensions()};
   }
   function sequenceKey(settings){return JSON.stringify(settings);}
-  function readySequence(){if(!state.scene)return null;const e=sequences.get(sequenceKey(sequenceSettings()));return e?.complete && (!references || references.prepared)?e:null;}
+  function readySequence(){if(!state.scene)return null;const key=sequenceKey(sequenceSettings());const e=presetViews.get(key)||sequences.get(key);return e?.complete && (!references || references.prepared)?e:null;}
+  async function readRecord(entry,frame){return entry.read?entry.read(frame):entry.frames.get(frame);}
+  function viewGroup() {
+    const base={...sequenceSettings(),yaw:0,pitch:0,zoom:1,pan_x:0,pan_y:0};
+    return {key:sequenceKey(base),views:presetButtons.map(button=>({name:button.textContent,
+      settings:{...base,yaw:+button.dataset.yaw,pitch:+button.dataset.pitch}}))};
+  }
+  function preparationUI(busy) {
+    stage.classList.toggle('preparing-views',busy);
+    $('viewerPanel').classList.toggle('waiting-view',busy);
+    $('detailRow').style.visibility=busy?'hidden':'';
+    stage.setAttribute('aria-busy',String(busy));
+  }
+  async function prepareAllViews(group) {
+    const job={key:group.key,resume:state.playing||autoStartPending};viewPreparation=job;
+    presetViews.activate(group.views.map(view=>sequenceKey(view.settings)));
+    autoStartPending=false;setPlaying(false);state.dirty=false;
+    state.minimumId=++state.id;state.pending.clear();
+    const locked=[...document.querySelectorAll('button,input,select')]
+      .filter(el=>el!==$('objectSelect')).map(el=>[el,el.disabled]);
+    locked.forEach(([el])=>{el.disabled=true;});preparationUI(true);
+    $('retryViews').hidden=true;
+    const valid=()=>viewPreparation===job && group.key===viewGroup().key;
+    const count=state.scene.frame_count,total=count*(group.views.length+(references?1:0));
+    let finished=0;
+    const viewStates=group.views.map(view=>presetViews.get(sequenceKey(view.settings))?'ready':'waiting');
+    const renderViewStates=()=>group.views.forEach((view,i)=>{
+      const el=$(`loadView${i}`),labels={waiting:'等待',rendering:'渲染中',saving:'缓存中',ready:'就绪'};
+      el.dataset.state=viewStates[i];el.textContent=`${view.name} · ${labels[viewStates[i]]}`;
+    });
+    renderViewStates();
+    const report=(name,done=0)=>{
+      if(!valid())return;
+      const progress=Math.min(99.9,(finished+done)/total*100);
+      overlay('渲染中',`${name} · ${Math.floor(progress)}% · 全部六个视角完成后展示`);
+      loadingProgress(progress);
+      text('streamStatus',`渲染中 · ${Math.floor(progress)}%`);
+    };
+    report('准备完整动画');
+    try {
+      if(references){await references.prepare(count,(done)=>report('RGB / 事件视频',done),valid);finished+=count;}
+      for(const [index,view] of group.views.entries()) {
+        if(!valid())throw new Error('画面设置已变化');
+        const key=sequenceKey(view.settings);
+        if(!presetViews.get(key)) {
+          viewStates[index]='rendering';renderViewStates();
+          const entry=await prepareSequence(view.settings,valid,done=>report(`${view.name} ${index+1}/6`,done));
+          viewStates[index]='saving';renderViewStates();
+          report(`${view.name} · 保存本地缓存`,count);
+          await presetViews.save(entry);
+          sequences.remove(key);
+        }
+        viewStates[index]='ready';renderViewStates();
+        finished+=count;report(`${view.name}已就绪`);
+      }
+      if(!valid())throw new Error('画面设置已变化');
+      preparedViewGroup=group.key;failedViewGroup=null;
+      loadingProgress(100);
+      text('loadMessage','六个视角已就绪 · 100% · 正在显示画面');
+      text('streamStatus','六个视角已就绪 · 本地播放');
+      state.dirty=true;
+    }catch(error){
+      failedViewGroup=group.key;
+      overlay('渲染未完成',`${error.message}。已完成的视角会保留，请重试。`,true);
+      $('retryViews').hidden=false;state.dirty=false;
+    }finally{
+      viewPreparation=null;locked.forEach(([el,disabled])=>{el.disabled=disabled;});
+      if(preparedViewGroup===group.key){
+        controls(true);
+        if(job.resume){$('loop').checked ||= launchOptions.get('loop')==='1';setPlaying(true);}
+      }else controls(false);
+    }
+  }
+  $('retryViews').onclick=()=>{failedViewGroup=null;state.dirty=true;};
   function rejectFrameRequests(error){for(const {reject,timer} of frameRequests.values()){clearTimeout(timer);reject(error);}frameRequests.clear();}
   function fetchFrame(settings,frame) {
     if(state.socket?.readyState!==WebSocket.OPEN)return Promise.reject(new Error('渲染连接已断开，请重连后重试'));
@@ -273,12 +357,13 @@
   async function prepareSequence(settings,valid,progress=()=>{}) {
     const entry=sequences.create(sequenceKey(settings),state.scene.frame_count);
     if(entry.complete)return entry;
-    await ensureConnection(valid);
+    const saved=presetViews.get(entry.key);
+    if(!saved)await ensureConnection(valid);
     let next=0,failure=null;
     await Promise.all(Array.from({length:4},async()=>{
       while(!failure && valid() && next<entry.count) {
         const index=next++;if(entry.frames.has(index))continue;
-        try {const record=await fetchFrame(settings,index);sequences.put(entry,index,record);if(valid())progress(entry.frames.size,entry.count);}
+        try {const record=saved?await saved.read(index):await fetchFrame(settings,index);if(!valid())break;sequences.put(entry,index,record);if(valid())progress(entry.frames.size,entry.count);}
         catch(error){failure=error;}
       }
     }));
@@ -286,7 +371,7 @@
     if(!entry.complete)throw new Error('整段缓存未完成，请重试');return entry;
   }
   async function decodeRecord(record) {
-    const decoded=await Promise.allSettled([createImageBitmap(record.blob),...(references?[references.frame(record.meta.frame)]:[])]);
+    const decoded=await Promise.allSettled([createImageBitmap(GaussianPlayback.Media.recordBlob(record)),...(references?[references.frame(record.meta.frame)]:[])]);
     const failure=decoded.find(r=>r.status==='rejected');
     if(failure){decoded.forEach(r=>{if(r.status==='fulfilled')r.value.close();});throw failure.reason;}
     const image=decoded[0].value,reference=decoded[1]?.value;
@@ -300,7 +385,7 @@
         const seq=stream.seq++,position=stream.startFrame+Math.floor(seq*state.scene.fps*stream.speed/stream.buffer.rate+1e-9);
         const last=!stream.loop && position>=state.scene.frame_count-1;
         const frame=stream.loop?position%state.scene.frame_count:Math.min(position,state.scene.frame_count-1);
-        const record=stream.entry.frames.get(frame);if(!record)throw new Error('本地缓存帧不完整');
+        const record=await readRecord(stream.entry,frame);if(!record)throw new Error('本地缓存帧不完整');
         const bitmap=await decodeRecord(record);
         if(state.stream!==stream){bitmap.close();break;}
         stream.buffer.push({meta:{...record.meta,id:stream.id,frame,client_cache_hit:true,stream:{seq}},bitmap});
@@ -392,7 +477,12 @@
     $("connectionText").textContent = text;
     $("statusDot").className = `dot ${kind}`;
   }
+  function loadingProgress(value) {
+    const percent=clamp(Number(value)||0,0,100);
+    $('loadProgress').value=percent;text('loadPercent',`${Math.floor(percent)}%`);
+  }
   function overlay(title, message, error = false) {
+    $('loadViews').hidden=!viewPreparation;
     $("overlay").hidden = false;
     $("overlay").classList.toggle("error", error);
     $("loadTitle").textContent = title;
@@ -402,6 +492,7 @@
     ["play", "previous", "next", "restart", "timeline", "snapshot"].forEach(id => $(id).disabled = !enabled);
   }
   function setPlaying(value) {
+    if(viewPreparation && value)return;
     const preparationId = ++state.preparationId;
     state.preparing = false;
     stopStream();
@@ -466,11 +557,13 @@
   }
 
   function reset(yaw = 0, pitch = 0) {
+    stopStream();
+    selectDetailView(`preset:${yaw}:${pitch}`);
     Object.assign(state, {yaw, pitch, zoom: 1, pan_x: 0, pan_y: 0, dirty: true});
     document.querySelectorAll(".preset").forEach(button => button.classList.toggle("active",
       +button.dataset.yaw === yaw && +button.dataset.pitch === pitch));
     const viewName = yaw === 0 && pitch === 0 ? "正视" : yaw === 180 && pitch === 0 ? "背面" :
-      yaw === 0 && pitch === 35 ? "俯视" : yaw === 0 && pitch === -35 ? "仰视" : "自由视角";
+      yaw === 0 && pitch === 35 ? "俯视" : yaw === 0 && pitch === -35 ? "仰视" : yaw === 35 && pitch === 20 ? "斜视" : yaw === 80 && pitch === 0 ? "侧视" : "自由视角";
     $("viewLabel").textContent = `${viewName} · 透视`;
   }
   function dimensions() {
@@ -490,10 +583,19 @@
     return {width: Math.floor(size.width * scale), height: Math.floor(size.height * scale)};
   }
   function requestFrame() {
+    if(viewPreparation)return;
+    if(state.scene && !state.exporting && $('smoothPlayback').checked) {
+      const group=viewGroup();
+      if(preparedViewGroup!==group.key) {
+        if(failedViewGroup!==group.key)prepareAllViews(group);
+        return;
+      }
+    }
     if(state.exporting || state.preparing)return;
     if(!state.playing && state.dirty && $("smoothPlayback").checked && readySequence() && !state.localStill) {
-      const entry=readySequence(),id=++state.id,record=entry.frames.get(state.frame);state.localStill=true;state.dirty=false;
-      decodeRecord(record).then(bitmap=>{if(!state.playing && !state.dirty && sequenceKey(sequenceSettings())===entry.key)present({meta:{...record.meta,id,client_cache_hit:true},bitmap});else bitmap.close();})
+      const entry=readySequence(),id=++state.id,frame=state.frame;state.localStill=true;state.dirty=false;
+      readRecord(entry,frame).then(async record=>({record,bitmap:await decodeRecord(record)}))
+        .then(({record,bitmap})=>{if(!state.playing && !state.dirty && sequenceKey(sequenceSettings())===entry.key)present({meta:{...record.meta,id,client_cache_hit:true},bitmap});else bitmap.close();})
         .catch(error=>text("streamStatus",error.message)).finally(()=>{state.localStill=false;});return;
     }
     if(state.localStill)return;
@@ -544,6 +646,7 @@
     $("streamStatus").textContent = "预缓冲…";
   }
   function present(item, close = true) {
+    if(viewPreparation){if(close)item.bitmap.close();return;}
     const {meta} = item, bitmap = item.bitmap.image || item.bitmap, now = performance.now();
     $("snapshot").disabled = false;
     const panelWidth = meta.comparison ? meta.panel_width : meta.width;
@@ -590,7 +693,7 @@
         labels(); state.lastLabels = now;
       }
     }
-    if (!$("overlay").hidden) {$("overlay").hidden = true; status("已连接", "ready");}
+    if (!$("overlay").hidden && !viewPreparation) {$("overlay").hidden = true; preparationUI(false);status("已连接", "ready");}
     if (meta.stream && window.gaussianViewerStats) {
       window.gaussianViewerStats.draw_ms = performance.now() - now;
       window.gaussianViewerStats.cache_hits += Number(!!meta.cache_hit);
@@ -606,7 +709,7 @@
     state.socket = socket; socket.binaryType = "arraybuffer";
     socket.onopen = () => {
       status("已连接", "ready"); state.pending.clear(); state.dirty = true;
-      controls(!state.exporting); requestFrame();
+      controls(!state.exporting && !viewPreparation); requestFrame();
       if (autoStartPending) {
         autoStartPending = false;
         $("loop").checked = launchOptions.get("loop") === "1";
@@ -636,9 +739,12 @@
         if(frameRequests.has(meta.id)) {
           const request=frameRequests.get(meta.id);frameRequests.delete(meta.id);clearTimeout(request.timer);
           if(length+4===data.byteLength)request.reject(new Error("缺少图像数据"));
-          else request.resolve({meta,blob:new Blob([new Uint8Array(data,4+length)],{type:"image/jpeg"})});
+          else request.resolve({meta,bytes:data.slice(4+length),type:"image/jpeg"});
           return;
         }
+        // Late replies to expired preparation/export requests must never be
+        // mistaken for a visible still, especially while a failed group is hidden.
+        if(!meta.stream && !state.pending.has(meta.id))return;
         // Keep compressed JPEGs (<= 64 MiB), not hundreds of decoded bitmaps.
         // Stream lifetime fixes frame/camera/quality; replacements start empty.
         const stream = state.stream?.id === meta.id ? state.stream : null;
@@ -690,6 +796,7 @@
     socket.onclose = () => {
       if (state.socket !== socket) return;
       rejectFrameRequests(new Error("渲染连接中断；已完成缓存会保留"));
+      if(viewPreparation){status('连接中断 · 可重试渲染','error');return;}
       if($("smoothPlayback").checked && readySequence()) {status("本地缓存可播放 · 服务器连接断开","ready");return;}
       state.pending.clear(); setPlaying(false); controls(false);
       status("连接已断开", "error");
@@ -712,7 +819,7 @@
         select.value = data.scene_id;
         select.disabled = data.objects.length < 2;
       }
-      $("loadProgress").value = data.progress || 0;
+      loadingProgress(data.progress || 0);
       if (data.error) {
         overlay("场景加载失败", `${data.message}（${data.detail}）`, true);
         status("加载失败", "error"); return;
@@ -793,7 +900,7 @@
           `${buffer.rate} FPS 同步流 · 缓存 ${buffer.frames.size} 帧 · 断流 ${buffer.underruns}`);
         state.lastStreamStatus = now;
       }
-    } else if (!state.playing && !state.preparing && !state.exporting) {
+    } else if (!state.playing && !state.preparing && !state.exporting && !viewPreparation && !failedViewGroup) {
       text("streamStatus", "逐帧查看");
     } else if (state.interacting) {
       text("streamStatus", "视角交互 · 松开恢复播放");
@@ -801,7 +908,7 @@
     if (now - state.lastReceived > 1500) $("displayFps").textContent = "0.0";
     requestFrame(); requestAnimationFrame(tick);
   }
-  $("smoothPlayback").onchange=()=>{setPlaying(false);state.dirty=true;};
+  $("smoothPlayback").onchange=()=>{setPlaying(false);failedViewGroup=null;controls(true);state.dirty=true;};
   $("play").onclick = () => setPlaying(!(state.playing || state.preparing));
   $("restart").onclick = () => {setPlaying(false); setFrame(0);};
   $("previous").onclick = () => {setPlaying(false); setFrame(state.frame - 1);};
@@ -864,7 +971,7 @@
   });
   stage.oncontextmenu = event => event.preventDefault();
   stage.onpointerdown = event => {
-    if(state.exporting)return;
+    if(state.exporting || viewPreparation || failedViewGroup)return;
     if (event.target.closest("button") || event.target.closest(".overlay") || event.target.closest(".reference-cell") || event.target.closest(".compare-label")) return;
     if (detail.enabled && comparisonView()) {
       if (event.target === canvas || event.target === rightCanvas) startDetail(event,event.target);
@@ -886,6 +993,7 @@
     }
     if (!pointer || pointer.id !== event.pointerId) return;
     const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
+    if(dx || dy)selectDetailView("free");
     pointer.x = event.clientX; pointer.y = event.clientY;
     if (pointer.pan) {
       const factor = state.zoom * 1.2 / stage.clientHeight;
@@ -902,9 +1010,9 @@
     if (detail.drag?.id === event.pointerId) detail.drag = null;
     if (pointer?.id === event.pointerId) {pointer = null; state.interacting = false; state.dirty = true;}
   };
-  stage.ondblclick = event => {if (!state.exporting && !(detail.enabled && comparisonView()) && !event.target.closest(".reference-cell")) reset();};
+  stage.ondblclick = event => {if (!state.exporting && !viewPreparation && !failedViewGroup && !(detail.enabled && comparisonView()) && !event.target.closest(".reference-cell")) reset();};
   stage.addEventListener("wheel", event => {
-    if(state.exporting)return;
+    if(state.exporting || viewPreparation || failedViewGroup)return;
     if (event.target.closest(".reference-cell") || event.target.closest(".compare-label")) return;
     if (detail.enabled && comparisonView()) return;
     state.interacting = true; stopStream(); clearTimeout(wheelTimer);
@@ -913,7 +1021,7 @@
     state.dirty = true;
   }, {passive: false});
   document.addEventListener("keydown", event => {
-    if(state.exporting)return;
+    if(state.exporting || viewPreparation || failedViewGroup)return;
     if (event.target.closest("input,select,textarea,button,a") || !state.scene) return;
     if (event.code === "Space") {event.preventDefault(); setPlaying(!(state.playing || state.preparing));}
     if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
@@ -1002,7 +1110,7 @@
         const entry=await prepareSequence(settings[modeIndex],valid,(done,total)=>report(`准备 ${name} ${done}/${total}`));
         await store.save(videoModes[modeIndex][0],entry);
         for(let frame=0;frame<count;frame++) {
-          check();const bitmap=await createImageBitmap(entry.frames.get(frame).blob);
+          check();const bitmap=await createImageBitmap(GaussianPlayback.Media.recordBlob(entry.frames.get(frame)));
           try{measure(bitmap);}finally{bitmap.close();}
           if(modeIndex===0 && references){const ref=await references.frame(frame);try{measure(ref);}finally{ref.close();}}
           if(frame%40===0){report(`分析完整运动范围 · ${modeIndex+1}/5 · ${frame+1}/${count}`);await new Promise(resolve=>setTimeout(resolve,0));}
@@ -1069,6 +1177,6 @@
     finally{writer?.close();store?.close();controls.forEach(([el,disabled])=>{el.disabled=disabled;});$('cancelExport').hidden=true;state.exporting=false;exportJob=null;state.dirty=true;}
   };
 
-  window.addEventListener("beforeunload", () => {exportJob?.store?.close();state.socket?.close();});
+  window.addEventListener("beforeunload", () => {presetViews.close();exportJob?.store?.close();state.socket?.close();});
   reset(); poll(); requestAnimationFrame(tick);
 })();

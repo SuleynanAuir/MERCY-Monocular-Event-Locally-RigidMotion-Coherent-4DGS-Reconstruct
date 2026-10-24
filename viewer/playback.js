@@ -98,24 +98,28 @@
     e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,directory.length,true);e.setUint32(16,offset,true);
     return new Blob([...entries,directory,end],{type:'application/zip'});
   }
+  const recordSize=record=>record.bytes?.byteLength??record.blob.size;
+  const recordBlob=record=>record.blob||new Blob([record.bytes],{type:record.type||'image/jpeg'});
   class SequenceCache {
     constructor(limit=384*1024**2){this.limit=limit;this.entries=new Map();this.bytes=0;}
+    remove(key){const entry=this.entries.get(key);if(entry){this.entries.delete(key);this.bytes-=entry.bytes;}}
     get(key){const e=this.entries.get(key);if(e){this.entries.delete(key);this.entries.set(key,e);}return e;}
     create(key,count){let e=this.get(key);if(!e){e={key,count,frames:new Map(),bytes:0,complete:false};this.entries.set(key,e);}return e;}
     put(entry,index,record){
       if(entry.frames.has(index))return;
-      if(entry.bytes+record.blob.size>this.limit)throw new Error('当前画面整段缓存超过容量，请降低清晰度后重试');
-      for(const [key,e] of this.entries){if(this.bytes+record.blob.size<=this.limit)break;if(e===entry)continue;this.entries.delete(key);this.bytes-=e.bytes;}
-      entry.frames.set(index,record);entry.bytes+=record.blob.size;this.bytes+=record.blob.size;entry.complete=entry.frames.size===entry.count;
+      const size=recordSize(record);
+      if(entry.bytes+size>this.limit)throw new Error('当前画面整段缓存超过容量，请降低清晰度后重试');
+      for(const [key,e] of this.entries){if(this.bytes+size<=this.limit)break;if(e===entry)continue;this.entries.delete(key);this.bytes-=e.bytes;}
+      entry.frames.set(index,record);entry.bytes+=size;this.bytes+=size;entry.complete=entry.frames.size===entry.count;
     }
   }
   class ExportFrameStore {
-    static async open() {
+    static async open(prefix='scgs-video-export') {
       if(!root.indexedDB)throw new Error('浏览器未允许视频临时缓存');
-      const name=`scgs-video-export-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const name=`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       // Clean up only our abandoned temporary exports, never application/user databases.
       if(root.indexedDB.databases)for(const item of await root.indexedDB.databases()) {
-        const match=/^scgs-video-export-(\d+)-/.exec(item.name||'');
+        const match=/^scgs-(?:video-export|preset-views)-(\d+)-/.exec(item.name||'');
         if(match && Date.now()-Number(match[1])>86400000)root.indexedDB.deleteDatabase(item.name);
       }
       return new Promise((resolve,reject)=>{
@@ -126,17 +130,76 @@
       });
     }
     constructor(name,db){this.name=name;this.db=db;}
-    save(mode,entry){return new Promise((resolve,reject)=>{
+    async save(mode,entry){
+      const frames=[...entry.frames];
+      for(let start=0;start<frames.length;start+=16){
+        // Batch encoded bytes to bound transient memory, without awaiting inside
+        // an open transaction (which would let the browser auto-close it).
+        const batch=await Promise.all(frames.slice(start,start+16).map(async([frame,record])=>
+          [frame,{meta:record.meta,bytes:record.bytes||await record.blob.arrayBuffer(),type:record.type||record.blob?.type}]));
+        await new Promise((resolve,reject)=>{
+          const tx=this.db.transaction('frames','readwrite'),store=tx.objectStore('frames');
+          for(const [frame,record] of batch)store.put(record,`${mode}:${frame}`);
+          tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>{
+            const error=new Error(`帧缓存写入失败：${tx.error?.name||'存储错误'} ${tx.error?.message||''}`);
+            error.name=tx.error?.name||'Error';reject(error);
+          };
+        });
+      }
+    }
+    remove(mode,count){return new Promise((resolve,reject)=>{
       const tx=this.db.transaction('frames','readwrite'),store=tx.objectStore('frames');
-      for(const [frame,record] of entry.frames)store.put(record,`${mode}:${frame}`);
-      tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(new Error('视频临时存储写入失败，请检查可用磁盘空间'));
+      for(let frame=0;frame<count;frame++)store.delete(`${mode}:${frame}`);
+      tx.oncomplete=()=>resolve();tx.onabort=tx.onerror=()=>reject(tx.error||new Error('无法释放未完成缓存'));
     });}
     get(mode,frame){return new Promise((resolve,reject)=>{
       const req=this.db.transaction('frames','readonly').objectStore('frames').get(`${mode}:${frame}`);
       req.onerror=()=>reject(new Error('视频临时缓存读取失败'));
-      req.onsuccess=()=>req.result?resolve(req.result):reject(new Error('视频缓存帧缺失'));
+      req.onsuccess=()=>{const record=req.result;if(!record){reject(new Error('视频缓存帧缺失'));return;}
+        resolve(record);};
     });}
     close(){this.db.close();root.indexedDB.deleteDatabase(this.name);}
+  }
+  // Completed views live on disk independently of the bounded RAM sequence LRU.
+  // A view is advertised only after all of its write transactions commit.
+  class PresetViews {
+    constructor(memoryLimit=512*1024**2){this.entries=new Map();this.store=null;this.opening=null;this.memoryBytes=0;this.memoryLimit=memoryLimit;}
+    get(key){return this.entries.get(key);}
+    activate(keys){this.activeKeys=new Set(keys);}
+    async releaseUnused(){
+      let released=false;
+      if(this.activeKeys)for(const [key,saved] of this.entries){
+        if(this.activeKeys.has(key))continue;
+        if(saved.memoryBytes)this.memoryBytes-=saved.memoryBytes;
+        else await this.store.remove(key,saved.count);
+        this.entries.delete(key);released=true;
+      }
+      return released;
+    }
+    async save(entry){
+      if(!entry.complete || entry.frames.size!==entry.count)throw new Error('视角帧不完整');
+      if(!this.opening)this.opening=ExportFrameStore.open('scgs-preset-views').catch(error=>{this.opening=null;throw error;});
+      this.store=await this.opening;
+      let read,memoryBytes=0;
+      try{
+        try{await this.store.save(entry.key,entry);}
+        catch(error){if(error.name!=='QuotaExceededError' || !await this.releaseUnused())throw error;await this.store.save(entry.key,entry);}
+        read=index=>this.store.get(entry.key,index);
+      }
+      catch(error){
+        if(error.name!=='QuotaExceededError')throw error;
+        // Some private/embedded browsers enforce less space than their reported
+        // quota. Retain compressed frames in bounded RAM instead of dropping a view.
+        await this.store.remove(entry.key,entry.count);
+        const bytes=[...entry.frames.values()].reduce((sum,record)=>sum+recordSize(record),0);
+        if(this.memoryBytes+bytes>this.memoryLimit)throw new Error('浏览器本地缓存空间不足，请使用普通浏览器窗口或降低清晰度后重试');
+        const frames=new Map(entry.frames);this.memoryBytes+=bytes;
+        memoryBytes=bytes;read=async index=>frames.get(index);
+      }
+      const saved={key:entry.key,count:entry.count,complete:true,read,memoryBytes};
+      this.entries.set(entry.key,saved);return saved;
+    }
+    close(){this.store?.close();this.entries.clear();this.memoryBytes=0;}
   }
   async function encoder(width,height,fps) {
     if(!root.VideoEncoder || !root.VideoFrame)throw new Error('当前浏览器不支持逐帧视频导出，请使用新版 Chrome 或 Edge');
@@ -155,7 +218,7 @@
       close(){if(writer.state!=='closed')writer.close();},
     };
   }
-  const Media={SequenceCache,ExportFrameStore,webm,zip,crc32,encoder};
+  const Media={SequenceCache,ExportFrameStore,PresetViews,recordBlob,webm,zip,crc32,encoder};
   if(typeof module!=='undefined' && module.exports)module.exports.Media=Media;
   else root.GaussianPlayback.Media=Media;
 })(globalThis);

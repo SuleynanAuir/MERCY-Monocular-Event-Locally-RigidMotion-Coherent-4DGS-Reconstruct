@@ -9,10 +9,13 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import gaussian_filter, binary_propagation
+from scipy.ndimage import gaussian_filter, binary_propagation, binary_dilation
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
 def probe(path):
@@ -90,12 +93,31 @@ def audit(rgb_path, event_path, count):
         note='Image-space consistency check of supplied videos, not independent physical camera calibration')
 
 
-def white_rgb_preview(rgb):
+def white_rgb_preview(rgb, coverage=None):
     """Replace border-connected black backdrop, preserving enclosed dark details.
 
-    The supplied RGB video has no alpha channel. This conservative display-only
-    matte deliberately does not erase all dark object pixels or infer geometry.
+    A source-geometry matte also removes enclosed background without keying out
+    black parts. Without a verified matte, retain the conservative border rule.
     """
+    if coverage is not None:
+        coverage = np.asarray(coverage, dtype=np.float32)
+        if (coverage.shape != rgb.shape[:2] or not np.isfinite(coverage).all()
+                or coverage.min() < 0 or coverage.max() > 1):
+            raise ValueError('Invalid RGB foreground coverage')
+        # Reject shifted/incorrect camera mattes instead of whitening real parts.
+        bright = rgb.max(axis=2) > 32
+        supported = binary_dilation(coverage > 0, iterations=2)
+        if np.count_nonzero(bright & ~supported) > max(8, np.count_nonzero(bright) * .005):
+            raise ValueError('Geometry matte is not aligned with the RGB foreground')
+        # Original RGB is already composited over black. Add only the missing
+        # background contribution in linear light; do not multiply alpha twice.
+        value = rgb.astype(np.float32) / 255
+        linear = np.where(value <= .04045, value / 12.92, ((value + .055) / 1.055) ** 2.4)
+        linear = np.clip(linear + 1 - coverage[..., None], 0, 1)
+        value = np.where(linear <= .0031308, linear * 12.92, 1.055 * linear ** (1 / 2.4) - .055)
+        result = np.rint(value * 255).clip(0, 255).astype(np.uint8)
+        result[coverage == 1] = rgb[coverage == 1]
+        return result
     dark = rgb.max(axis=2) <= 8
     seed = np.zeros_like(dark)
     seed[0] = dark[0]; seed[-1] = dark[-1]
@@ -104,6 +126,28 @@ def white_rgb_preview(rgb):
     result = rgb.copy()
     result[background] = 255
     return result
+
+
+class GeometryMatteSequence:
+    """Require exact source identity, dimensions and complete frame coverage."""
+    def __init__(self, directory, rgb_path, video):
+        self.root = Path(directory)
+        self.metadata = json.loads((self.root / 'matte.json').read_text())
+        meta = self.metadata
+        if (meta.get('format') != 'rgb_geometry_matte_v1'
+                or any(meta.get(k) != video[k] for k in ('width', 'height', 'frame_count', 'fps'))
+                or meta.get('rendered_frames') != video['frame_count']
+                or meta.get('rgb_sha256') != hashlib.sha256(Path(rgb_path).read_bytes()).hexdigest()
+                or len(meta.get('source_frames', [])) != video['frame_count']):
+            raise ValueError('Geometry matte source or timeline does not match RGB')
+        if any(not (self.root / f'{i:04d}.png').is_file() for i in range(video['frame_count'])):
+            raise ValueError('Incomplete geometry matte sequence')
+
+    def frame(self, index):
+        with Image.open(self.root / f'{index:04d}.png') as image:
+            if image.mode != 'L' or image.size != (self.metadata['width'], self.metadata['height']):
+                raise ValueError('Invalid geometry matte image format or dimensions')
+            return np.asarray(image, dtype=np.float32) / 255
 
 
 def white_event_preview(event):
@@ -119,20 +163,45 @@ def main():
     parser.add_argument('--events', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--white-background', action='store_true', help='Display-only white matte; preserve original videos')
+    parser.add_argument('--matte-directory', type=Path, help='Verified source-geometry coverage; removes enclosed black backdrop')
+    parser.add_argument('--event-reference', type=Path, help='Existing aligned white reference.json; preserve its event pixels exactly in lossless PNG pairs')
     args = parser.parse_args()
     meta, other = probe(args.rgb), probe(args.events)
     if meta != other or meta['frame_count'] < 12:
         raise ValueError('RGB and event video dimensions, FPS and frame count must match')
+    if args.matte_directory and not args.white_background:
+        parser.error('--matte-directory requires --white-background')
+    mattes = GeometryMatteSequence(args.matte_directory, args.rgb, meta) if args.matte_directory else None
     alignment = audit(args.rgb, args.events, meta['frame_count'])
+    existing = None
+    if args.event_reference:
+        # The existing pair has already applied the -1 event interval offset.
+        # Read the matching frame directly; never offset it a second time.
+        from utils.viewer_reference import ReferenceSequence
+        expected = dict(meta, times_seconds=(np.arange(meta['frame_count']) / meta['fps']).tolist())
+        existing = ReferenceSequence(args.event_reference, expected)
+        previous = json.loads(args.event_reference.read_text())
+        if (not args.white_background or previous.get('display_background') != 'white'
+                or previous.get('alignment', {}).get('event_frame_offset') != alignment['event_frame_offset']
+                or previous['width'] != meta['width'] or previous['height'] != meta['height']
+                or previous.get('sources', {}).get('event', {}).get('sha256') != hashlib.sha256(args.events.read_bytes()).hexdigest()):
+            raise ValueError('Existing event reference does not match the source and display settings')
     args.output.mkdir(parents=True, exist_ok=False)
     event_frames = frames(args.events, meta['width'], meta['height'])
     try:
         for i, rgb in enumerate(frames(args.rgb, meta['width'], meta['height'])):
             event = np.full_like(rgb, 255) if i == 0 else next(event_frames)
             if args.white_background:
-                rgb, event = white_rgb_preview(rgb), white_event_preview(event)
-            Image.fromarray(np.concatenate([rgb, event], axis=1)).save(
-                args.output / f'{i:04d}.jpg', quality=97, subsampling=0)
+                rgb, event = white_rgb_preview(rgb, mattes.frame(i) if mattes else None), white_event_preview(event)
+            if existing:
+                with Image.open(existing.frame_path(i)) as pair:
+                    if pair.size != (2 * meta['width'], meta['height']):
+                        raise ValueError('Existing event reference has incorrect dimensions')
+                    event = np.asarray(pair.convert('RGB'))[:, meta['width']:].copy()
+                Image.fromarray(np.concatenate([rgb, event], axis=1)).save(args.output / f'{i:04d}.png')
+            else:
+                Image.fromarray(np.concatenate([rgb, event], axis=1)).save(
+                    args.output / f'{i:04d}.jpg', quality=97, subsampling=0)
         # Drain the final forward interval, whose end lies outside this timeline.
         for _ in event_frames:
             pass
@@ -142,6 +211,10 @@ def main():
         times_seconds=(np.arange(meta['frame_count'])/meta['fps']).tolist(), alignment=alignment,
         display_background='white' if args.white_background else 'original',
         display_only=True, pixel_coordinates_unchanged=True,
+        background_method='source_geometry_coverage' if mattes else 'border_connected' if args.white_background else 'original',
+        foreground_matte=mattes.metadata if mattes else None,
+        frame_extension='.png' if existing else '.jpg',
+        event_pixels_preserved_from=str(args.event_reference) if existing else None,
         sources={name: dict(name=p.name, sha256=hashlib.sha256(p.read_bytes()).hexdigest())
                  for name, p in [('rgb', args.rgb), ('event', args.events)]})
     (args.output / 'reference.json').write_text(json.dumps(manifest, indent=2)+'\n')

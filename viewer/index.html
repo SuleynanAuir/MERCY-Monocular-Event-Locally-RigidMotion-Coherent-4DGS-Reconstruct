@@ -52,7 +52,15 @@
           <div class="compare-label reference-label"><strong>事件相机视频</strong><span id="referenceAlignment">对齐 RGB</span></div>
           <div class="cell-image"><canvas id="eventCanvas" aria-label="事件视频，使用 RGB 相机像素坐标和时间轴"></canvas></div>
         </section>
-        <div id="overlay" class="overlay"><div class="loader"></div><h1 id="loadTitle">连接渲染服务器</h1><p id="loadMessage">模型保留在 GPU 上，浏览器接收实时渲染画面。</p><progress id="loadProgress" max="100" value="0"></progress></div>
+        <div id="overlay" class="overlay">
+          <div class="loading-card">
+            <div class="loading-heading"><div class="loader" aria-hidden="true"></div><div><div class="loading-eyebrow">准备你的动态视角</div><h1 id="loadTitle">连接渲染服务器</h1></div><span id="loadPercent" class="loading-percent" aria-hidden="true">0%</span></div>
+            <p id="loadMessage" role="status">正在连接，画面即将就绪。</p>
+            <progress id="loadProgress" max="100" value="0" aria-label="渲染进度"></progress>
+            <div id="loadViews" class="loading-views" aria-label="六个视角的准备状态" hidden><div id="loadView0" class="load-view" data-state="waiting">正视 · 等待</div><div id="loadView1" class="load-view" data-state="waiting">斜视 · 等待</div><div id="loadView2" class="load-view" data-state="waiting">侧视 · 等待</div><div id="loadView3" class="load-view" data-state="waiting">背面 · 等待</div><div id="loadView4" class="load-view" data-state="waiting">俯视 · 等待</div><div id="loadView5" class="load-view" data-state="waiting">仰视 · 等待</div></div>
+            <button id="retryViews" class="secondary-button" hidden>重试渲染</button>
+          </div>
+        </div>
       </div>
       <div id="detailRow" class="detail-row" aria-label="选区细节 V1 与 V3 同步对比" hidden></div>
       </div>
@@ -64,7 +72,7 @@
         <div class="timeline-ticks"><span>0 s</span><span id="tickMid">3 s</span><span id="tickEnd">6 s</span></div>
         <div class="transport-bottom">
           <div class="play-controls"><button id="restart" class="icon-button" title="从头播放" aria-label="回到第一帧" disabled>↤</button><button id="previous" class="icon-button" title="上一帧" aria-label="上一帧" disabled>‹</button><button id="play" class="play-button" aria-label="播放" disabled>▶ <span>播放</span></button><button id="next" class="icon-button" title="下一帧" aria-label="下一帧" disabled>›</button><span id="frameLabel" class="frame-label">帧 — / —</span></div>
-          <div class="play-options"><label class="check-label"><input id="smoothPlayback" type="checkbox" checked>整段缓存后播放</label><label for="speed">速度</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><select id="streamRate" aria-label="连续播放帧率"><option value="auto">自动 · 流畅优先</option><option value="60" selected>60 FPS</option><option value="30">30 FPS · 节流</option></select><label class="check-label"><input id="loop" type="checkbox">循环</label></div>
+          <div class="play-options"><label class="check-label"><input id="smoothPlayback" type="checkbox" checked>六视角预渲染后播放</label><label for="speed">速度</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><select id="streamRate" aria-label="连续播放帧率"><option value="auto">自动 · 流畅优先</option><option value="60" selected>60 FPS</option><option value="30">30 FPS · 节流</option></select><label class="check-label"><input id="loop" type="checkbox">循环</label></div>
         </div>
       </section>
     </section>
@@ -80,7 +88,7 @@
         <p id="exportStatus" class="setting-note" role="status">导出 WebM 视频，保留源帧率。</p>
       </section>
       <section class="gpu-card"><span class="chip-icon">▦</span><div><strong id="gpuName">等待 GPU</strong><p id="cacheInfo">正在初始化渲染器</p></div><span class="dot" id="gpuDot"></span></section>
-      <div class="shortcuts"><span><kbd>Space</kbd> 播放 / 暂停</span><span><kbd>←</kbd><kbd>→</kbd> 逐帧查看</span><p>默认先缓存完整序列，再在本地播放；首次准备需要等待，后续同视角播放复用缓存。拖动视角时暂缓运动，松开继续；播放状态显示在时间轴上方。</p></div>
+      <div class="shortcuts"><span><kbd>Space</kbd> 播放 / 暂停</span><span><kbd>←</kbd><kbd>→</kbd> 逐帧查看</span><p>默认先渲染六个视角的完整序列，再统一显示；准备完成后，切换预设视角直接本地播放。拖动视角时暂缓运动，松开继续；播放状态显示在时间轴上方。</p></div>
     </aside>
   </main>
   <footer><span>SC–GS MOTION LAB</span><span>浏览器交互 · 服务器 GPU 渲染 · 原始输入另行保留</span></footer>

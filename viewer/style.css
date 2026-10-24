@@ -159,3 +159,47 @@ html{scrollbar-gutter:stable}
 #exportVideo,#cancelExport,#exportDownload{margin-top:10px}
 #exportStatus{min-height:3em;overflow-wrap:anywhere}
 .play-options{max-width:100%;flex-wrap:wrap;justify-content:flex-end}
+
+/* Conceal every comparison cell until the complete preset group is ready. */
+.stage.preparing-views>.view-cell{visibility:hidden}
+#retryViews[hidden]{display:none}
+#retryViews{margin-top:12px}
+
+/* Calm, light preparation surface with a non-shrinking progress indicator. */
+.overlay{color-scheme:light;background:radial-gradient(ellipse at 15% 0%,#e7f5f0,transparent 65%),#f6f9f8;color:#263f3b;padding:24px;cursor:default;overflow:auto}
+.loading-card{width:min(100%,660px);flex:none;padding:24px 28px;background:#ffffffed;border:1px solid #dfebe6;border-radius:18px;box-shadow:0 10px 32px #214d3c08;text-align:left}
+.loading-heading{display:flex;align-items:center;gap:15px}
+.loading-eyebrow{color:#748b83;font-size:11px;letter-spacing:1px;margin-bottom:4px}
+.overlay h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.4px;line-height:1.3;color:#253e37}
+.overlay .loader{width:36px;height:36px;flex:0 0 36px;border:3px solid #e1eeea;border-top-color:#3d9e87;animation:spin 1.1s linear infinite}
+.loading-percent{margin-left:auto;font:500 30px/1 ui-monospace,SFMono-Regular,monospace;letter-spacing:-1px;color:#328772}
+.overlay p{max-width:none;margin:18px 0 12px;color:#70837e;font-size:12px;line-height:1.7}
+.overlay progress{display:block;width:100%;max-width:none;height:8px;margin:0;border:0;border-radius:8px;overflow:hidden;appearance:none;background:#e9f0ed;accent-color:#55b29a;flex:none}
+.overlay progress::-webkit-progress-bar{background:#e9f0ed;border-radius:8px}
+.overlay progress::-webkit-progress-value{background:linear-gradient(90deg,#7ccbb8,#3c9d87);border-radius:8px;transition:width .2s ease}
+.overlay progress::-moz-progress-bar{background:#55b29a;border-radius:8px}
+.loading-views{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-top:19px}
+.loading-views[hidden]{display:none}
+.load-view{padding:9px 3px;border:1px solid #e5ece8;border-radius:8px;background:#fafcfb;color:#91a09a;font-size:10px;text-align:center;white-space:nowrap}
+.load-view[data-state="rendering"],.load-view[data-state="saving"]{background:#edf7f3;border-color:#a7d6c6;color:#29806a}
+.load-view[data-state="ready"]{background:#f1f8f5;border-color:#d1e9df;color:#4c8975}
+.load-view[data-state="ready"]::before{content:'✓ ';font-weight:600}
+.overlay.error .loader{animation:none;border-color:#e7b5a2}
+.overlay.error h1,.overlay.error .loading-percent{color:#9d6047}
+.overlay #retryViews{width:auto;display:inline-flex;padding:8px 20px;color:#2f7b65;border-color:#b8d8ca;background:#f1f8f4}
+.stage.preparing-views,.viewport:fullscreen .comparison-rows>.stage.preparing-views{min-height:310px}
+.waiting-view .view-toolbar,.waiting-view .transport{background:#f5f9f7;border-color:#dce8e2;color:#4a6259}
+.waiting-view .playback-preparation{background:#edf5f0;border-color:#d7e7de;color:#58796b}
+.waiting-view .playback-preparation p,.waiting-view .preparation-label,.waiting-view .time-label,.waiting-view .render-stats b{color:#416455}
+.waiting-view .frame-label,.waiting-view .play-options,.waiting-view .timeline-ticks,.waiting-view .eyebrow{color:#789086}
+.waiting-view .play-options select{color-scheme:light;background:#fff;color:#5c766a;border-color:#d4e2da}
+.waiting-view .motion-label{color:#43836d;background:#e2f1e9}
+@media(max-width:760px){
+ .overlay{padding:16px}.loading-card{padding:20px;border-radius:14px}.loading-views{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:14px}
+ .overlay h1{font-size:19px}.loading-percent{font-size:26px}.overlay p{font-size:11px;margin-top:15px}
+ .stage.preparing-views,.viewport:fullscreen .comparison-rows>.stage.preparing-views{min-height:330px}
+}
+@media(prefers-reduced-motion:reduce){.overlay .loader{animation:none}.overlay progress::-webkit-progress-value{transition:none}}
+.overlay #retryViews[hidden]{display:none}
+.waiting-view .transport{color-scheme:light}
+.waiting-view .view-badge{color:#607d71}

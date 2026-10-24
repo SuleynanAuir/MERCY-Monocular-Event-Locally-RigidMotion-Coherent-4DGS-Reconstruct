@@ -27,3 +27,18 @@ test('WebM keeps exact duration, requires a keyframe, and includes all chunks',a
  assert.ok(data.some((v,i)=>v===21&&data[i+1]===22&&data[i+2]===23));
  assert.throws(()=>Media.webm([chunks[0],{...chunks[1],timestamp:-20000}],640,480,60,33334),/timestamps/);
 });
+test('quota fallback retains all active views with bounded memory and frees other modes first',async()=>{
+ const original=Media.ExportFrameStore.open,removed=[];
+ const quota=Object.assign(new Error('quota'),{name:'QuotaExceededError'});
+ Media.ExportFrameStore.open=async()=>({save:async()=>{throw quota;},remove:async key=>removed.push(key),close(){}});
+ try{
+  const views=new Media.PresetViews(12),entry=key=>({key,count:2,complete:true,frames:new Map([0,1].map(frame=>[frame,{meta:{frame},blob:new Blob(['1234'])}]))});
+  views.activate(['a','b']);await views.save(entry('a'));
+  assert.equal(views.memoryBytes,8);assert.equal(await (await views.get('a').read(1)).blob.text(),'1234');
+  await assert.rejects(views.save(entry('b')),/空间不足/);assert.equal(views.get('b'),undefined);
+  assert.ok(views.get('a'),'the current group is never evicted to claim completion');
+  views.activate(['new-mode']);await views.save(entry('new-mode'));
+  assert.equal(views.get('a'),undefined);assert.equal(views.memoryBytes,8);assert.ok(views.get('new-mode').complete);
+  views.close();assert.equal(views.memoryBytes,0);assert.ok(removed.includes('b'));
+ }finally{Media.ExportFrameStore.open=original;}
+});
