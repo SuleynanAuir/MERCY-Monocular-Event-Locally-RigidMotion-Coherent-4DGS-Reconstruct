@@ -2,11 +2,10 @@
 
 **Monocular Event-boosted Locally RigidMotion Coherent 4DGS Reconstruction Dynamics**
 
-| 版本 | 名称与主要区别 | 运动来源 |
-| --- | --- | --- |
-| **V1 · Bind-GS** | 部件绑定动画基线；初始高斯可能存在误绑定、缺口和断臂 | Blender 部件 Object 矩阵，通过绑定带动高斯 |
-| **V2 · Align-GS** | 观测约束校正阶段：组织视频、事件标定和运动校正模块；**尚无统一独立网页产物** | Blender 基础运动＋观测约束校正，具体形式由实验配置确定 |
-| **V3 · MERCY** | 完整融合方案：事件等监督的校正、刚体与关节约束、表面和外观改进，以及局部 MLP 辅助变形 | **Blender 主运动＋校正＋局部 MLP 小幅补偿**；不是完全由 MLP 学习运动 |
+🌟 Collaborators
+
+Li Minghao: suleynanaiur@gmail.com
+Liang Yirui: Laybaeknim@gmail.com
 
 MERCY 面向 Lego 机械结构，研究如何利用事件流的时序变化信息和视频帧的外观参照，提高动态高斯与观测的一致性、部件连续性及多视角覆盖。实际显示资产是三维高斯；基础运动和部分几何来自 Blender 先验。Bind-GS / Align-GS 是本项目的方法组织名称，历史目录中的 `v1`、`v2`、`v3` 不能直接当作这三个阶段的检查点。
 
@@ -22,9 +21,9 @@ MERCY 面向 Lego 机械结构，研究如何利用事件流的时序变化信�
 
 <table>
   <tr>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0109.png"><img src="assets/demo/pseudocolor-frame-0109.png" width="240" alt="Lego · 1.817 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0149.png"><img src="assets/demo/pseudocolor-frame-0149.png" width="240" alt="Lego · 2.483 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0207.png"><img src="assets/demo/pseudocolor-frame-0207.png" width="240" alt="Lego · 3.450 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0109.png"><img src="assets/demo/pseudocolor-frame-0109.png" width="320" alt="Lego · 1.817 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0149.png"><img src="assets/demo/pseudocolor-frame-0149.png" width="320" alt="Lego · 2.483 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0207.png"><img src="assets/demo/pseudocolor-frame-0207.png" width="320" alt="Lego · 3.450 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
   </tr>
   <tr>
     <td align="center"><sub>Lego · 1.817 s</sub></td>
@@ -32,9 +31,9 @@ MERCY 面向 Lego 机械结构，研究如何利用事件流的时序变化信�
     <td align="center"><sub>Lego · 3.450 s</sub></td>
   </tr>
   <tr>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0214.png"><img src="assets/demo/pseudocolor-frame-0214.png" width="240" alt="Lego · 3.567 s · 视角 A，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0214%20%281%29.png"><img src="assets/demo/pseudocolor-frame-0214%20%281%29.png" width="240" alt="Lego · 3.567 s · 视角 B，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
-    <td width="240" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0274.png"><img src="assets/demo/pseudocolor-frame-0274.png" width="240" alt="Lego · 4.567 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0214.png"><img src="assets/demo/pseudocolor-frame-0214.png" width="320" alt="Lego · 3.567 s · 视角 A，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0214%20%281%29.png"><img src="assets/demo/pseudocolor-frame-0214%20%281%29.png" width="320" alt="Lego · 3.567 s · 视角 B，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
+    <td width="320" height="120" align="center" valign="middle"><a href="assets/demo/pseudocolor-frame-0274.png"><img src="assets/demo/pseudocolor-frame-0274.png" width="320" alt="Lego · 4.567 s，V1 与 V3、RGB 与事件参考及局部放大对比"></a></td>
   </tr>
   <tr>
     <td align="center"><sub>Lego · 3.567 s · 视角 A</sub></td>
@@ -61,6 +60,13 @@ MERCY 面向 Lego 机械结构，研究如何利用事件流的时序变化信�
 </table>
 
 两组图统一使用 **240 × 120 px 图片框**，Lego 与 Fan 的单格尺寸相同；图片等比居中，空余区域留白。图框尺寸不含标题和表格内边距。所有图片直接引用 `assets/demo` 原文件，保留原始比例、标注和局部细节，点击可查看原图。截图清单及校验值见 [演示素材清单](assets/demo/gallery-manifest.json)。
+
+| 版本 | 名称与主要区别 | 运动来源 |
+| --- | --- | --- |
+| **V1 · Bind-GS** | 部件绑定动画基线；初始高斯可能存在误绑定、缺口和断臂 | Blender 部件 Object 矩阵，通过绑定带动高斯 |
+| **V2 · Align-GS** | 观测约束校正阶段：组织视频、事件标定和运动校正模块；**尚无统一独立网页产物** | Blender 基础运动＋观测约束校正，具体形式由实验配置确定 |
+| **V3 · MERCY** | 完整融合方案：事件等监督的校正、刚体与关节约束、表面和外观改进，以及局部 MLP 辅助变形 | **Blender 主运动＋校正＋局部 MLP 小幅补偿**；不是完全由 MLP 学习运动 |
+
 
 ## 方法与技术路线
 
