@@ -183,7 +183,7 @@ def read_scene_catalog(path):
         key = item['id']
         if not isinstance(key, str) or not key or not all(c.isascii() and (c.isalnum() or c in '-_') for c in key) or key in scenes:
             raise ValueError('Scene IDs must be unique ASCII names')
-        if item['type'] not in {'sequence', 'comparison', 'fan_mesh', 'scgs_v4'}:
+        if item['type'] not in {'sequence', 'comparison', 'fan_mesh', 'scgs_v4', 'gaussian_pair'}:
             raise ValueError('Unknown scene renderer')
         if item['type'] == 'scgs_v4' and (item.get('base_scene') not in scenes
                 or scenes[item['base_scene']]['type'] != 'comparison'):
@@ -225,6 +225,9 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
         elif spec.get('type') == 'fan_mesh':
             from utils.fan_renderer import FanRenderer
             factory = FanRenderer
+        elif spec.get('type') == 'gaussian_pair':
+            from utils.gaussian_pair_renderer import GaussianPairRenderer
+            factory = GaussianPairRenderer
         renderers[key] = factory(spec['path'], spec.get('cache', cache))
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gaussian-gpu")
     references = {}

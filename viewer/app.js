@@ -1072,14 +1072,15 @@
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, "image/png");
   };
-  const videoModes=[['gaussian','Gaussian 高斯'],['mesh','V1/V3 纯 Mesh'],['clay','V1/V3 白模 · 清晰柔光'],['pseudocolor','V1/V3 伪彩色 · 柔光'],['hybrid','Mesh＋GS']];
+  const allVideoModes=[['gaussian','Gaussian 高斯'],['mesh','V1/V3 纯 Mesh'],['clay','V1/V3 白模 · 清晰柔光'],['pseudocolor','V1/V3 伪彩色 · 柔光'],['hybrid','Mesh＋GS']];
   let exportURL=null;
   $('cancelExport').onclick=()=>{if(exportJob){exportJob.cancelled=true;text('exportStatus','正在取消；已缓存的帧会保留。');}};
   $('exportVideo').onclick=async()=>{
     if(exportJob || !state.scene)return;
     if(!window.VideoEncoder || !window.VideoFrame){text('exportStatus','请使用新版 Chrome 或 Edge 导出完整视频。');return;}
-    const missing=videoModes.filter(([mode])=>mode!=='gaussian' && !state.scene[mode]?.available);
-    if(missing.length){text('exportStatus',`当前物件尚未提供：${missing.map(([,name])=>name).join('、')}`);return;}
+    const videoModes=allVideoModes.filter(([mode])=>(mode==='gaussian' || state.scene[mode]?.available)
+      && (state.scene.comparison || (state.scene.comparison_modes || []).includes(mode)));
+    if(!videoModes.length){text('exportStatus','当前物件尚未提供 V1/V3 成对画面。');return;}
     setPlaying(false);state.preparing=false;state.exporting=true;
     const job={cancelled:false};exportJob=job;
     const controls=[...document.querySelectorAll('button,input,select')].filter(el=>el!==$('cancelExport')).map(el=>[el,el.disabled]);
@@ -1113,7 +1114,7 @@
           check();const bitmap=await createImageBitmap(GaussianPlayback.Media.recordBlob(entry.frames.get(frame)));
           try{measure(bitmap);}finally{bitmap.close();}
           if(modeIndex===0 && references){const ref=await references.frame(frame);try{measure(ref);}finally{ref.close();}}
-          if(frame%40===0){report(`分析完整运动范围 · ${modeIndex+1}/5 · ${frame+1}/${count}`);await new Promise(resolve=>setTimeout(resolve,0));}
+          if(frame%40===0){report(`分析完整运动范围 · ${modeIndex+1}/${videoModes.length} · ${frame+1}/${count}`);await new Promise(resolve=>setTimeout(resolve,0));}
         }
       }
       const bounds=last<first?{top:0,bottom:1}:{top:Math.max(0,(first-8)/128),bottom:Math.min(1,(last+9)/128)};
@@ -1145,6 +1146,7 @@
           }finally{bitmap.close();}
           ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
           const titles=[`V1 · ${name.replace('V1/V3 ','')}`,`V3 · ${name.replace('V1/V3 ','')}`,'RGB 视频','事件相机视频 · 对齐 RGB'];
+          if(scene.detail_finish?.side==='right')titles[1]+=' · 细节增强';
           for(const [i,source] of sources.entries()){
             const x=i*panel;ctx.fillStyle='#263543';ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(titles[i],x+10*unit,18*unit,panel-95*unit);
             ctx.save();ctx.fillStyle='#677987';ctx.font=`${9*unit}px sans-serif`;ctx.textAlign='right';ctx.fillText(`${scene.times_seconds[frame].toFixed(3)} s`,x+panel-10*unit,18*unit);ctx.restore();
@@ -1162,17 +1164,18 @@
             }
           }
           await writer.add(output,timestamps[frame],durations[frame]);
-          if(frame%5===0)report(`编码 ${modeIndex+1}/5 · ${name} · ${frame+1}/${count}`);
+          if(frame%5===0)report(`编码 ${modeIndex+1}/${videoModes.length} · ${name} · ${frame+1}/${count}`);
         }
         check();const blob=await writer.finish(duration);writer.close();writer=null;
         files.push({name:`${modeIndex+1}_${mode}.webm`,blob});
       }
       check();files.push({name:'manifest.json',blob:new Blob([JSON.stringify({scene:scene.name,frame_count:count,fps,duration_seconds:duration/1e6,
-        width,height,overview:bounds,regions,camera:settings[0],modes:videoModes.map(([id,label])=>({id,label})),times_seconds:scene.times_seconds},null,2)],{type:'application/json'})});
-      report('正在打包五种完整视频…');const archive=await GaussianPlayback.Media.zip(files);check();
+        width,height,overview:bounds,regions,camera:settings[0],modes:videoModes.map(([id,label])=>({id,label})),
+        display_finish:scene.detail_finish||undefined,times_seconds:scene.times_seconds},null,2)],{type:'application/json'})});
+      report(`正在打包 ${videoModes.length} 种完整视频…`);const archive=await GaussianPlayback.Media.zip(files);check();
       if(exportURL)URL.revokeObjectURL(exportURL);exportURL=URL.createObjectURL(archive);
       const link=$('exportDownload');link.href=exportURL;link.download=`scgs-${$('objectSelect').value||'scene'}-all-modes.zip`;link.hidden=false;link.click();
-      report(`完成：5 个完整视频 · 每个 ${count} 帧 · ${(duration/1e6).toFixed(2)} 秒 · ${(archive.size/1024**2).toFixed(1)} MiB`);
+      report(`完成：${videoModes.length} 个完整视频 · 每个 ${count} 帧 · ${(duration/1e6).toFixed(2)} 秒 · ${(archive.size/1024**2).toFixed(1)} MiB`);
     }catch(error){report(job.cancelled?'已取消导出；已缓存的帧可继续复用。':`导出失败：${error.message}`);console.error('Video export',error);}
     finally{writer?.close();store?.close();controls.forEach(([el,disabled])=>{el.disabled=disabled;});$('cancelExport').hidden=true;state.exporting=false;exportJob=null;state.dirty=true;}
   };
