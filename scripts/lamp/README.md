@@ -1,5 +1,9 @@
 # Lamp viewer
 
+For the supplied Metronome and Microphone datasets, see [OBJECTS.md](OBJECTS.md).
+They share the rigid-part exporter and paired viewer, with dataset-specific
+camera registration and RGB background handling.
+
 Render `data/lamp_data` with the existing light UI, six-view preparation, per-view
 detail boxes and synchronized RGB/event references. The two supplied models are
 shown as V1 (`lamp.ply`) and V3 (`lamb_corrected_g0.ply`). These are supplied

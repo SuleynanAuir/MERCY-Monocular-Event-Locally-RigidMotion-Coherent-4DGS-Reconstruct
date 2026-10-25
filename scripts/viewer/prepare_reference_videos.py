@@ -93,11 +93,12 @@ def audit(rgb_path, event_path, count):
         note='Image-space consistency check of supplied videos, not independent physical camera calibration')
 
 
-def white_rgb_preview(rgb, coverage=None):
-    """Replace border-connected black backdrop, preserving enclosed dark details.
+def white_rgb_preview(rgb, coverage=None, background_rgb=None):
+    """Replace a border-connected constant backdrop, preserving enclosed details.
 
     A source-geometry matte also removes enclosed background without keying out
     black parts. Without a verified matte, retain the conservative border rule.
+    Black is the default; explicit nonblack colors must match the source border.
     """
     if coverage is not None:
         coverage = np.asarray(coverage, dtype=np.float32)
@@ -118,7 +119,16 @@ def white_rgb_preview(rgb, coverage=None):
         result = np.rint(value * 255).clip(0, 255).astype(np.uint8)
         result[coverage == 1] = rgb[coverage == 1]
         return result
-    dark = rgb.max(axis=2) <= 8
+    if background_rgb is None:
+        dark = rgb.max(axis=2) <= 8
+    else:
+        color = np.asarray(background_rgb, dtype=float)
+        if color.shape != (3,) or not np.isfinite(color).all() or np.any((color < 0) | (color > 255)):
+            raise ValueError('Invalid source RGB background color')
+        border = np.concatenate((rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]))
+        if np.max(np.abs(np.median(border, axis=0)-color)) > 3:
+            raise ValueError('Explicit background does not match the source border')
+        dark = np.max(np.abs(rgb.astype(float)-color), axis=2) <= 3
     seed = np.zeros_like(dark)
     seed[0] = dark[0]; seed[-1] = dark[-1]
     seed[:, 0] = dark[:, 0]; seed[:, -1] = dark[:, -1]
@@ -165,12 +175,16 @@ def main():
     parser.add_argument('--white-background', action='store_true', help='Display-only white matte; preserve original videos')
     parser.add_argument('--matte-directory', type=Path, help='Verified source-geometry coverage; removes enclosed black backdrop')
     parser.add_argument('--event-reference', type=Path, help='Existing aligned white reference.json; preserve its event pixels exactly in lossless PNG pairs')
+    parser.add_argument('--rgb-background', nargs=3, type=int, metavar=('R','G','B'),
+                        help='Verified constant source backdrop, removed only where border-connected')
     args = parser.parse_args()
     meta, other = probe(args.rgb), probe(args.events)
     if meta != other or meta['frame_count'] < 12:
         raise ValueError('RGB and event video dimensions, FPS and frame count must match')
     if args.matte_directory and not args.white_background:
         parser.error('--matte-directory requires --white-background')
+    if args.rgb_background and (not args.white_background or args.matte_directory):
+        parser.error('--rgb-background requires --white-background and no geometry matte')
     mattes = GeometryMatteSequence(args.matte_directory, args.rgb, meta) if args.matte_directory else None
     alignment = audit(args.rgb, args.events, meta['frame_count'])
     existing = None
@@ -192,7 +206,8 @@ def main():
         for i, rgb in enumerate(frames(args.rgb, meta['width'], meta['height'])):
             event = np.full_like(rgb, 255) if i == 0 else next(event_frames)
             if args.white_background:
-                rgb, event = white_rgb_preview(rgb, mattes.frame(i) if mattes else None), white_event_preview(event)
+                rgb, event = white_rgb_preview(rgb, mattes.frame(i) if mattes else None,
+                                               args.rgb_background), white_event_preview(event)
             if existing:
                 with Image.open(existing.frame_path(i)) as pair:
                     if pair.size != (2 * meta['width'], meta['height']):
@@ -213,6 +228,7 @@ def main():
         display_only=True, pixel_coordinates_unchanged=True,
         background_method='source_geometry_coverage' if mattes else 'border_connected' if args.white_background else 'original',
         foreground_matte=mattes.metadata if mattes else None,
+        source_background_rgb=args.rgb_background,
         frame_extension='.png' if existing else '.jpg',
         event_pixels_preserved_from=str(args.event_reference) if existing else None,
         sources={name: dict(name=p.name, sha256=hashlib.sha256(p.read_bytes()).hexdigest())

@@ -64,7 +64,7 @@ def rigid_deltas(matrices, registration):
     return delta
 
 
-def bake(source, destination, surface, groups, delta, preview_camera, timeline, provenance, *, bound_labels=None):
+def bake(source, destination, surface, groups, delta, preview_camera, timeline, provenance, *, bound_labels=None, name='Lamp · 台灯'):
     vertices = PlyData.read(source)['vertex'].data.copy()
     xyz = np.column_stack([vertices[k] for k in ('x', 'y', 'z')])
     quat = np.column_stack([vertices[f'rot_{i}'] for i in range(4)])
@@ -103,7 +103,7 @@ def bake(source, destination, surface, groups, delta, preview_camera, timeline, 
             poses[:, 0, :3], poses[:, 0, 3:] = xyz[indices], quat[indices]
         entries.append(dict(file=f'frames/frame_{frame:04d}.ply', time_seconds=frame/timeline['fps'],
                             pose_sha256=hashlib.sha256(poses[:, frame].tobytes()).hexdigest()))
-    meta = dict(format=FORMAT, version=SPARSE_VERSION, name='Lamp · 台灯',
+    meta = dict(format=FORMAT, version=SPARSE_VERSION, name=name,
         description='已提供的高斯外观，绑定原始 Blender 部件动画；未使用 RGB 或事件训练。',
         motion_label='Blender 原始部件动画', frame_count=len(entries), fps=timeline['fps'],
         duration_seconds=len(entries)/timeline['fps'], gaussians_per_frame=len(vertices),
