@@ -11,7 +11,7 @@ import numpy as np
 from plyfile import PlyData
 import torch
 
-from export_lego_sequence import write_npz
+from scripts.export.export_lego_sequence import write_npz
 from utils.event_refinement import correction_from_record
 from utils.event_supervision import require_event_export_approval
 from utils.gaussian_sequence import FORMAT, SPARSE_VERSION, POSE_FIELDS, GaussianSequence

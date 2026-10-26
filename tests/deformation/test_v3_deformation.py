@@ -52,7 +52,7 @@ class V3DeformationTests(unittest.TestCase):
             seen.append(model._xyz.clone())
             return {'render': torch.zeros(3, 256, 256)}
         modules = {'gaussian_renderer': SimpleNamespace(render=render),
-                   'render_ply': SimpleNamespace(make_camera=lambda *args: None)}
+                   'scripts.rendering.render_ply': SimpleNamespace(make_camera=lambda *args: None)}
         request = validate_request(dict(frame=20, width=256, height=256, background='black',
                                         render_mode='hybrid', hybrid_quality='native'), 400)
         with patch.dict(sys.modules, modules):
@@ -79,7 +79,7 @@ class V3DeformationTests(unittest.TestCase):
 
     def test_loader_rejects_wrong_source_hash_timeline_and_method(self):
         with tempfile.TemporaryDirectory() as tmp:
-            p = Path(tmp); (p/'model.pth').write_bytes(b'checkpoint')
+            p = Path(tmp).resolve(); (p/'model.pth').write_bytes(b'checkpoint')
             audit = dict(frame_count=3, approved_for_export=False,
                          summary={'all': {}, 'validation_events': {}}, failed_intervals=[],
                          intervals=[dict(interval=i, passed=True, reasons=[], reference_self_check_passed=True)

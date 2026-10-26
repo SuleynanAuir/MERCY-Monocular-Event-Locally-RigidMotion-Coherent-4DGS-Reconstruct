@@ -38,6 +38,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--max-distance', type=float, default=.1)
     parser.add_argument('--registration', type=Path, help='Reuse a previously verified registration JSON')
+    parser.add_argument('--source-ply', type=Path, help='Bind this exact PLY; default is the supplied corrected G0')
     args = parser.parse_args()
     if not np.isfinite(args.max_distance) or args.max_distance <= 0:
         parser.error('--max-distance must be finite and positive')
@@ -47,7 +48,8 @@ def main():
     metadata = json.loads(str(parts['metadata_json']))
     camera = json.loads(args.inspection.read_text())['camera']
     surface = parts['rest_points'].astype(np.float64)
-    vertices = PlyData.read(args.data / 'fan_contrastive_g0/contrastive_g0.ply')['vertex'].data
+    source = args.source_ply or args.data / 'fan_contrastive_g0/contrastive_g0.ply'
+    vertices = PlyData.read(source)['vertex'].data
     xyz = np.column_stack([vertices[k] for k in ('x', 'y', 'z')])
     # Cameras initialize the otherwise ambiguous coordinate system. Robust
     # similarity ICP refines it using geometry, without altering the Gaussians.
@@ -79,7 +81,10 @@ def main():
     # Floaters far from any source surface are not attached to a moving arm.
     attached = distance <= args.max_distance
     indices = np.flatnonzero(moving[labels] & attached)
-    report = {'source': str(args.data), 'method': 'camera initialized robust similarity ICP; nearest evaluated mesh vertex attachment',
+    import hashlib
+    report = {'source': str(args.data), 'source_ply': str(source.resolve()),
+              'source_ply_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+              'method': 'camera initialized robust similarity ICP; nearest evaluated mesh vertex attachment',
               'registration': matrix.tolist(), 'initial_registration': initial.tolist(),
               'distance_percentiles': dict(zip(['p50', 'p90', 'p95', 'p99'], np.percentile(distance, [50, 90, 95, 99]).tolist())),
               'max_attachment_distance': args.max_distance, 'unattached': int((~attached).sum()),

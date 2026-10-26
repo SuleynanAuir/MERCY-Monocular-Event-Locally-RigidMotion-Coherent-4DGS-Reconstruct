@@ -5,6 +5,7 @@
   const text = (id, value) => {if ($(id).textContent !== value) $(id).textContent = value;};
   const canvas = $("canvas"), stage = $("stage"), context = canvas.getContext("2d", {alpha: false});
   const rightCanvas = $("comparisonCanvas"), rightContext = rightCanvas.getContext("2d", {alpha: false});
+  const middleCanvas = $("middleCanvas");
   const state = {scene: null, socket: null, playing: false, frame: 0, dirty: true, pending: new Set(),
     id: 0, yaw: 0, pitch: 0, zoom: 1, pan_x: 0, pan_y: 0, background: "dark", speed: 1,
     lastReceived: 0, displayedFrame: -1, lastDrawnId: 0, delivered: [], retry: null,
@@ -23,7 +24,12 @@
     Object.assign(detail,saved,{scope:key,drag:null});
     rebuildDetail();
   }
-  const detailPairs = [[canvas,$("detailLeft")],[rightCanvas,$("detailRight")]];
+  const allRenderCanvases = [canvas,middleCanvas,rightCanvas];
+  function versionLabels(mode=state.renderMode) {
+    return state.scene?.mode_version_labels?.[mode] || state.scene?.version_labels || [state.scene?.left_label,state.scene?.right_label];
+  }
+  function renderCanvases(mode=state.renderMode) {return versionLabels(mode).length===3 ? allRenderCanvases : [canvas,rightCanvas];}
+  function detailPairs() {return renderCanvases().map(source=>[source,$(source===canvas?'detailLeft':source===middleCanvas?'detailMiddle':'detailRight')]);}
   const clamp = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
   // Shared vertical framing preserves RGB/event alignment and ROI coordinates.
   // The envelope only expands during a camera view, avoiding frame-to-frame breathing.
@@ -37,7 +43,7 @@
     const ctx=overviewFit.sample.getContext("2d",{willReadFrequently:true});
     if(!ctx.getImageData) return;
     let first=128,last=-1;
-    for(const source of [canvas,rightCanvas,rgbCanvas,eventCanvas]) {
+    for(const source of [...renderCanvases(),rgbCanvas,eventCanvas]) {
       ctx.clearRect(0,0,128,128);ctx.drawImage(source,0,0,128,128);
       const pixels=ctx.getImageData(0,0,128,128).data;
       for(let y=0;y<128;y++) {
@@ -59,7 +65,7 @@
   }
   function layoutOverview() {
     if(!comparisonView() || !state.scene?.reference?.available) {
-      for(const source of [canvas,rightCanvas,rgbCanvas,eventCanvas]) {source.style.height="";source.style.top="";}
+      for(const source of [...renderCanvases(),rgbCanvas,eventCanvas]) {source.style.height="";source.style.top="";}
       return;
     }
     const {top,bottom}=overviewBounds(),width=$("leftRenderCell").getBoundingClientRect().width;
@@ -67,7 +73,7 @@
     const fullHeight=width*canvas.height/canvas.width;
     const header=$("leftCompareLabel").getBoundingClientRect().height || 28;
     stage.style.setProperty("--overview-height",`${header+fullHeight*(bottom-top)}px`);
-    for(const source of [canvas,rightCanvas,rgbCanvas,eventCanvas]) {
+    for(const source of [...renderCanvases(),rgbCanvas,eventCanvas]) {
       source.style.height=`${fullHeight}px`;source.style.top=`${-top*fullHeight}px`;
     }
   }
@@ -118,11 +124,11 @@
     for(const r of detail.regions) {
       const option=document.createElement("option");option.value=String(r.id);option.textContent=r.label;
       $("detailSelect").append(option);
-      for(const [i,source] of [canvas,rightCanvas].entries()) {
+      for(const [i,source] of renderCanvases().entries()) {
         const cell=document.createElement("section"),title=document.createElement("div"),area=document.createElement("div"),view=document.createElement("canvas");
         cell.className="detail-cell";cell.style.setProperty("--roi-color",r.color);cell.dataset.region=r.label;
-        title.className="detail-title";title.textContent=`${r.label} · ${i===0?"V1":"V3"}`;
-        area.className="detail-image";view.setAttribute("aria-label",`${r.label} 选区 ${i===0?"V1":"V3"} 动态细节`);
+        title.className="detail-title";title.textContent=`${r.label} · ${comparisonStages()[i]}`;
+        area.className="detail-image";view.setAttribute("aria-label",`${r.label} 选区 ${comparisonStages()[i]} 动态细节`);
         area.append(view);cell.append(title,area);$("detailRow").append(cell);
         detail.views.push({region:r,source,view});
       }
@@ -143,7 +149,7 @@
     const active=detail.enabled && comparisonView() && state.displayedFrame>=0;
     $("detailRow").hidden=!active || !detail.regions.length;
     const dpr=Math.min(window.devicePixelRatio||1,2);
-    for(const [source,layer] of detailPairs) {
+    for(const [source,layer] of detailPairs()) {
       layer.hidden=!active;
       if(!active) continue;
       const box=detailGeometry(source),w=Math.round(box.rect.width*dpr),h=Math.round(box.rect.height*dpr);
@@ -214,14 +220,14 @@
   }
   function updateDetailHint() {
     $("viewHint").textContent=detail.enabled && comparisonView()
-      ? "选区：拖动框内移动 · 拖动边框 / 角点调整大小 · 下排同步对比 V1 / V3"
+      ? `选区：拖动框内移动 · 拖动边框 / 角点调整大小 · 下排同步对比 ${comparisonName()}`
       : comparisonView() && state.scene?.reference?.available
-        ? "V1 / V3：拖动旋转 · Shift 平移 · 滚轮缩放；RGB / 事件：固定相机视角"
+        ? `${comparisonName()}：拖动旋转 · Shift 平移 · 滚轮缩放；RGB / 事件：固定相机视角`
         : "拖动旋转 · Shift 平移 · 滚轮缩放";
   }
   $("detailToggle").onclick=()=>{
     detail.enabled=!detail.enabled;detail.drag=null;
-    canvas.style.cursor=rightCanvas.style.cursor="";
+    for(const source of allRenderCanvases)source.style.cursor="";
     $("detailToggle").setAttribute("aria-pressed",String(detail.enabled));
     $("detailToggle").textContent=detail.enabled?"关闭细节对比":"细节放大镜";
     $("detailOptions").hidden=!detail.enabled;stage.classList.toggle("detail-active",detail.enabled);
@@ -236,6 +242,10 @@
   let references = null;
   let pointer = null, wheelTimer = null;
   const launchOptions = new URLSearchParams(window.location.search);
+  function requestQuality(fallback) {
+    const value=Number(launchOptions.get('jpeg_quality'));
+    return Number.isInteger(value) && value>=60 && value<=95 ? value : fallback;
+  }
   const sceneQuery = launchOptions.has('scene') ? `?scene=${encodeURIComponent(launchOptions.get('scene'))}` : '';
   $('objectSelect').onchange = () => {
     setPlaying(false);
@@ -258,9 +268,134 @@
     const {yaw,pitch,zoom,pan_x,pan_y,background}=state;
     return {yaw,pitch,zoom,pan_x,pan_y,background,render_mode:mode,hybrid_quality:state.hybridQuality,
       clay_style:state.clayStyle,fovy:state.scene.fovy,
-      quality:state.scene.default_stream_quality??95,...dimensions()};
+      quality:requestQuality(state.scene.default_stream_quality??95),...dimensions()};
   }
   function sequenceKey(settings){return JSON.stringify(settings);}
+  let experimentPlan=null, experimentBusy=false;
+  const experimentButtons=['experimentAll','experimentFrame','experimentPlanSave','experimentSequence','experimentBenchmark'];
+  function experimentControls() {
+    for(const id of experimentButtons) $(id).disabled=experimentBusy || !state.scene ||
+      (['experimentSequence','experimentBenchmark'].includes(id) && !experimentPlan);
+  }
+  function experimentProgress(job) {
+    const finished=job.status==='complete';
+    const stagePercent=job.total>0 ? Math.min(100,job.completed/job.total*100) : 0;
+    const percent=finished ? 100 : Math.max(0,Math.min(99.9,Number.isFinite(job.percent) ? job.percent : stagePercent));
+    $('experimentProgress').hidden=false;
+    $('experimentProgress').dataset.state=job.status;
+    $('experimentProgressBar').value=percent;
+    text('experimentProgressLabel',Number.isFinite(job.percent) || finished ? '整体流程进度' : '当前阶段进度');
+    text('experimentPercent',`${Number(percent.toFixed(1))}%`);
+    text('experimentStage',`${job.stage_index && !finished ? `阶段 ${job.stage_index}/${job.stage_count} · ` : ''}${job.message}`);
+    const bytes=value=>{
+      const units=['B','KiB','MiB','GiB','TiB'];let index=0;
+      while(value>=1024 && index<units.length-1){value/=1024;index++;}
+      return `${value.toFixed(index ? 1 : 0)} ${units[index]}`;
+    };
+    const unit={frames:'帧',renders:'次',versions:'个版本',files:'个文件',items:'项'}[job.unit] || '项';
+    const count=job.unit==='bytes' ? `${bytes(job.completed)} / ${bytes(job.total)}` : `${job.completed} / ${job.total} ${unit}`;
+    text('experimentDetail',finished ? '文件包已生成，浏览器下载进度请查看下载列表。' :
+      job.stage==='queued' ? '等待任务开始…' : `${count}${job.detail ? ` · ${job.detail}` : ''}`);
+    $('experimentProgressBar').setAttribute('aria-valuetext',`${percent}% · ${job.message}`);
+  }
+  function experimentSamples(current=false) {
+    if(!state.scene) throw new Error('场景尚未就绪');
+    const first=current ? (state.displayedFrame>=0 ? state.displayedFrame : state.frame) : Number($('experimentStart').value);
+    const last=current ? first : ($('experimentEnd').value==='' ? state.scene.frame_count-1 : Number($('experimentEnd').value));
+    const step=current ? 1 : Number($('experimentStep').value);
+    if(![first,last,step].every(Number.isInteger) || first<0 || last<first || last>=state.scene.frame_count || step<1)
+      throw new Error('请输入有效的起止帧和采样间隔');
+    const settings=sequenceSettings(), samples=[];
+    for(let frame=first;frame<=last;frame+=step) samples.push({...settings,frame,time_seconds:state.scene.times_seconds[frame]});
+    return samples;
+  }
+  function adoptExperimentPlan(plan) {
+    if(plan.format!=='scgs_experiment_plan_v1' || plan.scene!==$('objectSelect').value ||
+       !Array.isArray(plan.samples) || !plan.samples.length || plan.samples.length>10000)
+      throw new Error('采样表格式或物件不匹配');
+    for(const sample of plan.samples) {
+      if(!Number.isInteger(sample.frame) || sample.frame<0 || sample.frame>=state.scene.frame_count ||
+         !Number.isFinite(sample.time_seconds) || Math.abs(sample.time_seconds-state.scene.times_seconds[sample.frame])>1e-8)
+        throw new Error('采样表时间与模型不匹配');
+    }
+    experimentPlan=plan;
+    text('experimentPlanStatus',`已固定 ${plan.samples.length} 个采样点及对应相机；修改视角不会改变该表。`);
+    experimentControls();
+  }
+  $('experimentPlanSave').onclick=async()=>{
+    try {
+      const response=await fetch(`/api/experiments/plan${sceneQuery}`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({operation:'sequence',samples:experimentSamples()})});
+      if(!response.ok)throw new Error(await response.text());
+      const plan=await response.json();
+      adoptExperimentPlan(plan);
+      const url=URL.createObjectURL(new Blob([JSON.stringify(plan,null,2)],{type:'application/json'}));
+      const link=document.createElement('a');link.href=url;link.download=`${plan.scene}-experiment-plan.json`;link.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } catch(error) {text('experimentStatus',error.message);}
+  };
+  $('experimentPlanFile').onchange=async()=>{
+    try {
+      const file=$('experimentPlanFile').files[0];if(!file)return;
+      if(file.size>8*1024*1024)throw new Error('采样表过大');
+      adoptExperimentPlan(JSON.parse(await file.text()));
+    } catch(error) {text('experimentStatus',error.message);}
+  };
+  async function startExperiment(operation) {
+    if(experimentBusy)return;
+    try {
+      if(viewPreparation || exportJob)throw new Error('请等待当前预渲染或视频导出完成');
+      if(!state.scene)throw new Error('场景尚未就绪');
+      setPlaying(false);
+      const complete=operation==='complete';
+      if(complete && (!Number.isInteger(Number($('experimentStep').value)) || Number($('experimentStep').value)<1 || Number($('experimentStep').value)>10000))
+        throw new Error('请输入有效采样间隔（1–10000）');
+      const samples=complete ? null : operation==='frame' ? experimentSamples(true) : experimentPlan?.samples;
+      if(!complete && !samples)throw new Error('请先保存或载入采样表');
+      experimentBusy=true;experimentControls();$('experimentDownload').hidden=true;
+      $('experimentLocation').hidden=true;
+      experimentProgress({status:'running',stage:'queued',message:'正在提交导出任务…',percent:0,completed:0,total:1});
+      text('experimentStatus','正在提交导出任务…');
+      const selection=complete ? {sample_step:Number($('experimentStep').value || state.scene.export_sample_step || 4),settings:{...sequenceSettings(),frame:state.displayedFrame>=0 ? state.displayedFrame : state.frame}} : {samples};
+      const measurement=operation==='benchmark' ? {warmup:Number($('experimentWarmup').value || 20),repeats:Number($('experimentRepeats').value || 5)} : {};
+      const response=await fetch(`/api/experiments${sceneQuery}`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({operation,...selection,...measurement})});
+      if(!response.ok)throw new Error(await response.text());
+      let job=await response.json();
+      while(job.status==='running') {
+        experimentProgress(job);
+        text('experimentStatus',`${$('experimentStage').textContent} · ${$('experimentDetail').textContent}`);
+        await new Promise(resolve=>setTimeout(resolve,1000));
+        const status=await fetch(`/api/experiments/${job.id}${sceneQuery}`);
+        if(!status.ok)throw new Error(await status.text());
+        job=await status.json();
+      }
+      experimentProgress(job);
+      if(job.status!=='complete')throw new Error(job.message);
+      $('experimentDownload').href=`/api/experiments/${job.id}/download${sceneQuery}`;
+      $('experimentDownload').hidden=false;
+      if(job.output_archive || job.output_directory) {
+        text('experimentLocation',job.output_archive ? `服务器仅保留 ZIP：${job.output_archive}（${(job.output_bytes/1024**2).toFixed(1)} MiB）` : `渲染服务器保存目录：${job.output_directory}`);
+        $('experimentLocation').hidden=false;
+      }
+      text('experimentStatus',complete ? `关键数据已保存${job.sampled_frames ? `：每 ${job.sample_step || 4} 帧采样，共 ${job.sampled_frames} 帧。` : '。'}${job.missing_data?.length ? '缺失或未对齐的数据已列入 data_availability.json。' : ''}解压后运行 python evaluate.py 进行独立评测。` : '导出完成。下载并解压 ZIP 后，运行独立评测脚本。');
+      if(complete) $('experimentDownload').click();
+    } catch(error) {
+      text('experimentStatus',error.message);
+      if(experimentBusy) {
+        if($('experimentProgress').dataset.state!=='failed')text('experimentStage',error.message);
+        $('experimentProgress').dataset.state='failed';
+      }
+    }
+    finally {
+      experimentBusy=false;experimentControls();state.dirty=true;
+      if(state.socket?.readyState===3)scheduleRetry();
+    }
+  }
+  $('experimentAll').onclick=()=>startExperiment('complete');
+  $('experimentFrame').onclick=()=>startExperiment('frame');
+  $('experimentSequence').onclick=()=>startExperiment('sequence');
+  $('experimentBenchmark').onclick=()=>startExperiment('benchmark');
   function readySequence(){if(!state.scene)return null;const key=sequenceKey(sequenceSettings());const e=presetViews.get(key)||sequences.get(key);return e?.complete && (!references || references.prepared)?e:null;}
   async function readRecord(entry,frame){return entry.read?entry.read(frame):entry.frames.get(frame);}
   function viewGroup() {
@@ -407,10 +542,16 @@
 
   let autoStartPending = launchOptions.get("autoplay") === "1";
 
+  function comparisonStages(mode=state.renderMode) {
+    return versionLabels(mode).map((label,i)=>String(label || "").match(/^V\d+/)?.[0] || (i===0?"V1":"V3"));
+  }
+  function comparisonName() {return comparisonStages().join(" / ");}
   function comparisonView() {
     return !!state.scene?.comparison || (state.scene?.comparison_modes || []).includes(state.renderMode);
   }
   function modeResolution(mode = state.renderMode) {
+    const specified=Number(launchOptions.get('resolution'));
+    if([512,640,768,1024,1280].includes(specified))return specified;
     return (["mesh", "hybrid", "clay", "pseudocolor"].includes(mode) ? state.scene?.[mode]?.default_resolution : null) || state.scene?.default_resolution || 768;
   }
   function updateModeUI() {
@@ -422,6 +563,8 @@
     const modeDescription = hybrid ? (scene.hybrid.quality_descriptions?.[state.hybridQuality] || scene.hybrid.description) : modeInfo?.description;
     $("renderMode").value = state.renderMode;
     $("renderMode").disabled = false;
+    $("clayOption").textContent = `${comparisonStages('clay').join(' / ')} 白模 · 清晰柔光`;
+    $("pseudocolorOption").textContent = `${comparisonStages('pseudocolor').join(' / ')} 伪彩色 · 柔光`;
     $("clayOption").disabled = !scene.clay?.available;
     $("pseudocolorOption").disabled = !scene.pseudocolor?.available;
     $("meshOption").disabled = !scene.mesh?.available;
@@ -434,35 +577,46 @@
     $("meshNotice").textContent = clay || color || hybrid ? modeDescription : scene.mesh?.available ? scene.mesh.description :
       (scene.mesh?.description || "当前场景未生成高斯重建网格。");
     stage.classList.toggle("comparison", paired);
+    const triplet = paired && versionLabels().length===3;
+    stage.classList.toggle('triplet',triplet);
+    middleCanvas.hidden = $('middleRenderCell').hidden = $('middleCompareLabel').hidden = !triplet;
+    if(!triplet)$('detailMiddle').hidden=true;
+    $('middleCompareLabel').textContent=versionLabels()[1] || 'V2';
+    middleCanvas.setAttribute('aria-label','V2 动态渲染，与 V1、V3 同相机同时间');
+    const detailLayout=renderCanvases().length;
+    if(detail.layout!==detailLayout){detail.layout=detailLayout;rebuildDetail();}
     $("detailTools").hidden = !paired;
     refreshDetail();
     $("expandView").textContent = paired ? "放大对比" : "放大画面";
-    $("expandView").title = paired ? "全屏显示两个对比视窗" : "全屏显示当前物件";
+    $("expandView").title = paired ? "全屏显示同步版本视窗" : "全屏显示当前物件";
     rightCanvas.hidden = $("rightRenderCell").hidden = !paired;
     const quad = !!scene.reference?.available && paired;
     stage.classList.toggle("quad", quad);
+    stage.style.setProperty('--overview-columns',renderCanvases().length+(quad?2:0));
     $("rgbCell").hidden = $("eventCell").hidden = !quad;
     if (quad) {
       $("referenceAlignment").textContent = "对齐 RGB · 同步";
       $("referenceAlignment").title = "与 RGB 使用相同像素坐标；事件区间结束时刻对应当前 RGB 帧，首帧无前序事件。";
-      $("viewHint").textContent = "V1 / V3：拖动旋转 · Shift 平移 · 滚轮缩放；RGB / 事件：固定相机视角";
-      $("expandView").textContent = "放大四列对比";
-      $("expandView").title = "全屏显示四个同步视窗";
+      $("viewHint").textContent = `${comparisonName()}：拖动旋转 · Shift 平移 · 滚轮缩放；RGB / 事件：固定相机视角`;
+      $("expandView").textContent = triplet ? "放大五列对比" : "放大四列对比";
+      $("expandView").title = triplet ? "全屏显示五个同步视窗" : "全屏显示四个同步视窗";
     }
     updateDetailHint();
     $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
     $("sceneKind").textContent = color ? "PSEUDOCOLOR" : clay ? "CLAY SURFACE" : hybrid ? "MESH + GAUSSIAN" : mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
-    $("sceneName").textContent = color ? "V1 / V3 伪彩色对比" : clay ? "V1 / V3 白模对比" : hybrid ? "V1 / V3 混合动态对比" : mesh ? "V1 / V3 Mesh 对比" : scene.name;
+    $("sceneName").textContent = color ? `${comparisonName()} 伪彩色对比` : clay ? `${comparisonName()} 白模对比` : hybrid ? `${comparisonName()} 混合动态对比` : mesh ? `${comparisonName()} Mesh 对比` : scene.name;
     $("leftCompareLabel").textContent = clay || color || mesh || hybrid ? (modeInfo.left_label || "V1 Mesh · 原始结果") : scene.left_label;
     $("rightCompareLabel").textContent = clay || color || mesh || hybrid ? (modeInfo.right_label || "V3 Mesh · 最新优化结果") : scene.right_label;
-    $("sequenceBadge").textContent = color ? "伪彩色 · 同帧同视角" : clay ? "白模 · 同帧同视角" : hybrid ? "Mesh＋Gaussian · 同帧同视角" : mesh ? "V1 / V3 Mesh · 同帧同视角" : paired ?
-      "原始 / 优化 · 同帧同视角" : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
+    if(triplet && !/^V1\b/.test($('leftCompareLabel').textContent || ''))
+      $('leftCompareLabel').textContent=['V1',$('leftCompareLabel').textContent].filter(Boolean).join(' · ');
+    $("sequenceBadge").textContent = color ? "伪彩色 · 同帧同视角" : clay ? "白模 · 同帧同视角" : hybrid ? "Mesh＋Gaussian · 同帧同视角" : mesh ? `${comparisonName()} Mesh · 同帧同视角` : paired ?
+      (triplet ? "V1 / V2 / V3 · 同帧同视角" : "原始 / 优化 · 同帧同视角") : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
     $("gaussianCount").textContent = (mesh ? modeInfo.triangle_count : scene.gaussian_count).toLocaleString("en-US");
     $("primitiveLabel").textContent = mesh ? "TRIANGLES / 三角面数量" : "GAUSSIANS / 高斯数量";
     $("sceneDescription").textContent = clay || color || mesh || hybrid ? modeDescription :
       (scene.description || "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。");
-    $("snapshot").textContent = color ? "保存 V1 / V3 伪彩色对比图 ↓" : clay ? "保存 V1 / V3 白模对比图 ↓" : hybrid ? "保存 Mesh＋Gaussian 动态对比图 ↓" : mesh ? "保存 V1 / V3 Mesh 对比图 ↓" : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
-    if (quad) $("snapshot").textContent = "保存 1×4 对比图 ↓";
+    $("snapshot").textContent = color ? `保存 ${comparisonName()} 伪彩色对比图 ↓` : clay ? `保存 ${comparisonName()} 白模对比图 ↓` : hybrid ? "保存 Mesh＋Gaussian 动态对比图 ↓" : mesh ? `保存 ${comparisonName()} Mesh 对比图 ↓` : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
+    if (quad) $("snapshot").textContent = `保存 1×${renderCanvases().length+2} 对比图 ↓`;
     canvas.setAttribute("aria-label", color ? "伪彩色表面，同步部件动画与对比视角" : clay ? "白色表面，同步部件动画与对比视角" : hybrid ? "V1 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V1 原始高斯重建的 Mesh，与右侧同帧同视角" : "GPU 实时渲染的动态高斯");
     rightCanvas.setAttribute("aria-label", color ? "伪彩色表面，同步部件动画与对比视角" : clay ? "白色表面，同步部件动画与对比视角" : hybrid ? "V3 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V3 最新优化高斯重建的 Mesh，与左侧同帧同视角" : "优化高斯，同步右视窗");
   }
@@ -490,6 +644,8 @@
   }
   function controls(enabled) {
     ["play", "previous", "next", "restart", "timeline", "snapshot"].forEach(id => $(id).disabled = !enabled);
+    experimentControls();
+    if(!enabled) for(const id of experimentButtons) $(id).disabled=true;
   }
   function setPlaying(value) {
     if(viewPreparation && value)return;
@@ -583,6 +739,7 @@
     return {width: Math.floor(size.width * scale), height: Math.floor(size.height * scale)};
   }
   function requestFrame() {
+    if(experimentBusy)return;
     if(viewPreparation)return;
     if(state.scene && !state.exporting && $('smoothPlayback').checked) {
       const group=viewGroup();
@@ -616,7 +773,7 @@
     state.pending.add(id);
     state.socket.send(JSON.stringify({id, frame: state.frame, yaw, pitch, zoom, pan_x, pan_y,
       background, render_mode: state.renderMode, hybrid_quality: state.hybridQuality, clay_style: state.clayStyle, fovy: state.scene.fovy,
-      quality: state.interacting ? 72 : (state.scene.default_still_quality ?? 85), ...dimensions()}));
+      quality: requestQuality(state.interacting ? 72 : (state.scene.default_still_quality ?? 85)), ...dimensions()}));
   }
   function startStream() {
     if($("smoothPlayback").checked){beginLocal();return;}
@@ -642,7 +799,7 @@
     const {yaw, pitch, zoom, pan_x, pan_y, background} = state;
     state.socket.send(JSON.stringify({type: "stream", id, frame: state.frame, speed: state.speed,
       rate, loop: $("loop").checked, yaw, pitch, zoom, pan_x, pan_y, background, render_mode: state.renderMode, hybrid_quality: state.hybridQuality, clay_style: state.clayStyle,
-      fovy: state.scene.fovy, quality: state.scene.default_stream_quality ?? 78, ...dimensions()}));
+      fovy: state.scene.fovy, quality: requestQuality(state.scene.default_stream_quality ?? 78), ...dimensions()}));
     $("streamStatus").textContent = "预缓冲…";
   }
   function present(item, close = true) {
@@ -654,12 +811,13 @@
       canvas.width = panelWidth; canvas.height = meta.height;
     }
     if (meta.comparison) {
-      if (rightCanvas.width !== panelWidth || rightCanvas.height !== meta.height) {
-        rightCanvas.width = panelWidth; rightCanvas.height = meta.height;
+      const targets=renderCanvases(meta.render_mode || state.renderMode);
+      if((meta.panel_count || 2)!==targets.length)throw new Error('版本数量与渲染帧不一致');
+      for(const [i,target] of targets.entries()){
+        if(target.width!==panelWidth || target.height!==meta.height){target.width=panelWidth;target.height=meta.height;}
+        target.getContext('2d').drawImage(bitmap,i*panelWidth,0,panelWidth,meta.height,0,0,panelWidth,meta.height);
+        target.dataset.frame=String(meta.panel_frames?.[i] ?? meta.frame);
       }
-      context.drawImage(bitmap, 0, 0, panelWidth, meta.height, 0, 0, panelWidth, meta.height);
-      rightContext.drawImage(bitmap, panelWidth, 0, panelWidth, meta.height, 0, 0, panelWidth, meta.height);
-      rightCanvas.dataset.frame = String(meta.right_frame);
     } else context.drawImage(bitmap, 0, 0);
     if (item.bitmap.reference) {
       const {width, height} = state.scene.reference, reference = item.bitmap.reference;
@@ -796,6 +954,7 @@
     socket.onclose = () => {
       if (state.socket !== socket) return;
       rejectFrameRequests(new Error("渲染连接中断；已完成缓存会保留"));
+      if(experimentBusy){state.pending.clear();status('导出进行中 · 预览稍后恢复');return;}
       if(viewPreparation){status('连接中断 · 可重试渲染','error');return;}
       if($("smoothPlayback").checked && readySequence()) {status("本地缓存可播放 · 服务器连接断开","ready");return;}
       state.pending.clear(); setPlaying(false); controls(false);
@@ -830,6 +989,7 @@
       const firstLoad = !state.scene;
       state.scene = data.scene; const scene = data.scene;
       if (firstLoad) {
+        $('experimentStep').value=String(scene.export_sample_step || 4);
         $("streamRate").value = scene.comparison ? 'auto' : String(scene.default_stream_rate || 60);
         $("resolution").value = String(scene.default_resolution || 768);
         state.background = scene.default_background || "dark";
@@ -974,7 +1134,7 @@
     if(state.exporting || viewPreparation || failedViewGroup)return;
     if (event.target.closest("button") || event.target.closest(".overlay") || event.target.closest(".reference-cell") || event.target.closest(".compare-label")) return;
     if (detail.enabled && comparisonView()) {
-      if (event.target === canvas || event.target === rightCanvas) startDetail(event,event.target);
+      if (renderCanvases().includes(event.target)) startDetail(event,event.target);
       return;
     }
     stage.focus({preventScroll: true}); stage.setPointerCapture(event.pointerId);
@@ -984,7 +1144,7 @@
   stage.onpointermove = event => {
     if (detail.enabled && comparisonView()) {
       if (detail.drag) moveDetail(event);
-      else if (event.target === canvas || event.target === rightCanvas) {
+      else if (renderCanvases().includes(event.target)) {
         const p=detailPoint(event,event.target),hit=p && hitDetail(p);
         const h=hit?.handle;
         event.target.style.cursor=!h?"crosshair":h==="move"?"move":`${h==="ne"||h==="sw"?"nesw":h==="nw"||h==="se"?"nwse":h==="n"||h==="s"?"ns":"ew"}-resize`;
@@ -1037,29 +1197,29 @@
     if (state.displayedFrame < 0) return;
     let snapshot = canvas;
     if (comparisonView()) {
-      const sources=state.scene.reference?.available?[canvas,rightCanvas,rgbCanvas,eventCanvas]:[canvas,rightCanvas];
+      const renders=renderCanvases(),sources=state.scene.reference?.available?[...renders,rgbCanvas,eventCanvas]:renders;
       const bounds=state.scene.reference?.available?overviewBounds():{top:0,bottom:1};
       const width=canvas.width,unit=width/$("leftRenderCell").getBoundingClientRect().width;
       const header=Math.round(28*unit),imageHeight=Math.round(canvas.height*(bounds.bottom-bounds.top));
-      const topHeight=imageHeight+header,withDetails=detail.enabled && detail.regions.length>0,count=detail.regions.length*2;
+      const topHeight=imageHeight+header,withDetails=detail.enabled && detail.regions.length>0,count=detail.regions.length*renders.length;
       const totalWidth=width*sources.length,cropHeight=withDetails?detailImageHeight(totalWidth/count,imageHeight):0;
       snapshot=document.createElement("canvas");snapshot.width=totalWidth;snapshot.height=topHeight+(withDetails?1+header+cropHeight:0);
       const ctx=snapshot.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,snapshot.width,snapshot.height);
-      const names=[$("leftCompareLabel").textContent,$("rightCompareLabel").textContent,"RGB 视频 · 固定相机","事件相机视频 · 对齐 RGB"];
+      const names=[...renders.map(c=>$(c===canvas?'leftCompareLabel':c===middleCanvas?'middleCompareLabel':'rightCompareLabel').textContent),"RGB 视频 · 固定相机","事件相机视频 · 对齐 RGB"];
       for(const [i,source] of sources.entries()) {
         const x=i*width;ctx.fillStyle="#263543";ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(names[i],x+10*unit,18*unit,width-95*unit);
         ctx.save();ctx.fillStyle="#677987";ctx.font=`${9*unit}px sans-serif`;ctx.textAlign="right";ctx.fillText(`${state.scene.times_seconds[state.displayedFrame].toFixed(3)} s`,x+width-10*unit,18*unit);ctx.restore();
         ctx.drawImage(source,0,bounds.top*source.height,source.width,(bounds.bottom-bounds.top)*source.height,x,header,width,imageHeight);
-        if(detail.enabled && i<2){ctx.save();ctx.beginPath();ctx.rect(x,header,width,imageHeight);ctx.clip();ctx.translate(x,header);
+        if(detail.enabled && i<renders.length){ctx.save();ctx.beginPath();ctx.rect(x,header,width,imageHeight);ctx.clip();ctx.translate(x,header);
           paintRegions(ctx,{x:0,y:-bounds.top*canvas.height,width,height:canvas.height},width/detailGeometry(source).width,false);ctx.restore();}
         if(i){ctx.fillStyle="#dfe4e8";ctx.fillRect(x,0,1,topHeight);}
       }
       if(withDetails) {
         ctx.fillStyle="#dfe4e8";ctx.fillRect(0,topHeight,totalWidth,1);
-        for(const [i,r] of detail.regions.entries()) for(const [j,source] of [canvas,rightCanvas].entries()) {
-          const index=i*2+j,x=Math.round(index*totalWidth/count),end=Math.round((index+1)*totalWidth/count),w=end-x;
+        for(const [i,r] of detail.regions.entries()) for(const [j,source] of renders.entries()) {
+          const index=i*renders.length+j,x=Math.round(index*totalWidth/count),end=Math.round((index+1)*totalWidth/count),w=end-x;
           ctx.save();ctx.translate(x,topHeight+1);ctx.fillStyle=r.color;ctx.fillRect(0,0,w,3);
-          ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(`${r.label} · ${j===0?"V1":"V3"}`,10*unit,18*unit,w-20*unit);
+          ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(`${r.label} · ${comparisonStages()[j]}`,10*unit,18*unit,w-20*unit);
           ctx.translate(0,header);paintCrop(ctx,source,r,w,cropHeight);ctx.restore();
           if(index){ctx.fillStyle="#dfe4e8";ctx.fillRect(x,topHeight+1,1,header+cropHeight);}
         }
@@ -1079,8 +1239,8 @@
     if(exportJob || !state.scene)return;
     if(!window.VideoEncoder || !window.VideoFrame){text('exportStatus','请使用新版 Chrome 或 Edge 导出完整视频。');return;}
     const videoModes=allVideoModes.filter(([mode])=>(mode==='gaussian' || state.scene[mode]?.available)
-      && (state.scene.comparison || (state.scene.comparison_modes || []).includes(mode)));
-    if(!videoModes.length){text('exportStatus','当前物件尚未提供 V1/V3 成对画面。');return;}
+      && (state.scene.comparison || (state.scene.comparison_modes || []).includes(mode))).map(([mode,name])=>[mode,name.replace('V1/V3',comparisonStages(mode).join('/'))]);
+    if(!videoModes.length){text('exportStatus','当前物件尚未提供成对画面。');return;}
     setPlaying(false);state.preparing=false;state.exporting=true;
     const job={cancelled:false};exportJob=job;
     const controls=[...document.querySelectorAll('button,input,select')].filter(el=>el!==$('cancelExport')).map(el=>[el,el.disabled]);
@@ -1119,48 +1279,50 @@
       }
       const bounds=last<first?{top:0,bottom:1}:{top:Math.max(0,(first-8)/128),bottom:Math.min(1,(last+9)/128)};
       for(const r of regions){bounds.top=Math.max(0,Math.min(bounds.top,r.y-.035));bounds.bottom=Math.min(1,Math.max(bounds.bottom,r.y+r.h+.02));}
-      const width=2560,columns=references?4:2,panel=width/columns,unit=panel/$('leftRenderCell').getBoundingClientRect().width;
-      const header=Math.round(28*unit),imageHeight=Math.round(panel*(bounds.bottom-bounds.top));
-      const detailWidth=regions.length?width/(regions.length*2):0;
-      const pad=Math.min(12,Math.max(4,detailWidth*.025));
-      const detailHeight=regions.length?Math.ceil(Math.max(2*pad+24,Math.min(Math.max(...regions.map(r=>r.h/r.w))*(detailWidth-2*pad)+2*pad,detailWidth*1.6,imageHeight*1.15))):0;
-      const height=Math.ceil((header+imageHeight+(regions.length?1+header+detailHeight:0))/2)*2;
-      const output=document.createElement('canvas');output.width=width;output.height=height;const ctx=output.getContext('2d',{alpha:false});
-      const sources=Array.from({length:columns},()=>{const c=document.createElement('canvas');c.width=1024;c.height=1024;return c;});
+      const width=2560,layouts=[];
+      const output=document.createElement('canvas'),ctx=output.getContext('2d',{alpha:false});
       const start=scene.times_seconds[0],timestamps=scene.times_seconds.map(t=>Math.round((t-start)*1e6));
       const durations=timestamps.map((t,i)=>i+1<count?timestamps[i+1]-t:Math.round(1e6/fps));
       const duration=timestamps[count-1]+durations[count-1];
       for(let modeIndex=0;modeIndex<settings.length;modeIndex++) {
         check();const [mode,name]=videoModes[modeIndex];
+        const stages=comparisonStages(mode),renderCount=stages.length,columns=renderCount+(references?2:0);
+        const panel=width/columns,unit=panel/$('leftRenderCell').getBoundingClientRect().width;
+        const header=Math.round(28*unit),imageHeight=Math.round(panel*(bounds.bottom-bounds.top));
+        const detailWidth=regions.length?width/(regions.length*renderCount):0,pad=Math.min(12,Math.max(4,detailWidth*.025));
+        const detailHeight=regions.length?Math.ceil(Math.max(2*pad+24,Math.min(Math.max(...regions.map(r=>r.h/r.w))*(detailWidth-2*pad)+2*pad,detailWidth*1.6,imageHeight*1.15))):0;
+        const height=Math.ceil((header+imageHeight+(regions.length?1+header+detailHeight:0))/2)*2;
+        output.width=width;output.height=height;layouts.push({mode,width,height,version_labels:stages});
+        const sources=Array.from({length:columns},()=>{const c=document.createElement('canvas');c.width=1024;c.height=1024;return c;});
         writer=await GaussianPlayback.Media.encoder(width,height,fps);
         for(let frame=0;frame<count;frame++) {
           check();const record=await store.get(mode,frame),bitmap=await decodeRecord(record);
           try {
-            if(!record.meta.comparison)throw new Error(`${name} 未提供 V1/V3 成对画面`);
+            if(!record.meta.comparison)throw new Error(`${name} 未提供成对画面`);
             const image=bitmap.image||bitmap,pw=record.meta.panel_width,ph=record.meta.height;
-            sources[0].getContext('2d').drawImage(image,0,0,pw,ph,0,0,1024,1024);
-            sources[1].getContext('2d').drawImage(image,pw,0,pw,ph,0,0,1024,1024);
+            if((record.meta.panel_count || 2)!==renderCount)throw new Error('视频版本数量不一致');
+            for(let i=0;i<renderCount;i++)sources[i].getContext('2d').drawImage(image,i*pw,0,pw,ph,0,0,1024,1024);
             if(references){const rw=scene.reference.width,rh=scene.reference.height;
-              sources[2].getContext('2d').drawImage(bitmap.reference,0,0,rw,rh,0,0,1024,1024);
-              sources[3].getContext('2d').drawImage(bitmap.reference,rw,0,rw,rh,0,0,1024,1024);}
+              sources[renderCount].getContext('2d').drawImage(bitmap.reference,0,0,rw,rh,0,0,1024,1024);
+              sources[renderCount+1].getContext('2d').drawImage(bitmap.reference,rw,0,rw,rh,0,0,1024,1024);}
           }finally{bitmap.close();}
           ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
-          const titles=[`V1 · ${name.replace('V1/V3 ','')}`,`V3 · ${name.replace('V1/V3 ','')}`,'RGB 视频','事件相机视频 · 对齐 RGB'];
-          if(scene.detail_finish?.side==='right')titles[1]+=' · 细节增强';
+          const titles=[...stages.map(stage=>`${stage} · ${name.replace(/^V\d+(?:\/V\d+)+ /,'')}`),'RGB 视频','事件相机视频 · 对齐 RGB'];
+          if(scene.detail_finish?.side==='right')titles[renderCount-1]+=' · 细节增强';
           for(const [i,source] of sources.entries()){
             const x=i*panel;ctx.fillStyle='#263543';ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(titles[i],x+10*unit,18*unit,panel-95*unit);
             ctx.save();ctx.fillStyle='#677987';ctx.font=`${9*unit}px sans-serif`;ctx.textAlign='right';ctx.fillText(`${scene.times_seconds[frame].toFixed(3)} s`,x+panel-10*unit,18*unit);ctx.restore();
             ctx.drawImage(source,0,bounds.top*1024,1024,(bounds.bottom-bounds.top)*1024,x,header,panel,imageHeight);
-            if(i<2 && regions.length){ctx.save();ctx.beginPath();ctx.rect(x,header,panel,imageHeight);ctx.clip();ctx.translate(x,header);
+            if(i<renderCount && regions.length){ctx.save();ctx.beginPath();ctx.rect(x,header,panel,imageHeight);ctx.clip();ctx.translate(x,header);
               paintRegions(ctx,{x:0,y:-bounds.top*panel,width:panel,height:panel},unit,false);ctx.restore();}
             if(i){ctx.fillStyle='#dfe4e8';ctx.fillRect(x,0,1,header+imageHeight);}
           }
           if(regions.length){const y=header+imageHeight+1;ctx.fillStyle='#dfe4e8';ctx.fillRect(0,y-1,width,1);
-            for(const [i,r] of regions.entries())for(let j=0;j<2;j++){
-              const x=Math.round((i*2+j)*detailWidth),end=Math.round((i*2+j+1)*detailWidth),w=end-x;
-              ctx.save();ctx.translate(x,y);ctx.fillStyle=r.color;ctx.fillRect(0,0,w,2);ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(`${r.label} · ${j===0?'V1':'V3'}`,10*unit,18*unit,w-20*unit);
+            for(const [i,r] of regions.entries())for(let j=0;j<renderCount;j++){
+              const x=Math.round((i*renderCount+j)*detailWidth),end=Math.round((i*renderCount+j+1)*detailWidth),w=end-x;
+              ctx.save();ctx.translate(x,y);ctx.fillStyle=r.color;ctx.fillRect(0,0,w,2);ctx.font=`600 ${11*unit}px sans-serif`;ctx.fillText(`${r.label} · ${stages[j]}`,10*unit,18*unit,w-20*unit);
               ctx.translate(0,header);paintCrop(ctx,sources[j],r,w,detailHeight);ctx.restore();
-              if(i*2+j){ctx.fillStyle='#dfe4e8';ctx.fillRect(x,y,1,header+detailHeight);}
+              if(i*renderCount+j){ctx.fillStyle='#dfe4e8';ctx.fillRect(x,y,1,header+detailHeight);}
             }
           }
           await writer.add(output,timestamps[frame],durations[frame]);
@@ -1170,7 +1332,7 @@
         files.push({name:`${modeIndex+1}_${mode}.webm`,blob});
       }
       check();files.push({name:'manifest.json',blob:new Blob([JSON.stringify({scene:scene.name,frame_count:count,fps,duration_seconds:duration/1e6,
-        width,height,overview:bounds,regions,camera:settings[0],modes:videoModes.map(([id,label])=>({id,label})),
+        width,height:layouts.every(l=>l.height===layouts[0].height)?layouts[0].height:null,layouts,overview:bounds,regions,camera:settings[0],modes:videoModes.map(([id,label])=>({id,label})),
         display_finish:scene.detail_finish||undefined,times_seconds:scene.times_seconds},null,2)],{type:'application/json'})});
       report(`正在打包 ${videoModes.length} 种完整视频…`);const archive=await GaussianPlayback.Media.zip(files);check();
       if(exportURL)URL.revokeObjectURL(exportURL);exportURL=URL.createObjectURL(archive);

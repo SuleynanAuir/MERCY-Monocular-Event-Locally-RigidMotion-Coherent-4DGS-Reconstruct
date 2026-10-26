@@ -10,7 +10,7 @@ import numpy as np
 from plyfile import PlyData
 import torch
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from scene import GaussianModel
 from scripts.motion.rebind_lego_motion import project, sample
 

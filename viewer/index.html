@@ -35,18 +35,22 @@
         </div>
       </div>
       <div class="comparison-rows">
-      <div id="stage" class="stage" tabindex="0" aria-label="同步对比视图；拖动 V1 / V3 画面旋转，Shift 拖动平移，滚轮缩放">
+      <div id="stage" class="stage" tabindex="0" aria-label="同步版本对比；拖动画面旋转，Shift 拖动平移，滚轮缩放">
         <section id="leftRenderCell" class="view-cell render-cell" aria-label="第 1 列 V1">
           <div id="leftCompareLabel" class="compare-label left" hidden>V1 · 原始结果</div>
           <div class="cell-image"><canvas id="canvas" aria-label="V1 动态渲染"></canvas><canvas id="detailLeft" class="detail-overlay" aria-hidden="true" hidden></canvas></div>
         </section>
-        <section id="rightRenderCell" class="view-cell render-cell" aria-label="第 2 列 V3" hidden>
+        <section id="middleRenderCell" class="view-cell render-cell" aria-label="V2" hidden>
+          <div id="middleCompareLabel" class="compare-label middle" hidden>V2 · 观测校正分支</div>
+          <div class="cell-image"><canvas id="middleCanvas" aria-label="V2 动态渲染" hidden></canvas><canvas id="detailMiddle" class="detail-overlay" aria-hidden="true" hidden></canvas></div>
+        </section>
+        <section id="rightRenderCell" class="view-cell render-cell" aria-label="V3" hidden>
           <div id="rightCompareLabel" class="compare-label right" hidden>V3 · 优化结果</div>
           <div class="cell-image"><canvas id="comparisonCanvas" aria-label="V3 动态渲染" hidden></canvas><canvas id="detailRight" class="detail-overlay" aria-hidden="true" hidden></canvas></div>
         </section>
         <section id="rgbCell" class="view-cell reference-cell" aria-label="第 3 列 RGB 视频" hidden>
           <div class="compare-label reference-label"><strong>RGB 视频</strong><span title="仅替换展示背景；原视频与相机坐标保持不变">白底 · 固定相机</span></div>
-          <div class="cell-image"><canvas id="rgbCanvas" aria-label="RGB 相机原始视频，与 V1 / V3 同一时刻"></canvas></div>
+          <div class="cell-image"><canvas id="rgbCanvas" aria-label="RGB 相机原始视频，与各版本同一时刻"></canvas></div>
         </section>
         <section id="eventCell" class="view-cell reference-cell" aria-label="第 4 列事件相机视频，对齐 RGB 相机" hidden>
           <div class="compare-label reference-label"><strong>事件相机视频</strong><span id="referenceAlignment">对齐 RGB</span></div>
@@ -62,7 +66,7 @@
           </div>
         </div>
       </div>
-      <div id="detailRow" class="detail-row" aria-label="选区细节 V1 与 V3 同步对比" hidden></div>
+      <div id="detailRow" class="detail-row" aria-label="选区细节多版本同步对比" hidden></div>
       </div>
       <div class="viewport-hint" id="viewHint">拖动旋转 <span>·</span> Shift + 拖动平移 <span>·</span> 滚轮缩放</div>
       <section class="transport" aria-label="动画播放控制">
@@ -81,6 +85,32 @@
       <section class="panel"><div class="panel-title"><h2>场景信息</h2><span class="small-badge">BAKED</span></div><p id="sceneDescription" class="scene-description">真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。</p><div class="big-number" id="gaussianCount">—</div><div id="primitiveLabel" class="number-label">GAUSSIANS / 高斯数量</div><dl class="scene-stats"><div><dt>序列帧数</dt><dd id="frameCount">—</dd></div><div><dt>采样频率</dt><dd id="sourceFps">—</dd></div><div><dt>持续时间</dt><dd id="duration">—</dd></div><div><dt>当前转速</dt><dd id="rpm">—</dd></div></dl></section>
       <section class="panel"><h2>视角</h2><div class="preset-row"><button class="preset active" data-yaw="0" data-pitch="0">正视</button><button class="preset" data-yaw="35" data-pitch="20">斜视</button><button class="preset" data-yaw="80" data-pitch="0">侧视</button></div><div class="preset-row"><button class="preset" data-yaw="180" data-pitch="0">背面</button><button class="preset" data-yaw="0" data-pitch="35">俯视</button><button class="preset" data-yaw="0" data-pitch="-35">仰视</button></div><button id="reset" class="secondary-button">重置视角 <kbd>R</kbd></button></section>
       <section class="panel"><h2>渲染设置</h2><div class="field"><label for="renderMode">显示模式</label><select id="renderMode" disabled><option value="gaussian">Gaussian · 高斯</option><option id="meshOption" value="mesh" disabled>V1 / V3 纯 Mesh</option><option id="clayOption" value="clay" disabled>V1 / V3 白模 · 清晰柔光</option><option id="pseudocolorOption" value="pseudocolor" disabled>V1 / V3 伪彩色 · 柔光</option><option id="hybridOption" value="hybrid" disabled>Mesh＋GS · 动态</option></select></div><div id="clayStyleField" class="field" hidden><label for="clayWire">显示表面线框</label><input id="clayWire" type="checkbox"></div><div id="hybridQualityField" class="field" hidden><label for="hybridQuality">混合画质</label><select id="hybridQuality"><option value="surface" selected>表面柔化</option><option value="native">GS 原生外观</option><option value="balanced">旧版均衡</option><option value="detail">旧版高采样</option></select></div><p id="meshNotice" class="setting-note" role="status">正在检查 Mesh…</p><div class="field"><label for="resolution">画面清晰度</label><select id="resolution"><option value="512">流畅 · 512 px</option><option value="640">标准 · 640 px</option><option value="768" selected>均衡 · 768 px</option><option value="1024">精细 · 1024 px</option><option id="ultraResolution" value="1280">超清 · 1280 px</option></select></div><div class="field"><span id="backgroundLabel">背景</span><div class="swatches" role="group" aria-labelledby="backgroundLabel"><button class="swatch black" data-background="black" aria-label="黑色背景（事件参考）" aria-pressed="false"></button><button class="swatch dark active" data-background="dark" aria-label="深色背景" aria-pressed="true"></button><button class="swatch gray" data-background="gray" aria-label="灰色背景" aria-pressed="false"></button><button class="swatch light" data-background="light" aria-label="白色背景" aria-pressed="false"></button></div></div><button id="snapshot" class="secondary-button" disabled>保存当前画面 <span>↓</span></button><p class="setting-note">清晰度越高，网络传输量越大。显示帧率与序列采样频率不同。</p></section>
+      <section class="panel experiment-panel" aria-labelledby="experimentHeading"><h2 id="experimentHeading">导出实验数据</h2>
+        <p class="setting-note">一键导出按真值固定相机、原始分辨率与背景保存各版本 Gaussian 帧；RGB 真值、公共掩码、事件计数只保存一份。按下方采样间隔采样，缺失数据会注明。当前视角对照请用下方单帧操作。</p>
+        <button id="experimentAll" class="secondary-button experiment-primary">一键保存关键实验数据 ↓</button>
+        <div id="experimentProgress" class="experiment-progress" hidden>
+          <div class="experiment-progress-heading"><span id="experimentProgressLabel">整体流程进度</span><strong id="experimentPercent">0%</strong></div>
+          <progress id="experimentProgressBar" max="100" value="0" aria-labelledby="experimentProgressLabel" aria-describedby="experimentStage experimentDetail"></progress>
+          <p id="experimentStage" class="experiment-stage">等待导出</p>
+          <p id="experimentDetail" class="experiment-detail"></p>
+          <p class="experiment-progress-note">按各阶段实际工作量更新，百分比不代表剩余时间。文件生成后由浏览器下载。</p>
+        </div>
+        <p class="setting-note">完整时间段按下方间隔采样，保留全部对比版本。保存 PNG、可用真值/掩码/事件、固定点轨迹及配置，不复制完整模型和原始视频。服务器仅保留一份 ZIP，单次上限 2 GiB；性能测量单独运行。</p>
+        <button id="experimentFrame" class="secondary-button">保存当前帧对照 ↓</button>
+        <div class="field"><label for="experimentStart">开始帧（从 0 计）</label><input id="experimentStart" type="number" min="0" step="1" value="0"></div>
+        <div class="field"><label for="experimentEnd">结束帧（含；空为末帧）</label><input id="experimentEnd" type="number" min="0" step="1" placeholder="末帧"></div>
+        <div class="field"><label for="experimentStep">采样间隔（一键保存／固定序列）</label><input id="experimentStep" type="number" min="1" step="1" value="4"></div>
+        <button id="experimentPlanSave" class="secondary-button">保存当前相机与时间表 ↓</button>
+        <div class="field experiment-file"><label for="experimentPlanFile">载入已有采样表</label><input id="experimentPlanFile" type="file" accept=".json,application/json"></div>
+        <p id="experimentPlanStatus" class="setting-note">请先保存或载入采样表，固定序列使用该表。</p>
+        <button id="experimentSequence" class="secondary-button" disabled>导出固定序列 ↓</button>
+        <div class="field"><label for="experimentWarmup">预热次数</label><input id="experimentWarmup" type="number" min="1" max="100" step="1" value="20"></div>
+        <div class="field"><label for="experimentRepeats">测量轮数</label><input id="experimentRepeats" type="number" min="1" max="100" step="1" value="5"></div>
+        <button id="experimentBenchmark" class="secondary-button" disabled>运行性能测量</button>
+        <a id="experimentDownload" class="secondary-button" hidden download>下载实验数据 ZIP ↓</a>
+        <p id="experimentLocation" class="setting-note" hidden></p>
+        <p id="experimentStatus" class="setting-note" role="status" aria-live="polite">轻量评测包可独立计算指标；重新渲染使用项目原模型。未配置的独立真值会注明缺失。</p>
+      </section>
       <section class="panel"><h2>完整视频</h2><p class="setting-note">完整时段 · 同视角 · 彩色选框＋细节 · 当前物件可用模式打包为 ZIP</p>
         <button id="exportVideo" class="secondary-button">保存全部模式完整视频 ↓</button>
         <button id="cancelExport" class="secondary-button" hidden>取消导出</button>

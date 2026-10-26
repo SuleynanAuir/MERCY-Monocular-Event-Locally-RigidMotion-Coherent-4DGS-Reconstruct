@@ -1,0 +1,8 @@
+# Install inside an existing CUDA SC-GS environment; do not replace its torch.
+numpy>=1.24,<2
+scipy>=1.10,<1.12
+scikit-image==0.21.0
+matplotlib>=3.7,<3.9
+opencv-python>=4.8,<4.10
+plyfile>=0.9
+Pillow>=9

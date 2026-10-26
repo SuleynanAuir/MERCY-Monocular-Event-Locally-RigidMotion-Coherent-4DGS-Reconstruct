@@ -39,7 +39,7 @@ class ComparisonRendererTests(unittest.TestCase):
             return {'render': torch.full((3, 128, 128), model.value)*alpha,
                     'depth': 2*alpha, 'alpha': alpha}
         with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=render),
-                                     'render_ply': SimpleNamespace(make_camera=lambda *args: None)}):
+                                     'scripts.rendering.render_ply': SimpleNamespace(make_camera=lambda *args: None)}):
             req = validate_request(dict(render_mode='clay', frame=1, width=128, height=128, background='light'), 3)
             packet = renderer.render(req); cached = renderer.render(req)
         self.assertEqual(poses, [(0, 1, True), (1, 1, True)])
@@ -68,7 +68,7 @@ class ComparisonRendererTests(unittest.TestCase):
             return {'render': torch.full((3, camera[1], camera[0]), model.value),
                     'depth': torch.full((1, camera[1], camera[0]), 2.), 'alpha': torch.ones((1, camera[1], camera[0]))}
         with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=pixels),
-                                     'render_ply': SimpleNamespace(make_camera=camera)}):
+                                     'scripts.rendering.render_ply': SimpleNamespace(make_camera=camera)}):
             request=validate_request({'frame': 1, 'width': 128, 'height': 128}, 3)
             original=renderer.render(request)
             hybrid=renderer.render(dict(request,render_mode='hybrid'))
@@ -99,7 +99,7 @@ class ComparisonRendererTests(unittest.TestCase):
         def unexpected(*args):
             raise AssertionError('Mesh comparison must not render GS in either panel')
         with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=unexpected),
-                                      'render_ply': SimpleNamespace(make_camera=unexpected)}):
+                                      'scripts.rendering.render_ply': SimpleNamespace(make_camera=unexpected)}):
             request = validate_request({'render_mode': 'mesh', 'frame': 1, 'width': 128, 'height': 128}, 3)
             for _ in range(2):
                 packet = renderer.render(request)
@@ -145,7 +145,7 @@ class ComparisonRendererTests(unittest.TestCase):
             return {'render': torch.full((3, 128, 128), float(model._xyz.sum()) / 4)}
 
         with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=render),
-                                      'render_ply': SimpleNamespace(make_camera=lambda *args: None)}):
+                                      'scripts.rendering.render_ply': SimpleNamespace(make_camera=lambda *args: None)}):
             for index in (1, 0):
                 packet = renderer.render(validate_request({'id': 5, 'frame': index, 'width': 128, 'height': 128}, 2))
                 size = struct.unpack('<I', packet[:4])[0]
@@ -364,7 +364,7 @@ class ComparisonRendererTests(unittest.TestCase):
             calls.append(side)
             return {'render': torch.full((3, camera[1], camera[0]), .2 + .4 * side)}
         with patch.dict(sys.modules, {'gaussian_renderer': SimpleNamespace(render=draw),
-                                      'render_ply': SimpleNamespace(make_camera=lambda pose, width, height, fov: (width, height))}):
+                                      'scripts.rendering.render_ply': SimpleNamespace(make_camera=lambda pose, width, height, fov: (width, height))}):
             for ident, yaw in ((1, 0), (2, 1), (3, 0)):
                 packet = renderer.render(validate_request({'id': ident, 'frame': 1, 'width': 128, 'height': 128, 'yaw': yaw}, 2))
                 size = struct.unpack('<I', packet[:4])[0]; metadata = json.loads(packet[4:4 + size])

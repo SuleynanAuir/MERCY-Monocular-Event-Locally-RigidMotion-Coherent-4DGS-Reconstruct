@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 from plyfile import PlyData
 import torch
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from scene import GaussianModel
 from utils.articulated_motion import ArticulatedBaker
 

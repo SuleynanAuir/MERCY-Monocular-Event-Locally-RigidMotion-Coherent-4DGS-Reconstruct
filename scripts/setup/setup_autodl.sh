@@ -8,7 +8,7 @@ SCGS_BASE_PYTHON="${SCGS_BASE_PYTHON:-/root/miniconda3/bin/python}"
 source "$SCGS_PROJECT_DIR/scripts/setup/autodl_env.sh"
 cd "$SCGS_PROJECT_DIR"
 mkdir -p "$SCGS_DATA_ROOT/scgs-downloads" "$SCGS_DATA_ROOT/scgs-deps"
-python -m pip install -r requirements-autodl.txt
+python -m pip install -r requirements/autodl.txt
 
 fetch_source() {
     local url="$1" archive="$2" target="$3"

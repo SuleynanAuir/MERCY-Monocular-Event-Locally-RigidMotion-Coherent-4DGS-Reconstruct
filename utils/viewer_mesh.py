@@ -5,6 +5,7 @@ from pathlib import Path
 import time
 
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel
 
 from utils.viewer_cache import EncodedFrameCache
 from utils.viewer_state import BACKGROUNDS, image_packet, orbit_pose
@@ -106,6 +107,7 @@ class MeshRenderer:
         import torch
         from utils.event_refinement import qrotate
 
+        panel_started = begin_panel(request)
         with torch.no_grad():
             q, t = (self.correction.group_transforms(request['frame']) if self.motion is None
                     else (values[request['frame']] for values in self.motion))
@@ -113,7 +115,12 @@ class MeshRenderer:
             if getattr(self, 'deformation', None) is not None:
                 from utils.v3_deformation import deform_mesh_vertices
                 xyz = deform_mesh_vertices(self.deformation, xyz, self.vertex_groups, request['frame'])
-            pose = orbit_pose(self.base_pose, self.target, request)
+            if request.get('_capture'):
+                from utils.experiment_export import capture_points, joint_snapshot
+                joints = joint_snapshot(self.correction, q) if getattr(self, 'deformation', None) is None else {}
+                capture_points(request, xyz, self.vertex_groups,
+                    {'group_quaternions': q, 'group_translations': t, **joints})
+            pose = render_pose(self.base_pose, self.target, request)
             camera = torch.as_tensor(pose, device='cuda')
             xyz_camera = (xyz - camera[:3, 3]) @ camera[:3, :3]
             projection = torch.as_tensor(projection_matrix(
@@ -144,7 +151,9 @@ class MeshRenderer:
             # and crawling edges during animation. Output framing stays identical.
             rgb = rgb.reshape(request['height'], self.supersample,
                               request['width'], self.supersample, 3).mean(dim=(1, 3))
-            return (rgb.flip(0).clamp(0, 1) * 255).byte().cpu().numpy()
+            pixels = (rgb.flip(0).clamp(0, 1) * 255).byte().cpu().numpy()
+            end_panel(request, panel_started)
+            return pixels
 
     def render(self, request):
         from PIL import Image

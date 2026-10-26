@@ -115,7 +115,7 @@ def main():
     from scripts.geometry.prune_lego_completion_exposure import contribution_from_dc_gradient
     from utils.event_refinement import correction_from_record
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from utils.surface_detail_metrics import surface_comparison, mesh_structure_edges, edge_agreement
     from scipy.ndimage import binary_erosion, binary_dilation, label
     from PIL import Image

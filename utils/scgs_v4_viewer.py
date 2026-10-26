@@ -6,6 +6,7 @@ from pathlib import Path
 import time
 
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel
 from PIL import Image
 import torch
 
@@ -100,20 +101,21 @@ class SCGSV4ComparisonRenderer:
     @torch.no_grad()
     def render(self, request):
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
         if request.get('render_mode', 'gaussian') != 'gaussian':
             raise ValueError('This V4 field is evaluated on Gaussian geometry')
-        jpeg = self.image_cache.get(request)
+        jpeg = None if request.get('_raw') else self.image_cache.get(request)
         if jpeg is not None:
             return self.base.packet(request, jpeg, 0., 0., cache_hit=True)
         started = time.perf_counter()
-        pose = orbit_pose(self.base.base_pose, self.base.target, request)
+        pose = render_pose(self.base.base_pose, self.base.target, request)
         supersample = self.base.side_sampling[1]['render_supersample']
         camera = make_camera(pose, request['width']*supersample, request['height']*supersample,
                              np.deg2rad(request['fovy']))
         frame, panels = request['frame'], []
         try:
             for auxiliary in (False, True):
+                panel_started = begin_panel(request)
                 # Both panels begin at exactly the same corrected V3 pose.
                 self.base.apply_side_pose(1, frame)
                 model = self.base.model
@@ -121,12 +123,16 @@ class SCGSV4ComparisonRenderer:
                     group_q = self.base.correction.group_transforms(frame)[0]
                     model._xyz, model._rotation = self.field.deform(model._xyz, model._rotation, group_q, frame)
                     model._scaling = self.field.deform_scaling(model._scaling, frame)
-                rgb = resolve_rgb(render(camera, model, self.base.pipe, self.base.backgrounds[request['background']],
-                                         0., 0., 0.)['render'], supersample)
+                output = render(camera, model, self.base.pipe, self.base.backgrounds[request['background']], 0., 0., 0.)
+                rgb = resolve_rgb(output['render'], supersample)
+                capture_gaussians(request, model, output.get('alpha'))
                 panels.append(rgb.clamp(0, 1).permute(1, 2, 0).mul(255).byte().contiguous().cpu().numpy())
+                end_panel(request, panel_started)
         finally:
             # Shared GPU model must be restored before another scene renders.
             self.base.apply_side_pose(1, frame)
+        if request.get('_raw'):
+            return {'panels': panels}
         rendered = time.perf_counter()
         stream = io.BytesIO()
         Image.fromarray(np.concatenate(panels, 1)).save(stream, format='JPEG', quality=request['quality'], subsampling=0)

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from PIL import Image
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from utils.viewer_state import validate_request, orbit_pose
 from utils.gs_clay import gray_gaussians, canonical_coordinates
 

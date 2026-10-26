@@ -147,6 +147,8 @@ flowchart LR
 
 [评估指标与消融协议](assets/technical/06-evaluation.md) 定义比较口径；[历史实验记录](assets/technical/08-experiment-records.md) 保留原始表格、失败项、图像和旧分支命令。
 
+[全项目实验计划](assets/technical/12-experiment-plan.md) 提供主实验、消融、参数敏感性、效率与统计显著性表格，区分 Lego 主线、严格 event-only、Fan 和 Lamp；[实验记录模板](assets/experiments/templates/experiment-records.md) 用于填写配置、结果、成本与运行状态。表中的待测项目是后续实验计划，不代表已完成评测。
+
 ## Fan 示例与可视化
 
 Fan 使用 G0、相机和 `Fan.mkv` 拟合右侧叶片逐帧转角，左侧风扇及后方支架保持静止。后续处理包括支架归属修复，以及规范高斯的受限局部表面细化；这些步骤没有把 Fan 转成事件重建通过版。
@@ -172,8 +174,8 @@ source scripts/setup/autodl_env.sh
 
 ```bash
 pip install -r requirements.txt
-pip install -r requirements-event.txt
-pip install -r requirements-viewer.txt
+pip install -r requirements/event.txt
+pip install -r requirements/viewer.txt
 pip install --no-build-isolation ./submodules/diff-gaussian-rasterization
 pip install --no-build-isolation ./submodules/simple-knn
 ```
@@ -217,6 +219,12 @@ python viewer.py --scenes_path /path/to/scenes.json   --host 127.0.0.1 --port 88
 
 打开 `http://127.0.0.1:8892/?scene=lego` 或 `?scene=fan`。服务器 GPU 负责渲染，浏览器负责交互与播放；远程服务可通过 SSH 转发到本地。完整的显示、参考帧、选区与视频导出说明见 [查看器操作](assets/technical/09-viewer-reference.md)。
 
+## 本地目录组织
+
+根目录保留 README、LICENSE、基础依赖 `requirements.txt`，以及 `train.py`、`train_gui.py`、`edit_gui.py`、`render.py`、`viewer.py` 五个主要入口。辅助导出、渲染、评测与预处理工具按功能放入 `scripts/`，公共模块放入 `utils/`，可选依赖集中在 `requirements/`。
+
+本地独立 PLY 已归入 `data/gaussians/fan_dynamic_gaussians.ply`；数据与历史实验仍不提交到 Git。完整的新旧路径、运行方式与迁移记录见 [目录与入口索引](assets/technical/11-project-layout.md)。
+
 ## 技术文档与代码导航
 
 | 文档 | 内容 |
@@ -231,11 +239,19 @@ python viewer.py --scenes_path /path/to/scenes.json   --host 127.0.0.1 --port 88
 | [07 Fan 技术说明](assets/technical/07-fan-and-viewer.md) | 视频拟合、绑定修复、表面细化与显示边界 |
 | [08 历史实验记录](assets/technical/08-experiment-records.md) | 历史数字、失败实验、图像及旧分支 |
 | [09 查看器操作](assets/technical/09-viewer-reference.md) | 场景、五种显示、参考画面、细节与视频导出 |
+| [11 目录与入口](assets/technical/11-project-layout.md) | 根目录分类、新旧路径与运行约定 |
+| [12 全项目实验计划](assets/technical/12-experiment-plan.md) | 五类实验矩阵、参数范围、统计协议、执行优先级与填写模板 |
+| [13 UI 导出与独立评测](assets/technical/13-experiment-export.md) | 三版本同步、每 2 帧关键数据、公共参考、容量控制与离线评测 |
 
 ```text
 gaussian_renderer/       高斯渲染接口
 scene/                   数据、相机、高斯及原始形变模型
 utils/                   运动、事件、关节、辅助网络与加载器
+scripts/export/          高斯序列与刚体模型导出、打包
+scripts/rendering/       PLY、旋转与动画序列渲染
+scripts/evaluation/      全流程评测与图像指标
+scripts/preprocessing/   COLMAP 数据转换
+scripts/training/        GUI 训练启动示例
 scripts/motion/          Blender 导出、配准、绑定、基础缓存
 scripts/events/          事件监督、校正、审计与导出
 scripts/deformation/     局部 MLP、历史形变分支与评估
@@ -246,6 +262,8 @@ scripts/viewer/          参考图像、显示资产与浏览工具
 scripts/mesh/            Mesh 重建、去噪与高斯绑定
 viewer/                  浏览器前端与场景配置示例
 tests/                   按功能分类的回归测试
+requirements/           AutoDL、事件、Mesh、查看器可选依赖
+data/gaussians/          本地独立高斯资产（不提交）
 assets/demo/             原始展示截图与图库清单
 assets/technical/        技术文档、复现协议与历史记录
 ```

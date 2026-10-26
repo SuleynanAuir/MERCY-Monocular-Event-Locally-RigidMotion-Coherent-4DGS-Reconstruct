@@ -40,7 +40,7 @@ def main():
     from scripts.geometry.render_lego_multiview import verify_inputs
     from utils.event_refinement import correction_from_record
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from PIL import Image
     import torch
 

@@ -11,12 +11,12 @@ import uuid
 from argparse import ArgumentParser, Namespace
 from arguments import ModelParams, PipelineParams, OptimizationParams
 import math
-from cam_utils import OrbitCamera
+from utils.cam_utils import OrbitCamera
 import numpy as np
 import dearpygui.dearpygui as dpg
 import datetime
 from PIL import Image
-from train_gui_utils import DeformKeypoints
+from utils.train_gui_utils import DeformKeypoints
 from scipy.spatial.transform import Rotation as R
 import pytorch3d.ops
 try:
@@ -351,7 +351,7 @@ class GUI:
 
     @torch.no_grad()
     def animation_initialize(self):
-        from lap_deform import LapDeform
+        from utils.lap_deform import LapDeform
         mask = (self.gaussians.get_opacity > 0.9)[:, 0]
         pcl = self.gaussians.get_xyz[mask]
         from utils.time_utils import farthest_point_sample

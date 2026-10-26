@@ -13,7 +13,7 @@ from PIL import Image
 import torch
 
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from scene.gaussian_model import GaussianModel
 from utils.ply_utils import gaussian_degree
 

@@ -18,7 +18,7 @@ from scipy.ndimage import maximum_filter, minimum_filter, sobel, laplace, binary
 def main():
     import torch
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from utils.comparison_renderer import ComparisonRenderer
     from utils.mesh_gaussian_binding import MeshGaussianBinding
     from utils.viewer_mesh import MeshRenderer

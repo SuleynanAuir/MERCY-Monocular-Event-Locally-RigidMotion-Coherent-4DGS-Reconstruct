@@ -17,7 +17,7 @@ def main():
     from viewer import Renderer
     from scene import GaussianModel
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from utils.viewer_state import orbit_pose, validate_request
     from scripts.mesh.reconstruct_viewer_mesh import valid_depth, projected_samples, bilinear
     from utils.rigid_checkpoint import sha256_file

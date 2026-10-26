@@ -9,7 +9,7 @@ import torch
 class GaussianMaterialTests(unittest.TestCase):
     def test_override_is_used_without_mutating_native_sh_or_coverage(self):
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
         xyz = torch.zeros(1, 3, device='cuda')
         rotation = torch.tensor([[1., 0, 0, 0]], device='cuda')
         features = torch.zeros(1, 1, 3, device='cuda')

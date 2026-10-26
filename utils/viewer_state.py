@@ -101,15 +101,17 @@ def image_packet(metadata, jpeg):
     return struct.pack("<I", len(header)) + header + jpeg
 
 
-def cached_image_reference(request, comparison=False):
+def cached_image_reference(request, comparison=False, panel_count=None):
     """Reference a JPEG explicitly retained by this stream's browser client."""
     frame = request['frame']
+    panel_count = panel_count or (2 if comparison else 1)
     return image_packet({'id': request['id'], 'frame': frame, 'stream': request['_stream'],
                          'render_mode': request.get('render_mode', 'gaussian'),
                          **({'hybrid_quality': request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)}
                             if request.get('render_mode') == 'hybrid' else {}),
-                         'width': request['width'] * (2 if comparison else 1),
+                         'width': request['width'] * panel_count,
                          'height': request['height'], 'render_ms': 0., 'encode_ms': 0.,
                          'cache_hit': True, 'client_cache_hit': True,
                          **({'comparison': True, 'panel_width': request['width'],
+                             'panel_count': panel_count, 'panel_frames': [frame]*panel_count,
                              'left_frame': frame, 'right_frame': frame} if comparison else {})}, b'')
