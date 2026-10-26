@@ -6,6 +6,7 @@
 
 Li Minghao: suleynanaiur@gmail.com
 Liang Yirui: Laybaeknim@gmail.com
+Chen Qianqi：chenqianqi0719@gmail.com
 
 MERCY 面向 Lego 机械结构，研究如何利用事件流的时序变化信息和视频帧的外观参照，提高动态高斯与观测的一致性、部件连续性及多视角覆盖。实际显示资产是三维高斯；基础运动和部分几何来自 Blender 先验。Bind-GS / Align-GS 是本项目的方法组织名称，历史目录中的 `v1`、`v2`、`v3` 不能直接当作这三个阶段的检查点。
 
