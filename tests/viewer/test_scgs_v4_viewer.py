@@ -62,7 +62,7 @@ class V4ViewerTests(unittest.TestCase):
                 raise RuntimeError('simulated raster failure')
             return {'render': torch.full((3, 256, 256), .2*len(calls))}
         modules = {'gaussian_renderer': SimpleNamespace(render=render),
-                   'render_ply': SimpleNamespace(make_camera=lambda *args: None)}
+                   'scripts.rendering.render_ply': SimpleNamespace(make_camera=lambda *args: None)}
         with patch.dict(sys.modules, modules):
             if fail:
                 with self.assertRaisesRegex(RuntimeError, 'raster failure'):

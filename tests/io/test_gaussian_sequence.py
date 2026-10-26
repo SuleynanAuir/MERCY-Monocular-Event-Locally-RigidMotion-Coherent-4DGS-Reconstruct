@@ -8,7 +8,7 @@ import zipfile
 import numpy as np
 from plyfile import PlyData, PlyElement
 
-from export_gaussian_sequence import BakedRotor, export_sequence
+from scripts.export.export_gaussian_sequence import BakedRotor, export_sequence
 from utils.gaussian_sequence import GaussianSequence
 from utils.rigid_checkpoint import RigidRotation, export_rigid_bundle, sha256_file
 
@@ -122,7 +122,7 @@ class GaussianSequenceTests(unittest.TestCase):
             GaussianSequence(bad)
 
     def test_compact_tensor_package_recreates_identical_ply_bytes(self):
-        from pack_gaussian_sequence import pack_sequence
+        from scripts.export.pack_gaussian_sequence import pack_sequence
         source = self.export()
         destination = pack_sequence(source, self.root / "moving.npz")
         with GaussianSequence(source) as reference, GaussianSequence(destination) as packed:
@@ -134,7 +134,7 @@ class GaussianSequenceTests(unittest.TestCase):
             pack_sequence(source, destination)
 
     def test_compact_tensor_package_no_normals_needs_only_seven_channels(self):
-        from pack_gaussian_sequence import pack_sequence
+        from scripts.export.pack_gaussian_sequence import pack_sequence
         self.vertices["nx"] = 0
         PlyData([PlyElement.describe(self.vertices, "vertex")]).write(self.source)
         other = self.root / "zero-normal-bundle"

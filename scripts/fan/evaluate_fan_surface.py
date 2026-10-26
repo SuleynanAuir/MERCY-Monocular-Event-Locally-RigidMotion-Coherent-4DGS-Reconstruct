@@ -34,7 +34,7 @@ def main():
     from PIL import Image
     from scipy import ndimage
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from utils.viewer_state import orbit_pose, validate_request
     from utils.event_refinement import qmul, qrotate
     from utils.gs_clay import gray_gaussians

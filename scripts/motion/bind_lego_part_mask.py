@@ -14,7 +14,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 import torch
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from scene import GaussianModel
 from scripts.motion.rebind_lego_motion import project, sample
 from scripts.motion.bind_lego_parts import transform

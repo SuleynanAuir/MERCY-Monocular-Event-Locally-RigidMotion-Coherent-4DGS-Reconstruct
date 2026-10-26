@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from utils.viewer_state import image_packet, orbit_pose, stream_frame, validate_request, validate_stream
+from utils.viewer_state import image_packet, orbit_pose, stream_frame, validate_request, validate_stream, cached_image_reference
 
 
 class ViewerStateTests(unittest.TestCase):
@@ -56,6 +56,16 @@ class ViewerStateTests(unittest.TestCase):
         size = struct.unpack("<I", packet[:4])[0]
         self.assertEqual(json.loads(packet[4:4 + size]), {"id": 7, "frame": 3})
         self.assertEqual(packet[4 + size:], b"jpeg-data")
+
+    def test_triplet_cache_reference_preserves_dimensions_and_frame_alignment(self):
+        request = validate_request(dict(frame=7,width=640,height=640),20)
+        request['_stream'] = dict(seq=4)
+        packet = cached_image_reference(request, True, 3)
+        size = struct.unpack('<I',packet[:4])[0]
+        meta = json.loads(packet[4:4+size])
+        self.assertEqual((meta['width'],meta['panel_width'],meta['panel_count']), (1920,640,3))
+        self.assertEqual(meta['panel_frames'], [7,7,7])
+        self.assertEqual(len(packet),4+size)
 
     def test_stream_preserves_source_time_and_speed(self):
         request = validate_stream({"speed": 1, "rate": 60}, 360)

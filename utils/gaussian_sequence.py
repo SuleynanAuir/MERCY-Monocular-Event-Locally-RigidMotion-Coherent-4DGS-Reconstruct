@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import tempfile
 import zipfile
+import weakref
 
 import numpy as np
 from plyfile import PlyData, PlyElement
@@ -20,12 +21,13 @@ FORMAT = "baked_gaussian_ply_sequence"
 VERSION = 1
 SPARSE_VERSION = 2
 POSE_FIELDS = ["x", "y", "z", "rot_0", "rot_1", "rot_2", "rot_3"]
+_SHARED_POSES = weakref.WeakValueDictionary()
 
 
 class GaussianSequence:
     """Read actual Gaussian states from a baked NPZ, PLY ZIP or extracted directory."""
 
-    def __init__(self, path):
+    def __init__(self, path, *, share_poses=False):
         self.path = Path(path)
         self.archive = None
         self.tensor_archive = None
@@ -35,7 +37,17 @@ class GaussianSequence:
             if self.path.suffix == ".npz":
                 self.tensor_archive = np.load(self.path, allow_pickle=False)
                 data = str(self.tensor_archive["metadata_json"].item())
-                self.poses = self.tensor_archive["poses"]
+                # The viewer only reads poses. Its V1/V2 and V1/V3 panels may
+                # refer to the same multi-GB V1 archive. Weak sharing avoids
+                # decompressing and retaining duplicate copies; ordinary
+                # sequence callers keep the original independent semantics.
+                stat = self.path.stat()
+                identity = (str(self.path.resolve()), stat.st_size, stat.st_mtime_ns)
+                self.poses = _SHARED_POSES.get(identity) if share_poses else None
+                if self.poses is None:
+                    self.poses = self.tensor_archive["poses"]
+                    if share_poses:
+                        _SHARED_POSES[identity] = self.poses
                 self.base_vertices = self.tensor_archive["base_vertices"]
                 if "dynamic_indices" in self.tensor_archive:
                     self.dynamic_indices = self.tensor_archive["dynamic_indices"]

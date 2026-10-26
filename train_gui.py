@@ -25,13 +25,13 @@ from argparse import ArgumentParser, Namespace
 from arguments import ModelParams, PipelineParams, OptimizationParams
 from train import training_report
 import math
-from cam_utils import OrbitCamera
+from utils.cam_utils import OrbitCamera
 import numpy as np
 import dearpygui.dearpygui as dpg
 import imageio
 import datetime
 from PIL import Image
-from train_gui_utils import DeformKeypoints
+from utils.train_gui_utils import DeformKeypoints
 from scipy.spatial.transform import Rotation as R
 
 try:
@@ -235,7 +235,7 @@ class GUI:
             self.test_step()
 
     def animation_initialize(self, use_traj=True):
-        from lap_deform import LapDeform
+        from utils.lap_deform import LapDeform
         gaussians = self.deform.deform.as_gaussians
         fid = torch.tensor(self.animation_time).cuda().float()
         time_input = fid.unsqueeze(0).expand(gaussians.get_xyz.shape[0], -1)

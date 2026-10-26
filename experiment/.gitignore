@@ -1,0 +1,8 @@
+__pycache__/
+**/prepared/**/rgb.npy
+**/prepared/**/parts.npz
+**/prepared/**/bands.npy
+**/prepared/**/band-binding.npz
+**/prepared/**/events.npz
+**/smoke/
+*.partial

@@ -23,7 +23,7 @@ def main():
     from utils.gs_clay import gray_gaussians
     from utils.gs_pseudocolor import palette
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
 
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('data', 'parts', 'binding-report', 'candidate', 'output'):

@@ -42,7 +42,7 @@ def stats(values):
 def render_depth(source, camera):
     import torch
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from scene import GaussianModel
     with torch.no_grad():
         model = GaussianModel(3, with_motion_mask=False)

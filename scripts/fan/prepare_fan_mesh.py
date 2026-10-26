@@ -18,7 +18,7 @@ def reconstruct(renderer, groups, output, size, voxel, yaw_step):
     import open3d as o3d
     import torch
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from scene import GaussianModel
     from scripts.mesh.reconstruct_viewer_mesh import valid_depth, continuous_surface, projected_samples, bilinear
     from utils.viewer_state import orbit_pose, validate_request

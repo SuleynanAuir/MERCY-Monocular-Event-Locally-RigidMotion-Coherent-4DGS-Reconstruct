@@ -6,6 +6,7 @@ from pathlib import Path
 import time
 from types import SimpleNamespace
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel, render_background
 from utils.viewer_cache import EncodedFrameCache
 from utils.viewer_state import image_packet, orbit_pose, validate_request
 
@@ -164,10 +165,10 @@ class FanRenderer:
         if mode not in self.caches: raise ValueError('Unknown Fan display mode')
         from PIL import Image
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
         from utils.hybrid_sampling import sampling_plan, resolve_hybrid_rgb, smooth_surface
         start = time.perf_counter()
-        jpeg = self.caches[mode].get(request)
+        jpeg = None if request.get('_raw') else self.caches[mode].get(request)
         hit = jpeg is not None
         render_ms = encode_ms = 0.
         if jpeg is None:
@@ -178,6 +179,7 @@ class FanRenderer:
                     from utils.gs_clay import gray_gaussians
                     panels = []
                     for index, (side, rest, material, color_material) in enumerate(zip(self.sides, self.native_rests, self.clay_coordinates, self.pseudocolor_materials)):
+                        panel_started = begin_panel(request)
                         # Restore native static rows after any hybrid render;
                         # apply this side's own baked trajectory exactly once.
                         side.model._xyz.copy_(rest[0]); side.model._rotation.copy_(rest[1])
@@ -190,9 +192,9 @@ class FanRenderer:
                         else:
                             side.model._xyz[side.dynamic_indices] = motion[:, :3]
                             side.model._rotation[side.dynamic_indices] = motion[:, 3:7]
-                        camera = make_camera(orbit_pose(side.base_pose, side.target, request),
+                        camera = make_camera(render_pose(side.base_pose, side.target, request),
                             request['width'], request['height'], np.deg2rad(request['fovy']))
-                        output = render(camera, side.model, side.pipe, side.backgrounds[request['background'] if mode == 'gaussian' else 'black'], 0., 0., 0.)
+                        output = render(camera, side.model, side.pipe, render_background(side.backgrounds, request) if mode == 'gaussian' else side.backgrounds['black'], 0., 0., 0.)
                         coordinates = None
                         if mode == 'clay' and request.get('clay_style', 'solid') == 'wire':
                             coordinates = render(camera, side.model, side.pipe, side.backgrounds['black'],
@@ -210,19 +212,26 @@ class FanRenderer:
                                 request['fovy'], side.backgrounds[request['background']], coordinates=coordinates)
                         if index == 1 and self.surface_refinement:
                             rgb = smooth_surface(rgb, output['depth'], output['alpha'])
+                        capture_gaussians(request, side.model, output.get('alpha'))
                         panels.append((rgb.permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
+                        end_panel(request, panel_started)
                 else:
                     quality = request.get('hybrid_quality', 'surface')
                     width, height = sampling_plan(request['width'], request['height'], quality)
                     panels = []
                     for side, binding in zip(self.sides, self.bindings):
+                        panel_started = begin_panel(request)
                         binding.apply(side.model, request['frame'])
-                        camera = make_camera(orbit_pose(side.base_pose, side.target, request), width, height,
+                        camera = make_camera(render_pose(side.base_pose, side.target, request), width, height,
                                              np.deg2rad(request['fovy']))
                         output = render(camera, side.model, side.pipe, side.backgrounds[request['background']], 0., 0., 0.)
                         rgb = resolve_hybrid_rgb(output['render'], request['width'], request['height'], quality)
                         if quality == 'surface': rgb = smooth_surface(rgb, output['depth'], output['alpha'])
+                        capture_gaussians(request, side.model, output.get('alpha'))
                         panels.append((rgb.permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
+                        end_panel(request, panel_started)
+            if request.get('_raw'):
+                return {'panels': panels}
             rendered = time.perf_counter()
             stream = io.BytesIO()
             Image.fromarray(np.concatenate(panels, axis=1)).save(stream, format='JPEG', quality=request['quality'], subsampling=0)

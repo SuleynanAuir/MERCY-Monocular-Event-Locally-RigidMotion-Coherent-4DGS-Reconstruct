@@ -69,7 +69,7 @@ def fetch(requirement, destination, tag_order):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--requirements", type=Path, default=Path("requirements-autodl.txt"))
+    parser.add_argument("--requirements", type=Path, default=Path("requirements/autodl.txt"))
     parser.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args()
     args.destination.mkdir(parents=True, exist_ok=True)

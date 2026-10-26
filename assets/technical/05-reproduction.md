@@ -4,7 +4,7 @@
 
 ## 1 准备环境与数据
 
-训练和渲染需要 CUDA GPU、匹配的 PyTorch/CUDA、编译工具及本地 rasterizer／simple-knn；涉及节点操作的模块还依赖 PyTorch3D。Blender 导出需 Blender Python 环境，参考视频处理需 FFmpeg／ffprobe，Mesh 流程参照 `requirements-mesh.txt`。
+训练和渲染需要 CUDA GPU、匹配的 PyTorch/CUDA、编译工具及本地 rasterizer／simple-knn；涉及节点操作的模块还依赖 PyTorch3D。Blender 导出需 Blender Python 环境，参考视频处理需 FFmpeg／ffprobe，Mesh 流程参照 `requirements/mesh.txt`。
 
 AutoDL 安装入口是 [setup_autodl.sh](../../scripts/setup/setup_autodl.sh)，手动安装按 [README](../../readme.md) 执行。使用环境脚本前确认实际解释器与数据盘路径。环境配置和模型重建是两个步骤，成功安装不等于数据有效。
 

@@ -1,3 +1,0 @@
-# Optional Mesh viewer for the existing PyTorch 2.1 / CUDA 12.1 environment.
-# Install with: pip install --no-deps --no-build-isolation -r requirements-mesh.txt
-nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git@v0.3.3

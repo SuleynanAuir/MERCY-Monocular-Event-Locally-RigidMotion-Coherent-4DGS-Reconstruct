@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 from scipy.ndimage import binary_dilation
 from gaussian_renderer import render
-from render_ply import make_camera
+from scripts.rendering.render_ply import make_camera
 from scene import GaussianModel
 from utils.event_refinement import RigidMotionCorrection
 from utils.event_supervision import require_event_export_approval

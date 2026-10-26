@@ -10,6 +10,7 @@ from pathlib import Path
 import time
 
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel, render_background
 
 from utils.viewer_cache import EncodedFrameCache
 from utils.viewer_state import image_packet, orbit_pose
@@ -108,9 +109,26 @@ class GaussianPairRenderer:
             comparison_modes=['gaussian', 'clay', 'pseudocolor'],
             left_label=config['left']['label'], right_label=config['right']['label'],
             description=config['description'], default_background='light',
+            asset_identity=dict(manifest_sha256=file_sha(self.path),
+                sequence_sha256={k:config[k]['sha256'] for k in ('left','right')},
+                material_reference_sha256=config.get('material_reference',{}).get('sha256'),
+                detail_finish_sha256=config.get('detail_finish',{}).get('sha256'),
+                renderer_sha256=file_sha(Path(__file__)),
+                renderer_components_sha256={name:file_sha(Path(__file__).resolve().parents[1]/name)
+                    for name in ('viewer.py','utils/gaussian_sequence.py','utils/gs_clay.py',
+                        'utils/gs_pseudocolor.py','utils/lamp_detail.py','utils/viewer_state.py',
+                        'gaussian_renderer/__init__.py','scripts/rendering/render_ply.py')}),
             surface_refinement=config.get('surface_refinement'), render_supersamples=self.supersamples,
             gaussian_counts=[s.info['gaussian_count'] for s in self.sides],
             clay=gs_clay_info(), pseudocolor=pseudocolor_info())
+        # Frozen experimental V2 pairs use this same renderer. Do not silently
+        # label their right-hand stage V3 in styled display modes.
+        for mode, title in (('clay', '白模'), ('pseudocolor', '伪彩色')):
+            for side in ('left', 'right'):
+                label = config[side]['label']
+                stage = label.split(' · ', 1)[0]
+                if stage in ('V1', 'V2', 'V3'):
+                    self.info[mode][side+'_label'] = stage+' · '+title
         self.detail_normals = None
         if config.get('detail_finish'):
             from utils.lamp_detail import height_weights
@@ -135,7 +153,7 @@ class GaussianPairRenderer:
         import torch
         from PIL import Image
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
         from utils.gs_clay import gray_gaussians
         from utils.gs_pseudocolor import color_gaussians
 
@@ -143,13 +161,14 @@ class GaussianPairRenderer:
         if mode not in self.info['comparison_modes']:
             raise ValueError('This Gaussian pair does not provide the requested mode')
         start = time.perf_counter()
-        jpeg = self.frames.get(request)
+        jpeg = None if request.get('_raw') else self.frames.get(request)
         hit = jpeg is not None
         render_ms = encode_ms = 0.
         if jpeg is None:
             panels = []
             with torch.no_grad():
                 for i, side in enumerate(self.sides):
+                    panel_started = begin_panel(request)
                     factor = self.supersamples[i]
                     def resolve(value):
                         return value if factor == 1 else torch.nn.functional.avg_pool2d(value, factor)
@@ -160,10 +179,10 @@ class GaussianPairRenderer:
                     else:
                         side.model._xyz[side.dynamic_indices] = pose[:, :3]
                         side.model._rotation[side.dynamic_indices] = pose[:, 3:7]
-                    camera_pose = orbit_pose(side.base_pose, side.target, request)
+                    camera_pose = render_pose(side.base_pose, side.target, request)
                     camera = make_camera(camera_pose,
                         request['width']*factor, request['height']*factor, np.deg2rad(request['fovy']))
-                    background = side.backgrounds[request['background']]
+                    background = render_background(side.backgrounds, request)
                     output = render(camera, side.model, side.pipe,
                         background if mode == 'gaussian' else side.backgrounds['black'], 0., 0., 0.)
                     rgb = output['render'] if factor == 1 else resolve(output['render'].clamp(0, 1))
@@ -192,7 +211,11 @@ class GaussianPairRenderer:
                             0., 0., 0., override_color=(normal*self.detail_weights*.5+.5).contiguous())['render']
                         rgb = detail_finish(rgb, resolve(guide), depth, alpha,
                                             request['fovy'], background, mode)
+                    capture_gaussians(request, side.model, output.get('alpha'))
                     panels.append((rgb.clamp(0, 1).permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
+                    end_panel(request, panel_started)
+            if request.get('_raw'):
+                return {'panels': panels}
             rendered = time.perf_counter()
             stream = io.BytesIO()
             Image.fromarray(np.concatenate(panels, axis=1)).save(stream, 'JPEG', quality=request['quality'], subsampling=0)

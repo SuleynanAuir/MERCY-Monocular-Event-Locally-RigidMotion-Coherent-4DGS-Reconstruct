@@ -156,6 +156,21 @@ html{scrollbar-gutter:stable}
 @media(max-width:760px){.detail-row,.viewport:fullscreen .comparison-rows>.detail-row{height:calc(var(--detail-image-height,180px) + 32px)}}
 
 #cancelExport[hidden],#exportDownload[hidden]{display:none}
+/* Real V2 occupies its own synchronized column; reference images stay last. */
+.stage.triplet{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stage.triplet.quad{grid-template-columns:repeat(5,minmax(0,1fr))}
+.stage.triplet #leftRenderCell{grid-column:1;grid-row:1}
+.stage.triplet #middleRenderCell{grid-column:2;grid-row:1}
+.stage.triplet #rightRenderCell{grid-column:3;grid-row:1}
+.stage.triplet.quad #rgbCell{grid-column:4;grid-row:1}
+.stage.triplet.quad #eventCell{grid-column:5;grid-row:1}
+.stage .cell-image #middleCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#middleCanvas[hidden]{display:none}
+.compare-label.middle{color:#8a641b}
+@media(max-width:760px){
+ .stage.triplet.quad{grid-template-columns:repeat(5,minmax(220px,1fr));overflow-x:auto}
+ .stage.triplet:not(.quad){grid-template-columns:repeat(3,minmax(180px,1fr));overflow-x:auto}
+}
 #exportVideo,#cancelExport,#exportDownload{margin-top:10px}
 #exportStatus{min-height:3em;overflow-wrap:anywhere}
 .play-options{max-width:100%;flex-wrap:wrap;justify-content:flex-end}
@@ -213,3 +228,28 @@ button:not(:disabled):hover{background:#edf5f1;border-color:var(--border-strong)
 #exportDownload:hover{background:#e3f3eb}
 .viewport:fullscreen::backdrop{background:var(--bg)}
 ::selection{background:#cceade;color:#263d38}
+
+/* Experiment inputs stay within the narrow inspector on desktop and mobile. */
+.experiment-panel .field input[type=number]{width:84px;min-width:0;padding:6px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:var(--panel)}
+.experiment-panel .experiment-file{display:block}
+.experiment-panel input[type=file]{display:block;width:100%;min-width:0;margin-top:8px;font-size:11px}
+.experiment-panel .secondary-button{margin-top:10px}
+.experiment-panel .setting-note{overflow-wrap:anywhere}
+.experiment-panel .experiment-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;justify-content:center;padding:11px 8px}
+.experiment-panel .experiment-primary:hover{background:#106d5a;border-color:#106d5a}
+.experiment-progress{margin-top:12px;padding:12px;border:1px solid #c6dfd5;border-radius:8px;background:#f2f9f5}
+.experiment-panel [hidden]{display:none}
+.experiment-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
+.experiment-progress-heading strong{font:600 14px ui-monospace,monospace;color:var(--accent);font-variant-numeric:tabular-nums}
+.experiment-progress progress{display:block;width:100%;height:9px;margin:9px 0 10px;border:0;border-radius:8px;overflow:hidden;appearance:none;background:#dfece5;accent-color:var(--accent)}
+.experiment-progress progress::-webkit-progress-bar{background:#dfece5;border-radius:8px}
+.experiment-progress progress::-webkit-progress-value{background:var(--accent);border-radius:8px;transition:width .2s ease}
+.experiment-progress progress::-moz-progress-bar{background:var(--accent);border-radius:8px}
+.experiment-stage{margin:0;font-size:11px;font-weight:600;line-height:1.7;overflow-wrap:anywhere}
+.experiment-detail{margin:5px 0 0;font-size:10px;color:var(--muted);line-height:1.7;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.experiment-progress-note{margin:8px 0 0;font-size:9px;line-height:1.6;color:var(--muted)}
+.experiment-progress[data-state=failed]{border-color:#dfb8b2;background:#fff6f4}
+.experiment-progress[data-state=failed] .experiment-stage{color:#a4473b}
+.experiment-progress[data-state=failed] progress::-webkit-progress-value{background:#b45a4c}
+.experiment-progress[data-state=failed] progress::-moz-progress-bar{background:#b45a4c}
+@media(prefers-reduced-motion:reduce){.experiment-progress progress::-webkit-progress-value{transition:none}}

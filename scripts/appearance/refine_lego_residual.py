@@ -118,7 +118,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     args.render_output.parent.mkdir(parents=True, exist_ok=True)
     from scripts.events.refine_lego_events import MotionRenderer
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     renderer = MotionRenderer(args.baseline, 640)
     correction = correction_from_record(record, 'cuda').eval()
     for parameter in correction.parameters():

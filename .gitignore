@@ -1,6 +1,7 @@
 # Local datasets and generated experiment artifacts
 /Lego_data/
 /outputs/
+/experiment/exports/
 /fan_dynamic_gaussians.ply
 /data/
 /datasets/
@@ -24,5 +25,5 @@ __pycache__/
 *.sh
 !scripts/setup/*.sh
 !scripts/viewer/*.sh
-!train_gui.sh
+!scripts/training/train_gui.sh
 !scripts/*.sh

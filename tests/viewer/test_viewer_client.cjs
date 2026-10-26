@@ -54,7 +54,8 @@ async function client(overrides = {}, catalog = null, search = '?autoplay=1&loop
   tick(0);
   const stream = () => socket.sent.filter(m => m.type === 'stream').at(-1);
   async function packet(seq, frame, reference = false, id = stream().id) {
-    const header = Buffer.from(JSON.stringify({id, frame, stream: {seq}, width: 1280,
+    const mode = stream().render_mode, panels = (scene.mode_version_labels?.[mode] || scene.version_labels || [0,1]).length;
+    const header = Buffer.from(JSON.stringify({id, frame, stream: {seq}, width: 640*panels, panel_count:panels, render_mode:mode,
       height: 640, panel_width: 640, comparison: true, left_frame: frame, right_frame: frame,
       render_ms: 0, encode_ms: 0, cache_hit: true, client_cache_hit: reference}));
     const data = new ArrayBuffer(4 + header.length + (reference ? 0 : 4));
@@ -64,6 +65,35 @@ async function client(overrides = {}, catalog = null, search = '?autoplay=1&loop
   }
   return {elements, presets, socket, stream, tick, packet, decoded, resize, errors, context};
 }
+
+test('V1 V2 V3 stay synchronized through cached playback, ROI and a two-version mode switch', async () => {
+  const c = await client({version_labels:['V1','V2 · 存档分支','V3'],
+    mode_version_labels:{mesh:['V1','V3']}, reference:{available:true},
+    mesh:{available:true,triangle_count:20,description:'Mesh',left_label:'V1',right_label:'V3'}});
+  assert.equal(c.elements.middleRenderCell.hidden,false);
+  assert.equal(c.elements.middleCompareLabel.textContent,'V2 · 存档分支');
+  assert.equal(c.elements.snapshot.textContent,'保存 1×5 对比图 ↓');
+  for(let i=0;i<20;i++)await c.packet(i,i);
+  c.tick(100);c.tick(140);
+  for(const id of ['middleCanvas','comparisonCanvas','rgbCanvas','eventCanvas'])
+    assert.equal(c.elements[id].dataset.frame,c.elements.canvas.dataset.frame);
+  c.elements.detailToggle.onclick();c.elements.detailAdd.onclick();
+  assert.equal(c.elements.detailRow.children.length,6);
+  assert.equal(c.elements.detailMiddle.dataset.regions,c.elements.detailLeft.dataset.regions);
+  const decoded=c.decoded.length;
+  await c.packet(20,0,true);
+  assert.equal(c.decoded.length,decoded+1);
+  assert.equal(c.decoded[decoded],c.decoded[0]);
+  c.elements.renderMode.onchange({target:{value:'mesh'}});c.tick(160);
+  assert.equal(c.elements.middleRenderCell.hidden,true);
+  assert.equal(c.elements.detailMiddle.hidden,true);
+  assert.equal(c.elements.snapshot.textContent,'保存 1×4 对比图 ↓');
+  assert.equal(c.elements.detailRow.children.length,4);
+  c.elements.renderMode.onchange({target:{value:'gaussian'}});c.tick(180);
+  assert.equal(c.elements.middleRenderCell.hidden,false);
+  assert.equal(c.elements.detailRow.children.length,6);
+  assert.equal(c.errors.length,0);
+});
 
 test('default cached view selects 60 FPS, new camera selects 30, layout does not restart playback', async () => {
   const c = await client();
@@ -703,4 +733,156 @@ test('ROI sets are independent per camera view and shared across render modes of
  c.elements.detailClear.onclick();assert.deepEqual(regions(),[]);
  c.presets[0].onclick();c.tick(96);await c.packet(0,0);assert.deepEqual(regions(),frontMesh,'clearing side does not clear front');
  assert.equal(c.elements.detailSelect.value,'2','selected ROI is restored with the view');
+});
+
+test('V1/V2 scene keeps the frozen stage labels in clay title and controls', async () => {
+  const c = await client({left_label:'V1 · 原始高斯',right_label:'V2 · 观测校正',
+    clay:{available:true,left_label:'V1 · 白模',right_label:'V2 · 白模',default_resolution:640}},null,'?mode=clay');
+  assert.equal(c.elements.sceneName.textContent,'V1 / V2 白模对比');
+  assert.equal(c.elements.rightCompareLabel.textContent,'V2 · 白模');
+  assert.equal(c.elements.clayOption.textContent,'V1 / V2 白模 · 清晰柔光');
+  assert.equal(c.errors.length,0);
+});
+
+test('evaluation link applies the same 640px and JPEG 95 settings as measured UI frames', async () => {
+  const c=await client({default_stream_quality:78,clay:{available:true,default_resolution:1024}},null,'?mode=clay&autoplay=1&resolution=640&jpeg_quality=95');
+  assert.equal(c.elements.resolution.value,'640');
+  assert.equal(c.stream().width,640);
+  assert.equal(c.stream().height,640);
+  assert.equal(c.stream().quality,95);
+  assert.equal(c.stream().render_mode,'clay');
+});
+
+test('experiment sequence reuses saved camera/time samples after the live view changes', async () => {
+  const c=await client();
+  const samples=[{frame:0,time_seconds:0,width:640,height:640,yaw:0,pitch:0,
+    camera:{pose_opengl_c2w:[[1,0,0,0],[0,1,0,0],[0,0,1,3],[0,0,0,1]]}}];
+  const plan={format:'scgs_experiment_plan_v1',scene:c.elements.objectSelect.value,samples};
+  c.elements.experimentPlanFile.files=[{size:100,text:async()=>JSON.stringify(plan)}];
+  await c.elements.experimentPlanFile.onchange();
+  assert.equal(c.elements.experimentSequence.disabled,false);
+  c.presets[1].onclick();c.tick(20);
+  c.elements.experimentWarmup.value='3';c.elements.experimentRepeats.value='2';
+  let submitted;
+  c.context.fetch=async(url,options)=>{submitted={url,data:JSON.parse(options.body)};
+    return {ok:true,json:async()=>({id:'test-job',status:'complete'})};};
+  await c.elements.experimentSequence.onclick();
+  assert.equal(submitted.data.operation,'sequence');
+  assert.deepEqual(submitted.data.samples,samples);
+  assert.equal(c.elements.experimentDownload.hidden,false);
+  assert.match(c.elements.experimentDownload.href,/test-job\/download/);
+});
+
+test('experiment benchmark forwards explicit warmup/repeats and errors do not expose a download', async () => {
+  const c=await client();
+  const plan={format:'scgs_experiment_plan_v1',scene:c.elements.objectSelect.value,
+    samples:[{frame:0,time_seconds:0,width:640,height:640}]};
+  c.elements.experimentPlanFile.files=[{size:100,text:async()=>JSON.stringify(plan)}];
+  await c.elements.experimentPlanFile.onchange();
+  c.elements.experimentWarmup.value='7';c.elements.experimentRepeats.value='4';
+  let submitted;
+  c.context.fetch=async(url,options)=>{submitted=JSON.parse(options.body);return {ok:false,text:async()=> '已有任务'};};
+  await c.elements.experimentBenchmark.onclick();
+  assert.equal(submitted.operation,'benchmark');assert.equal(submitted.warmup,7);assert.equal(submitted.repeats,4);
+  assert.equal(c.elements.experimentStatus.textContent,'已有任务');
+  assert.equal(c.elements.experimentDownload.hidden,true);
+  assert.equal(c.elements.experimentBenchmark.disabled,false);
+});
+
+test('one-click save needs no saved plan, preserves camera and downloads the single folder archive', async () => {
+  const c=await client({export_sample_step:2});
+  assert.equal(c.elements.experimentStep.value,'2');
+  c.presets[1].onclick();c.tick(20);
+  c.elements.experimentStart.value='invalid';c.elements.experimentEnd.value='invalid';
+  c.elements.experimentStep.value='2';
+  let submitted,downloads=0;
+  c.elements.experimentDownload.click=()=>downloads++;
+  c.context.fetch=async(url,options)=>{submitted=JSON.parse(options.body);
+    return {ok:true,json:async()=>({id:'one-click',status:'complete',
+      output_archive:'/exports/scene_20261026.zip',output_bytes:1048576,sampled_frames:5,sample_step:4,missing_data:['原始事件计数：0/4']})};};
+  await c.elements.experimentAll.onclick();
+  assert.equal(submitted.operation,'complete');
+  assert.equal(submitted.settings.yaw,35);assert.equal(submitted.settings.pitch,20);
+  assert.equal(submitted.warmup,undefined);assert.equal(submitted.repeats,undefined);
+  assert.equal(submitted.samples,undefined,'server selects the complete source timeline');
+  assert.equal(submitted.sample_step,2);
+  assert.equal(downloads,1);assert.equal(c.elements.experimentLocation.hidden,false);
+  assert.match(c.elements.experimentLocation.textContent,/\/exports\/scene_20261026/);
+  assert.match(c.elements.experimentStatus.textContent,/data_availability.json/);
+  assert.match(c.elements.experimentStatus.textContent,/python evaluate.py/);
+  assert.match(c.elements.experimentStatus.textContent,/每 4 帧采样，共 5 帧/);
+  assert.match(c.elements.experimentLocation.textContent,/仅保留 ZIP/);
+});
+
+test('one-click progress follows server stages and bytes until the archive is complete', async () => {
+  const c=await client(), waits=[];
+  c.context.setTimeout=callback=>waits.push(callback);
+  let downloads=0;
+  c.elements.experimentDownload.click=()=>downloads++;
+  const jobs=[
+    {stage:'warmup',message:'预热渲染器',stage_index:2,stage_count:10,percent:12,completed:2,total:10,unit:'renders'},
+    {stage:'frames',message:'导出无损帧与模型状态',stage_index:4,stage_count:10,percent:35,completed:10,total:20,unit:'frames'},
+    {stage:'archive',message:'打包下载文件',stage_index:10,stage_count:10,percent:95,completed:1048576,total:2097152,unit:'bytes',detail:'sources/model.npz'},
+    {status:'complete',stage:'complete',message:'导出完成',percent:100,completed:1,total:1},
+  ];
+  c.context.fetch=async()=>({ok:true,json:async()=>({id:'progress',status:'running',...jobs.shift()})});
+  const saving=c.elements.experimentAll.onclick();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(c.elements.experimentProgress.hidden,false);
+  assert.equal(c.elements.experimentProgressBar.value,12);
+  assert.match(c.elements.experimentStage.textContent,/阶段 2\/10 · 预热/);
+  assert.equal(c.elements.experimentDetail.textContent,'2 / 10 次');
+  assert.equal(c.elements.experimentAll.disabled,true);
+  waits.shift()();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(c.elements.experimentProgressBar.value,35);
+  assert.equal(c.elements.experimentDetail.textContent,'10 / 20 帧');
+  waits.shift()();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(c.elements.experimentPercent.textContent,'95%');
+  assert.match(c.elements.experimentDetail.textContent,/1.0 MiB \/ 2.0 MiB · sources\/model.npz/);
+  assert.equal(downloads,0,'no download before the archive closes');
+  waits.shift()();await saving;
+  assert.equal(c.elements.experimentProgressBar.value,100);
+  assert.equal(c.elements.experimentProgress.dataset.state,'complete');
+  assert.match(c.elements.experimentDetail.textContent,/浏览器下载进度/);
+  assert.equal(downloads,1);
+  assert.equal(c.elements.experimentAll.disabled,false);
+});
+
+test('failed exports retain their progress and retry starts at zero', async () => {
+  const c=await client();
+  c.context.fetch=async()=>({ok:true,json:async()=>({id:'failed',status:'failed',stage:'sources',
+    message:'导出失败：磁盘空间不足',percent:64,completed:4,total:10,unit:'files'})});
+  await c.elements.experimentAll.onclick();
+  assert.equal(c.elements.experimentProgressBar.value,64);
+  assert.equal(c.elements.experimentProgress.dataset.state,'failed');
+  assert.match(c.elements.experimentStage.textContent,/磁盘空间不足/);
+  assert.equal(c.elements.experimentDownload.hidden,true);
+  c.context.fetch=async()=>{
+    assert.equal(c.elements.experimentProgressBar.value,0);
+    assert.equal(c.elements.experimentProgress.dataset.state,'running');
+    return {ok:false,text:async()=> '已有导出正在运行'};
+  };
+  await c.elements.experimentAll.onclick();
+  assert.equal(c.elements.experimentAll.disabled,false);
+  assert.match(c.elements.experimentStage.textContent,/已有导出正在运行/);
+});
+
+test('long experiment keeps the displayed frame, pauses preview requests and schedules reconnect after completion', async () => {
+  const c=await client(),waits=[];
+  c.elements.overlay.hidden=true;
+  c.context.setTimeout=callback=>waits.push(callback);
+  let finish;
+  c.context.fetch=()=>new Promise(resolve=>{finish=resolve;});
+  c.elements.experimentDownload.click=()=>{};
+  const saving=c.elements.experimentAll.onclick();
+  const sent=c.socket.sent.length;
+  c.tick(20);c.tick(40);
+  assert.equal(c.socket.sent.length,sent,'no preview queued behind a long export');
+  c.socket.readyState=3;c.socket.onclose();
+  assert.equal(c.elements.overlay.hidden,true,'retain the last rendered image');
+  assert.equal(waits.length,0,'wait until the export releases the renderer');
+  finish({ok:true,json:async()=>({id:'slow',status:'complete'})});
+  await saving;
+  assert.equal(waits.length,1,'reconnect after the export completes');
+  assert.equal(c.elements.experimentDownload.hidden,false);
 });

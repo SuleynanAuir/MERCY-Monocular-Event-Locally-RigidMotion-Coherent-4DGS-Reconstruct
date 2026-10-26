@@ -244,7 +244,7 @@ def main():
     import torch
     from PIL import Image
     from gaussian_renderer import render
-    from render_ply import make_camera
+    from scripts.rendering.render_ply import make_camera
     from scripts.events.refine_lego_events import MotionRenderer
     from utils.event_refinement import correction_from_record
     renderer = MotionRenderer(args.baseline, 640)

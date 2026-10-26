@@ -47,10 +47,22 @@ def resample_surface(triangles, normals, groups, materials, corrected, *, spacin
     key=np.column_stack((groups,materials,np.rint(face_normal*200),np.rint(planes/spacing)))
     _,patches=np.unique(key,axis=0,return_inverse=True)
     face_colors=np.zeros((len(tri),3));support=np.zeros(len(tri),bool)
+    # Stable grouping preserves the former ascending face/sample order exactly,
+    # but avoids scanning every Gaussian for every small planar/material patch.
+    # Dense microphone grilles otherwise spend minutes in repeated np.isin.
+    face_order=np.argsort(patches,kind='stable')
+    face_keys=patches[face_order]
+    point_patch=patches[face_ids]
+    point_order=np.argsort(point_patch,kind='stable')
+    point_keys=point_patch[point_order]
     for patch in np.unique(patches[ids]):
-        f=np.flatnonzero(patches==patch)
-        pool=np.flatnonzero(np.isin(face_ids,f));sample=pool[::max(1,len(pool)//512)]
-        distance,nearest=reference_tree.query(xyz[sample],k=4,workers=4)
+        lo,hi=np.searchsorted(face_keys,[patch,patch+1])
+        f=face_order[lo:hi]
+        lo,hi=np.searchsorted(point_keys,[patch,patch+1])
+        pool=point_order[lo:hi];sample=pool[::max(1,len(pool)//512)]
+        # Each patch has at most about 512 query points; repeatedly spawning
+        # worker pools costs more than this small nearest-neighbor lookup.
+        distance,nearest=reference_tree.query(xyz[sample],k=4,workers=1)
         valid=distance<.04
         colors=reference_colors[nearest][valid]
         if len(colors)>12:

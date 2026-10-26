@@ -9,6 +9,7 @@ import time
 from types import SimpleNamespace
 
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel, comparison_motion, render_background
 import torch
 from PIL import Image
 
@@ -519,6 +520,10 @@ class ComparisonRenderer:
                         self.info[mode]['quality_descriptions'][quality] += ' V3 已启用局部 MLP 辅助运动。'
         self.progress(95, '预热双视图实时渲染')
         self.render(validate_request({'width': 512, 'height': 512, 'fovy': camera['fovy_degrees']}, frames))
+        if not getattr(self, 'prewarm', True):
+            self.info['prewarmed_frames'] = 0
+            self.status = dict(ready=True, progress=100, message='就绪', scene=self.info)
+            return
         # Render every source frame of the initial view once, before autoplay.
         # This is an exact JPEG cache of 3D Gaussian renders, not a substituted
         # input video. New camera/resolution/background values render afresh.
@@ -619,15 +624,16 @@ class ComparisonRenderer:
         if hybrid_mode and self.hybrid is None:
             raise ValueError('Hybrid Mesh bindings are unavailable for this scene')
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
         start = time.perf_counter()
         cache = self.pseudocolor_cache if color_mode else self.clay_comparison_cache if clay_mode else self.mesh_comparison_cache if mesh_mode else self.hybrid_comparison_cache if hybrid_mode else self.image_cache
-        jpeg = cache.get(request)
+        jpeg = None if request.get('_raw') else cache.get(request)
         if jpeg is not None:
             return self.packet(request, jpeg, 0., 0., cache_hit=True)
-        pose = orbit_pose(self.base_pose, self.target, request)
+        pose = render_pose(self.base_pose, self.target, request)
         pixels = []
         for side in (() if mesh_mode else (0, 1)):
+            panel_started = begin_panel(request)
             quality = request.get('hybrid_quality', DEFAULT_HYBRID_QUALITY)
             supersample = self.side_sampling[side]['render_supersample']
             render_width, render_height = (sampling_plan(request['width'], request['height'], quality, supersample)
@@ -639,7 +645,8 @@ class ComparisonRenderer:
                 self.hybrid[side].apply(self.model, request['frame'])
                 # Binding rewrites positions: deform only after it, exactly once.
                 self.apply_deformation(side, request['frame'])
-            output = render(camera, self.model, self.pipe, self.backgrounds['black' if clay_mode or color_mode else request['background']], 0., 0., 0.)
+            background = self.backgrounds['black'] if clay_mode or color_mode else render_background(self.backgrounds, request)
+            output = render(camera, self.model, self.pipe, background, 0., 0., 0.)
             rgb = (resolve_hybrid_rgb(output['render'], request['width'], request['height'], quality)
                    if hybrid_mode else resolve_rgb(output['render'], supersample))
             if hybrid_mode and quality == 'surface':
@@ -666,9 +673,13 @@ class ComparisonRenderer:
                 guides = [F.avg_pool2d(output[key], supersample) for key in ('depth', 'alpha')]
                 rgb = color_gaussians(rgb, *guides, F.avg_pool2d(material, supersample),
                                       request['fovy'], self.backgrounds[request['background']])
-            pixels.append((rgb.permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
+            capture_gaussians(request, self.model, output.get('alpha'), comparison_motion(self, side, request))
+            pixels.append((rgb.clamp(0, 1).permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy())
+            end_panel(request, panel_started)
         if mesh_mode:
             pixels = self.mesh.render_panels(request)
+        if request.get('_raw'):
+            return {'panels': pixels}
         rendered = time.perf_counter()
         stream = io.BytesIO()
         Image.fromarray(np.concatenate(pixels, axis=1)).save(stream, format='JPEG', quality=request['quality'], subsampling=0)

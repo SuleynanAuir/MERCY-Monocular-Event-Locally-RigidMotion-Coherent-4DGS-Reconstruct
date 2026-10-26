@@ -18,6 +18,7 @@ from types import SimpleNamespace
 
 from aiohttp import WSMsgType, web
 import numpy as np
+from utils.experiment_export import capture_gaussians, render_pose, begin_panel, end_panel, render_background
 
 from utils.viewer_state import (BACKGROUNDS, STREAM_WINDOW, image_packet, orbit_pose,
                                 cached_image_reference, stream_frame, validate_request, validate_stream)
@@ -42,11 +43,11 @@ class Renderer:
         from utils.gaussian_sequence import GaussianSequence
 
         if self.path.suffix != ".npz":
-            raise ValueError("Realtime viewer requires a baked .npz; use pack_gaussian_sequence.py first")
+            raise ValueError("Realtime viewer requires a baked .npz; use scripts/export/pack_gaussian_sequence.py first")
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA GPU is required on the rendering server")
         self.progress(5, "正在解压动态高斯 NPZ，首次加载约需数十秒")
-        with GaussianSequence(self.path) as sequence, torch.no_grad():
+        with GaussianSequence(self.path, share_poses=self.cache == 'cpu') as sequence, torch.no_grad():
             meta = sequence.metadata
             self.model = GaussianModel(meta["sh_degree"], with_motion_mask=False)
             self.progress(35, "校验首帧并加载颜色、尺度和不透明度")
@@ -76,8 +77,12 @@ class Renderer:
                 device = "gpu" if free > needed + 1536 * 1024**2 else "cpu"
             if device == "gpu" and free < needed + 512 * 1024**2:
                 raise RuntimeError("Insufficient GPU memory; restart with --cache cpu")
-            self.poses = torch.empty((frames, n, 7), dtype=torch.float32,
-                                     device="cuda" if device == "gpu" else "cpu")
+            # CPU playback needs only a read-only view of the validated source
+            # array. Avoid a second complete multi-GB allocation/transposition.
+            # A frame is made contiguous when transferred to the GPU at render.
+            self.poses = (torch.from_numpy(sequence.poses[:, :, :7].transpose(1, 0, 2))
+                          if device == "cpu" else
+                          torch.empty((frames, n, 7), dtype=torch.float32, device="cuda"))
             for start in range(0, frames, 16):
                 end = min(start + 16, frames)
                 for index in range(start, end):
@@ -85,7 +90,8 @@ class Renderer:
                 chunk = np.ascontiguousarray(sequence.poses[:, start:end, :7].transpose(1, 0, 2))
                 if not np.isfinite(chunk).all() or np.any(np.linalg.norm(chunk[:, :, 3:], axis=-1) < 1e-8):
                     raise ValueError("Invalid baked position or quaternion")
-                self.poses[start:end].copy_(torch.from_numpy(chunk))
+                if device == "gpu":
+                    self.poses[start:end].copy_(torch.from_numpy(chunk))
                 self.progress(40 + int(50 * end / frames), "缓存逐帧高斯位置与朝向")
             camera = meta.get("preview_camera")
             if not camera:
@@ -126,9 +132,10 @@ class Renderer:
         import torch
         from PIL import Image
         from gaussian_renderer import render
-        from render_ply import make_camera
+        from scripts.rendering.render_ply import make_camera
 
         start = time.perf_counter()
+        panel_started = begin_panel(request)
         with torch.no_grad():
             pose = self.poses[request["frame"]].to("cuda")
             if self.dynamic_indices is None:
@@ -137,12 +144,17 @@ class Renderer:
             else:
                 self.model._xyz[self.dynamic_indices] = pose[:, :3]
                 self.model._rotation[self.dynamic_indices] = pose[:, 3:7]
-            camera = make_camera(orbit_pose(self.base_pose, self.target, request),
+            camera = make_camera(render_pose(self.base_pose, self.target, request),
                                  request["width"], request["height"], np.deg2rad(request["fovy"]))
-            result = render(camera, self.model, self.pipe, self.backgrounds[request["background"]],
-                            0., 0., 0.)["render"]
+            output = render(camera, self.model, self.pipe, render_background(self.backgrounds, request),
+                            0., 0., 0.)
+            result = output["render"]
             # HWC-contiguous on the GPU avoids Pillow's slow strided-array copy.
             pixels = (result.clamp(0, 1).permute(1, 2, 0) * 255).byte().contiguous().cpu().numpy()
+        end_panel(request, panel_started)
+        if request.get("_raw"):
+            capture_gaussians(request, self.model, output.get('alpha'))
+            return {"panels": [pixels]}
         rendered = time.perf_counter()
         stream = io.BytesIO()
         Image.fromarray(pixels).save(stream, format="JPEG", quality=request["quality"])
@@ -196,15 +208,16 @@ def read_scene_catalog(path):
         if not asset.is_file():
             raise ValueError(f'Missing scene asset: {asset}')
         scenes[key] = {**item, 'path': asset}
-        if item.get('reference_path'):
-            scenes[key]['reference_path'] = (path.parent / item['reference_path']).resolve()
+        for field in ('reference_path', 'evaluation_path', 'middle_path'):
+            if item.get(field):
+                scenes[key][field] = (path.parent / item[field]).resolve()
     default = config.get('default', next(iter(scenes), None))
     if default not in scenes:
         raise ValueError('Default scene must exist')
     return scenes, default
 
 
-def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, default_scene=None):
+def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, default_scene=None, export_root=None):
     if scenes is None:
         default_scene = 'default'
         scenes = {'default': {'path': path, 'name': '当前物件', 'factory': renderer_factory or Renderer}}
@@ -229,15 +242,24 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             from utils.gaussian_pair_renderer import GaussianPairRenderer
             factory = GaussianPairRenderer
         renderers[key] = factory(spec['path'], spec.get('cache', cache))
+        if spec.get('middle_path'):
+            if spec.get('type') != 'comparison': raise ValueError('V2 insertion requires a comparison scene')
+            from utils.version_triplet import VersionTripletRenderer
+            renderers[key] = VersionTripletRenderer(renderers[key], spec['middle_path'], spec.get('cache', cache))
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gaussian-gpu")
     references = {}
     clients = set()
     loading = {'id': None}
-    app = web.Application(middlewares=[local_only], client_max_size=4096)
+    app = web.Application(middlewares=[local_only], client_max_size=8*1024*1024)
 
     async def load_one(key, renderer):
         try:
+            from utils.experiment_export import sha256
+            if getattr(renderer, 'path', None) and Path(renderer.path).is_file():
+                renderer.loaded_source_sha256 = await asyncio.to_thread(sha256, renderer.path)
+            started = time.perf_counter()
             await asyncio.get_running_loop().run_in_executor(executor, renderer.load)
+            renderer.load_seconds = time.perf_counter() - started
             if scenes[key].get('reference_path'):
                 from utils.viewer_reference import ReferenceSequence
                 reference = await asyncio.to_thread(ReferenceSequence, scenes[key]['reference_path'], renderer.info)
@@ -332,7 +354,8 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
                     if frame in credit['cached_frames']:
                         paired = (renderer.info.get('comparison', False)
                                   or sample.get('render_mode') in renderer.info.get('comparison_modes', []))
-                        packet = cached_image_reference(sample, paired)
+                        labels = renderer.info.get('mode_version_labels', {}).get(sample['render_mode'], [])
+                        packet = cached_image_reference(sample, paired, len(labels) or (2 if paired else 1))
                     else:
                         packet = await asyncio.get_running_loop().run_in_executor(executor, renderer.render, sample)
                     credit['offered_frames'].add(frame)
@@ -406,6 +429,9 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             clients.discard(ws)
         return ws
 
+    from utils.viewer_experiments import install_exports
+    install_exports(app, selected, scenes, references, executor,
+                    export_root or Path(__file__).parent/'outputs'/'experiment-exports', loading)
     app.cleanup_ctx.append(lifecycle)
     app.router.add_get("/api/status", status)
     app.router.add_get("/api/reference/{frame}", reference_frame)
@@ -424,6 +450,7 @@ def main():
     parser.add_argument("--port", type=int, default=8890)
     parser.add_argument("--host", choices=["127.0.0.1", "localhost"], default="127.0.0.1")
     parser.add_argument("--cache", choices=["auto", "gpu", "cpu"], default="auto")
+    parser.add_argument("--export-root", type=Path, help="Directory for experiment export packages")
     args = parser.parse_args()
     path = args.sequence_path or args.comparison_path or args.scenes_path
     if not path.is_file():
@@ -434,7 +461,7 @@ def main():
         factory = ComparisonRenderer
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     scenes, default = read_scene_catalog(path) if args.scenes_path else (None, None)
-    web.run_app(create_app(path, args.cache, factory, scenes=scenes, default_scene=default), host=args.host, port=args.port,
+    web.run_app(create_app(path, args.cache, factory, scenes=scenes, default_scene=default, export_root=args.export_root), host=args.host, port=args.port,
                 access_log=None)
 
 

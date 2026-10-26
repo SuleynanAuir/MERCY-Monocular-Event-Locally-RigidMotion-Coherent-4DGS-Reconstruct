@@ -30,7 +30,7 @@ node scripts/viewer/capture_viewer_mesh_views.cjs http://127.0.0.1:8892 /path/to
 在现有 CUDA 环境安装可选依赖并生成一次网格：
 
 ```bash
-pip install --no-deps --no-build-isolation -r requirements-mesh.txt
+pip install --no-deps --no-build-isolation -r requirements/mesh.txt
 pip install open3d-cpu==0.19.0 'numpy<2'
 python scripts/mesh/reconstruct_viewer_mesh.py \
   --comparison /path/to/comparison-manifest.json \
