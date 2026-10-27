@@ -156,7 +156,7 @@ html{scrollbar-gutter:stable}
 @media(max-width:760px){.detail-row,.viewport:fullscreen .comparison-rows>.detail-row{height:calc(var(--detail-image-height,180px) + 32px)}}
 
 #cancelExport[hidden],#exportDownload[hidden]{display:none}
-/* Real V2 occupies its own synchronized column; reference images stay last. */
+/* The second displayed version occupies its own synchronized column; reference images stay last. */
 .stage.triplet{grid-template-columns:repeat(3,minmax(0,1fr))}
 .stage.triplet.quad{grid-template-columns:repeat(5,minmax(0,1fr))}
 .stage.triplet #leftRenderCell{grid-column:1;grid-row:1}
@@ -237,6 +237,9 @@ button:not(:disabled):hover{background:#edf5f1;border-color:var(--border-strong)
 .experiment-panel .setting-note{overflow-wrap:anywhere}
 .experiment-panel .experiment-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;justify-content:center;padding:11px 8px}
 .experiment-panel .experiment-primary:hover{background:#106d5a;border-color:#106d5a}
+.experiment-advanced{margin:12px 0;border-top:1px solid var(--line);padding-top:12px}
+.experiment-advanced summary{cursor:pointer;color:var(--muted);font-size:12px;line-height:1.8}
+.experiment-advanced[open] summary{margin-bottom:12px}
 .experiment-progress{margin-top:12px;padding:12px;border:1px solid #c6dfd5;border-radius:8px;background:#f2f9f5}
 .experiment-panel [hidden]{display:none}
 .experiment-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}
@@ -253,3 +256,6 @@ button:not(:disabled):hover{background:#edf5f1;border-color:var(--border-strong)
 .experiment-progress[data-state=failed] progress::-webkit-progress-value{background:#b45a4c}
 .experiment-progress[data-state=failed] progress::-moz-progress-bar{background:#b45a4c}
 @media(prefers-reduced-motion:reduce){.experiment-progress progress::-webkit-progress-value{transition:none}}
+
+.comparison-link{display:block;text-align:center;text-decoration:none;margin:12px 0;color:#168574;border:1px solid #b4d8ce;padding:12px;border-radius:10px;font-weight:600}.comparison-link:hover{background:#eaf5f1}
+.comparison-launch{display:grid;grid-template-columns:minmax(90px,.7fr) minmax(0,1.3fr);gap:10px;align-items:end}.comparison-launch label{display:grid;gap:6px;font-size:12px;color:var(--muted,#6b8189)}.comparison-launch input{min-width:0;width:100%;height:43px;padding:9px 10px;border:1px solid #cfdedb;border-radius:8px;background:white;color:#23443e;font:inherit}.comparison-launch .comparison-link{margin:0;min-width:0;min-height:43px;font-size:12px;padding:10px 6px;text-align:center}

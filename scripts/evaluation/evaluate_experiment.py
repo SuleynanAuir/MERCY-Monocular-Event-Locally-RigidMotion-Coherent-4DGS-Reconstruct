@@ -19,13 +19,14 @@ def artifact(root, name):
     return path
 
 
-def verify(root, manifest):
+def verify(root, manifest, progress=None):
     if manifest.get('format') != FORMAT:
         raise ValueError('Unsupported experiment format')
-    for name, record in manifest['files'].items():
+    for index, (name, record) in enumerate(manifest['files'].items()):
         path = artifact(root, name)
         if path.stat().st_size != record['bytes'] or sha256(path) != record['sha256']:
             raise ValueError(f'Artifact checksum mismatch: {name}')
+        if progress: progress(index+1, len(manifest['files']), name)
 
 
 def rgb(path):
@@ -65,6 +66,33 @@ def image_metrics(reference, prediction, mask=None, similarity=None):
     return dict(available=True, pixels=int(mask.sum()), l1=float(np.abs(difference).mean()), mse=mse,
                 psnr_db=float(-10*np.log10(mse)) if mse else None, psnr_infinite=mse == 0,
                 ssim=float(similarity[interior].mean()) if interior.any() else None)
+
+
+def part_metrics(reference, prediction, mask, similarity, coverage):
+    """One grouped reduction over pixels; equivalent to evaluating each GT part."""
+    if mask.ndim != 2 or not np.issubdtype(mask.dtype, np.integer) or mask.min() < 0 or mask.max() > 65535:
+        raise ValueError('Part masks must contain uint16-compatible integer labels')
+    labels=mask.ravel().astype(np.int64); count=np.bincount(labels)
+    ids=np.flatnonzero(count);ids=ids[ids>0];result={}
+    if reference is not None:
+        error=reference-prediction
+        mse=np.bincount(labels,weights=np.square(error).mean(-1).ravel(),minlength=len(count))
+        l1=np.bincount(labels,weights=np.abs(error).mean(-1).ravel(),minlength=len(count))
+        interior=mask[5:-5,5:-5].ravel().astype(np.int64)
+        ic=np.bincount(interior,minlength=len(count))
+        ss=np.bincount(interior,weights=similarity.ravel(),minlength=len(count))
+    if coverage is not None:
+        missing=np.bincount(labels,weights=(~coverage).ravel(),minlength=len(count))
+    for label in ids:
+        row=dict(available=False,reason='No aligned RGB reference',pixels=int(count[label]))
+        if reference is not None:
+            error=float(mse[label]/count[label])
+            row=dict(available=True,pixels=int(count[label]),mse=error,l1=float(l1[label]/count[label]),
+                psnr_db=float(-10*np.log10(error)) if error else None,psnr_infinite=error==0,
+                ssim=float(ss[label]/ic[label]) if ic[label] else None)
+        if coverage is not None:row['alpha_missing_fraction']=float(missing[label]/count[label])
+        result[str(label)]=row
+    return result
 
 
 def third_derivative(values, times):
@@ -190,15 +218,18 @@ def event_metrics(first, second, event_path, calibration, t0, t1):
         no_event_pixels=int(silent.sum()), t0=t0, t1=t1)
 
 
-def evaluate(root, use_lpips=False, version_ids=None):
+def evaluate(root, use_lpips=False, version_ids=None, progress=None, verified=False):
     root = Path(root).resolve()
     manifest = json.loads((root/'manifest.json').read_text())
-    verify(root, manifest)
+    if not verified: verify(root, manifest, lambda done,total,detail: progress('verify',done,total,detail) if progress else None)
     result = dict(format='scgs_experiment_metrics_v1', manifest_sha256=sha256(root/'manifest.json'),
         protocol=dict(range=1, psnr='mean per-frame dB; infinite results explicitly flagged',
             ssim='11x11 Gaussian, sigma=1.5, population covariance, valid crop, channel mean',
             masked_ssim='mean of SSIM map at fixed mask centers; windows include neighbors',
             jerk='6 times third divided differences using actual timestamps; units per second cubed'), versions={})
+    if manifest.get('version_presentation'):
+        result['version_presentation'] = manifest['version_presentation']
+        result['version_mapping'] = manifest['version_mapping']
     lpips_model = None
     if use_lpips:
         try:
@@ -206,7 +237,10 @@ def evaluate(root, use_lpips=False, version_ids=None):
             import lpips
         except ImportError as error:
             raise RuntimeError('--lpips requires torch and lpips; install evaluation requirements') from error
-        lpips_model = lpips.LPIPS(net='alex').eval()
+        from unittest.mock import patch
+        original_load=torch.load
+        with patch('torch.load',lambda *a,**kw: original_load(*a,**dict(kw,weights_only=True))):
+            lpips_model = lpips.LPIPS(net='alex').eval()
         result['protocol']['lpips'] = 'alex, RGB [-1,1], full frame, CPU'
         # Record the actual model, including installed/pretrained weights.
         import hashlib
@@ -217,14 +251,15 @@ def evaluate(root, use_lpips=False, version_ids=None):
     references = manifest.get('reference', {}).get('samples', [])
     if version_ids is not None and not set(version_ids)<=set(v['id'] for v in manifest['versions']):
         raise ValueError('Unknown evaluation version')
-    for version in manifest['versions']:
+    selected_versions=[v for v in manifest['versions'] if version_ids is None or v['id'] in version_ids]
+    for version_index, version in enumerate(selected_versions):
         name = version['id']
         if version_ids is not None and name not in version_ids: continue
         if not isinstance(name, str) or not name.isascii() or not name.isdigit():
             raise ValueError('Invalid version identifier')
         rows, events, previous = [], [], None
         for index, sample in enumerate(manifest['samples']):
-            ref = references[index]
+            ref = references[index] if index<len(references) else {}
             predicted = rgb(artifact(root, f'versions/{name}/frames/{index:06d}.png'))
             row = dict(sample=index, frame=sample['frame'], time_seconds=sample['time_seconds'])
             truth = similarity = None
@@ -257,13 +292,7 @@ def evaluate(root, use_lpips=False, version_ids=None):
                 if 'part_mask' in ref:
                     mask = np.asarray(Image.open(artifact(root, ref['part_mask'])))
                     if mask.ndim != 2: raise ValueError('Part masks must contain integer labels')
-                    row['parts'] = {str(label): (image_metrics(truth, predicted, mask == label, similarity)
-                                    if truth is not None else dict(available=False, reason='No aligned RGB reference'))
-                                    for label in np.unique(mask) if label > 0}
-                    if coverage is not None:
-                        for label, part in row['parts'].items():
-                            selected = mask == int(label)
-                            part['alpha_missing_fraction'] = float((selected & ~coverage).sum()/selected.sum())
+                    row['parts'] = part_metrics(truth,predicted,mask,similarity,coverage)
             rows.append(row)
             if 'events' in ref:
                 eligible = (previous is not None and ref.get('aligned') and previous[2].get('aligned')
@@ -280,23 +309,27 @@ def evaluate(root, use_lpips=False, version_ids=None):
                              for i in calibration_ids) else 'response_validation')
                 events.append(dict(sample=index, split=split, **metric))
             previous = predicted, sample, ref
+            if progress: progress('metrics',version_index*len(manifest['samples'])+index+1,len(selected_versions)*len(manifest['samples']),f'{version["label"]} · frame {sample["frame"]}')
         valid = [row for row in rows if row.get('available')]
         finite_psnr = [row['psnr_db'] for row in valid if row['psnr_db'] is not None]
         infinite = sum(row['psnr_infinite'] for row in valid)
         mean = lambda values: float(np.mean(values)) if values else None
+        if progress: progress('motion',version_index+1,len(selected_versions),version['label'])
+        motion_path=f'versions/{name}/motion.npz'
         result['versions'][name] = dict(label=version['label'], frames=rows, events=events,
             summary=dict(evaluated_frames=len(valid), total_frames=len(rows), infinite_psnr_frames=infinite,
                 psnr_db=None if infinite else mean(finite_psnr), psnr_infinite=bool(infinite),
                 finite_psnr_db_mean=mean(finite_psnr), ssim=mean([row['ssim'] for row in valid]),
                 l1=mean([row['l1'] for row in valid])),
-            motion=motion_metrics(artifact(root, f'versions/{name}/motion.npz')),
+            motion=motion_metrics(artifact(root,motion_path)) if motion_path in manifest['files'] else dict(unavailable={'motion':'No fixed-point trajectories'}),
             unavailable=dict(lpips=None if use_lpips else 'Not requested; use --lpips',
                              events=None if events else 'No raw calibrated event counts'))
-    timing = json.loads(artifact(root, 'timings.json').read_text())
+    timing_path = manifest.get('performance', {}).get('timings', 'timings.json')
+    timing = json.loads(artifact(root, timing_path).read_text())
     measurements = timing['samples']
     latencies = [row['render_and_transfer_ms'] for row in measurements]
     result['performance'] = dict(operation=timing.get('operation', manifest['operation']),
-        export_operation=manifest['operation'], samples=len(latencies),
+        export_operation=manifest['operation'], timing_file=timing_path, samples=len(latencies),
         warmup=timing['warmup'], repeats=timing['repeats'], scope=manifest['timing_scope'],
         includes_state_capture=any(row['includes_state_capture'] for row in measurements),
         mean_ms=float(np.mean(latencies)), p50_ms=float(np.percentile(latencies, 50)),

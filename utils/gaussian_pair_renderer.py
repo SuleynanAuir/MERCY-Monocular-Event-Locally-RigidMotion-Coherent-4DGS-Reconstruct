@@ -81,6 +81,10 @@ class GaussianPairRenderer:
             side.progress = progress
             side.load()
             self.sides.append(side)
+        appearance = None
+        if config.get('appearance_refinement'):
+            from utils.appearance_stage import apply_stage
+            appearance = apply_stage(self.sides[1].model, self.path, config['appearance_refinement'], config['right']['sha256'])
         with torch.no_grad():
             rests = [side.model._xyz for side in self.sides]
             anchors = rests
@@ -106,20 +110,23 @@ class GaussianPairRenderer:
                 high = torch.stack([v.max() for v in values]).max()
                 self.colors = [palette((x @ x.new_tensor([.65, .20, .15])-low)/(high-low).clamp_min(1e-6)).contiguous() for x in rests]
         self.info = dict(self.sides[1].info, name=config['name'], comparison=True,
+            source_preview=bool(config.get('source_preview', False)),
             comparison_modes=['gaussian', 'clay', 'pseudocolor'],
             left_label=config['left']['label'], right_label=config['right']['label'],
-            description=config['description'], default_background='light',
+            description=config['description'], default_background=self.sides[1].info['default_background'] if config.get('source_preview') else 'light',
             asset_identity=dict(manifest_sha256=file_sha(self.path),
                 sequence_sha256={k:config[k]['sha256'] for k in ('left','right')},
                 material_reference_sha256=config.get('material_reference',{}).get('sha256'),
                 detail_finish_sha256=config.get('detail_finish',{}).get('sha256'),
+                appearance_refinement_sha256=config.get('appearance_refinement',{}).get('sha256'),
                 renderer_sha256=file_sha(Path(__file__)),
                 renderer_components_sha256={name:file_sha(Path(__file__).resolve().parents[1]/name)
                     for name in ('viewer.py','utils/gaussian_sequence.py','utils/gs_clay.py',
-                        'utils/gs_pseudocolor.py','utils/lamp_detail.py','utils/viewer_state.py',
+                        'utils/gs_pseudocolor.py','utils/lamp_detail.py','utils/appearance_stage.py','utils/viewer_state.py',
                         'gaussian_renderer/__init__.py','scripts/rendering/render_ply.py')}),
-            surface_refinement=config.get('surface_refinement'), render_supersamples=self.supersamples,
+            surface_refinement=config.get('surface_refinement'), appearance_refinement=appearance, render_supersamples=self.supersamples,
             gaussian_counts=[s.info['gaussian_count'] for s in self.sides],
+            cache_gib=sum(s.info['cache_gib'] for s in self.sides),
             clay=gs_clay_info(), pseudocolor=pseudocolor_info())
         # Frozen experimental V2 pairs use this same renderer. Do not silently
         # label their right-hand stage V3 in styled display modes.
@@ -127,7 +134,9 @@ class GaussianPairRenderer:
             for side in ('left', 'right'):
                 label = config[side]['label']
                 stage = label.split(' · ', 1)[0]
-                if stage in ('V1', 'V2', 'V3'):
+                if config.get('source_preview'):
+                    self.info[mode][side+'_label'] = label+' · '+title
+                elif stage in ('V1', 'V2', 'V3'):
                     self.info[mode][side+'_label'] = stage+' · '+title
         self.detail_normals = None
         if config.get('detail_finish'):

@@ -123,6 +123,27 @@ class ExportTests(unittest.TestCase):
             self.assertEqual(a['frame'], b['frame'])
         scores = evaluate(output)
         self.assertEqual(set(scores['versions']), {'0','1','2'})
+        from utils.version_presentation import VersionPresentationRenderer, REVISION
+        presented=VersionPresentationRenderer(renderer);presented.configure()
+        swapped=self.root/'triplet-renumbered'
+        self.export(presented,self.plan(),swapped,'triplet',reference_path=self.reference())
+        current=json.loads((swapped/'manifest.json').read_text())
+        self.assertEqual(current['version_presentation']['revision'],REVISION)
+        self.assertEqual([r['source_version'] for r in current['version_mapping']],['V2','V1','V3'])
+        self.assertEqual(current['renderer_config']['components'][0]['versions'],[1,2])
+        self.assertEqual(current['renderer_config']['components'][1]['versions'],[0])
+        for side,value in enumerate([85,80,90]):
+            self.assertTrue(np.all(np.asarray(Image.open(swapped/f'versions/{side}/frames/000000.png'))==value))
+            np.testing.assert_allclose(np.asarray(Image.open(swapped/f'versions/{side}/alpha/000000.png'))/65535,value/100,atol=1/65535)
+            with np.load(swapped/f'versions/{side}/motion.npz') as motion:
+                self.assertTrue(np.all(motion['points']==value))
+            self.assertEqual(current['versions'][side]['point_count'],value*5)
+        timings=json.loads((swapped/'timings.json').read_text())
+        self.assertEqual(timings['samples'][0]['panel_ms'],[85.,80.,90.])
+        renderer.motion_evidence={0:{'identity':'original-baseline'},1:{'identity':'archived-correction'}}
+        self.assertEqual(presented.motion_evidence[0]['identity'],'archived-correction')
+        self.assertEqual(presented.motion_evidence[1]['identity'],'original-baseline')
+        self.assertEqual(evaluate(swapped)['version_presentation']['revision'],REVISION)
         plan = self.plan(); plan['samples'][1]['render_mode'] = 'mesh'
         with self.assertRaisesRegex(ValueError, '相同的版本'):
             run_export(renderer, plan, self.root/'mixed', 'triplet')
@@ -292,31 +313,38 @@ class ExportTests(unittest.TestCase):
         self.renderer.info.update(frame_count=13,times_seconds=[i*.1+i*i*.001 for i in range(13)])
         plan=validate_plan(dict(operation='complete',settings=dict(frame=2,width=128,height=128),
             samples=[self.samples[2]],warmup=2,repeats=2),self.renderer.info)
-        self.assertEqual([sample['frame'] for sample in plan['samples']],[0,4,8,12])
-        self.assertEqual(plan['sample_step'],4)
+        frames=list(range(0,13,2))
+        self.assertEqual([sample['frame'] for sample in plan['samples']],frames)
+        self.assertEqual(plan['sample_step'],2)
         self.assertEqual(plan['selected_frame'],2)
         output=self.root/'complete-export'
         updates=[]
         archive=self.export(self.renderer,plan,output,'test',reference_path=self.reference(),progress=updates.append)
         self.assertEqual(list(dict.fromkeys(row['stage'] for row in updates)),
-            ['prepare','frames','motion','reference','sources','code','hashes','archive'])
+            ['prepare','frames','motion','reference','warmup','benchmark','sources','code','hashes','archive'])
         self.assertEqual([row['percent'] for row in updates],sorted(row['percent'] for row in updates))
         self.assertTrue(all(0<=row['percent']<100 for row in updates),'Only the job completion may report 100%')
         self.assertEqual(updates[-1]['completed'],updates[-1]['total'])
-        self.assertEqual(updates[-1]['stage_count'],8)
-        self.assertEqual(len(self.renderer.calls),4,'one render per sampled time, no repeated benchmark')
-        self.assertEqual([call['frame'] for call in self.renderer.calls],[0,4,8,12])
-        self.assertTrue(all('_capture' in call for call in self.renderer.calls))
+        self.assertEqual(updates[-1]['stage_count'],10)
+        self.assertEqual(len(self.renderer.calls),7+2+2*7)
+        self.assertEqual([call['frame'] for call in self.renderer.calls],frames+frames[:2]+frames*2)
+        self.assertTrue(all('_capture' in call for call in self.renderer.calls[:7]))
+        self.assertFalse(any('_capture' in call for call in self.renderer.calls[7:]))
+        for repeat in range(2):
+            for index in range(7):
+                np.testing.assert_array_equal(self.renderer.calls[index]['_camera_pose'],
+                    self.renderer.calls[9+7*repeat+index]['_camera_pose'])
         with zipfile.ZipFile(archive) as bundle:
             self.assertEqual({Path(name).parts[0] for name in bundle.namelist()},{output.name})
-            for path in ('manifest.json','plan.json','timings.json','evaluate.py',
+            for path in ('manifest.json','plan.json','timings.json','performance/timings.json','evaluate.py',
                          'data_availability.json','README.txt','versions/0/frames/000003.png',
                          'versions/1/motion.npz','reference/000000-rgb.png'):
                 self.assertIn(output.name+'/'+path,bundle.namelist())
             self.assertFalse(any('/states/' in name or '/sources/' in name for name in bundle.namelist()))
             self.assertEqual(sum('/code/' in name for name in bundle.namelist()),3)
+            self.assertEqual(sum('/frames/' in name for name in bundle.namelist()),14)
         availability=json.loads((output/'data_availability.json').read_text())
-        self.assertEqual(availability['reference']['rgb']['saved'],4)
+        self.assertEqual(availability['reference']['rgb']['saved'],7)
         self.assertTrue(any('事件' in item for item in availability['missing_data']))
         self.assertFalse((output/'metrics.json').exists(),'UI export must leave image metrics to the standalone script')
         self.source.unlink()
@@ -324,10 +352,16 @@ class ExportTests(unittest.TestCase):
         process=subprocess.run([sys.executable,str(moved/'evaluate.py')],cwd=self.root,capture_output=True,text=True)
         self.assertEqual(process.returncode,0,process.stderr)
         metrics=json.loads((moved/'metrics.json').read_text())
-        self.assertEqual(metrics['versions']['0']['summary']['evaluated_frames'],4)
-        self.assertEqual(metrics['performance']['operation'],'complete')
-        self.assertEqual(metrics['performance']['samples'],4)
-        self.assertTrue(metrics['performance']['includes_state_capture'])
+        self.assertEqual(metrics['versions']['0']['summary']['evaluated_frames'],7)
+        self.assertEqual(metrics['performance']['operation'],'benchmark')
+        self.assertEqual(metrics['performance']['samples'],14)
+        self.assertEqual(metrics['performance']['warmup'],2)
+        self.assertEqual(metrics['performance']['repeats'],2)
+        self.assertFalse(metrics['performance']['includes_state_capture'])
+        self.assertEqual(metrics['performance']['timing_file'],'performance/timings.json')
+        capture_timing=json.loads((moved/'timings.json').read_text())
+        self.assertEqual(len(capture_timing['samples']),7)
+        self.assertTrue(all(row['includes_state_capture'] for row in capture_timing['samples']))
 
     def test_large_file_copy_hash_and_zip_report_partial_bytes(self):
         payload=self.root/'model.bin';payload.write_bytes(b'fixture\x00'*(300*1024))
@@ -401,7 +435,7 @@ class ExportTests(unittest.TestCase):
                 np.savez(self.root/row['events'],positive=np.full((128,128),i,dtype=np.uint16),negative=np.zeros((128,128),np.uint16),t0=(i-1)/10,t1=t)
             data['samples'].append(row)
         save_json(reference,data)
-        plan=validate_plan(dict(operation='complete',settings=dict(width=128,height=128)),self.renderer.info)
+        plan=validate_plan(dict(operation='complete',sample_step=4,settings=dict(width=128,height=128)),self.renderer.info)
         two_step=validate_plan(dict(operation='complete',sample_step=2,settings=dict(width=128,height=128)),self.renderer.info)
         two_output=self.root/'two-step-events';self.export(self.renderer,two_step,two_output,'test',reference_path=reference)
         two_refs=json.loads((two_output/'manifest.json').read_text())['reference']['samples']
@@ -435,6 +469,20 @@ class ExportTests(unittest.TestCase):
                 validate_plan(dict(operation='frame',samples=samples),self.renderer.info)
         with self.assertRaises(ValueError):
             validate_plan(dict(operation='sequence',samples=list(reversed(self.samples))),self.renderer.info)
+
+    def test_automatic_measurement_validation_and_frozen_reference_background(self):
+        plan=validate_plan(dict(operation='complete'),self.renderer.info)
+        self.assertEqual((plan['warmup'],plan['repeats'],plan['sample_step']),(20,5,2))
+        for key in ('warmup','repeats'):
+            for value in (0,True,2.5,101):
+                with self.assertRaises(ValueError):
+                    validate_plan(dict(operation='complete',**{key:value}),self.renderer.info)
+        source=self.reference();data=json.loads(source.read_text())
+        data.update(background='black',background_rgb=[.27,.27,.27]);save_json(source,data)
+        aligned=reference_plan(plan,self.renderer.info,source)
+        frozen=validate_plan(dict(operation='benchmark',samples=aligned['samples']),self.renderer.info)
+        self.assertEqual(frozen['samples'][0]['background_rgb'],[.27,.27,.27])
+        np.testing.assert_array_equal(frozen['samples'][0]['camera']['pose_opengl_c2w'],data['camera']['pose_opengl_c2w'])
 
     def test_nonuniform_jerk_and_event_intervals(self):
         times=np.array([0.,.1,.4,1.,1.3])
@@ -528,8 +576,8 @@ class ExportHTTPTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(directory.parent,(self.root/'exports').resolve())
         self.assertTrue(directory.name.startswith('default_'))
         self.assertFalse(directory.exists())
-        self.assertEqual(job['sample_step'],4)
-        self.assertEqual(job['sampled_frames'],1)
+        self.assertEqual(job['sample_step'],2)
+        self.assertEqual(job['sampled_frames'],2)
         self.assertEqual(job['output_bytes'],archive.stat().st_size)
         self.assertTrue(job['missing_data'])
         response=await self.client.get('/api/experiments/'+job['id']+'/download')

@@ -179,9 +179,9 @@ async def local_only(request, handler):
     if not response.prepared:
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Content-Security-Policy"] = (
+        response.headers.setdefault("Content-Security-Policy", (
             "default-src 'self'; connect-src 'self'; img-src 'self' blob: data:; "
-            "style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+            "style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'"))
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -243,9 +243,12 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             factory = GaussianPairRenderer
         renderers[key] = factory(spec['path'], spec.get('cache', cache))
         if spec.get('middle_path'):
-            if spec.get('type') != 'comparison': raise ValueError('V2 insertion requires a comparison scene')
+            if spec.get('type') not in {'comparison', 'gaussian_pair', 'fan_mesh'}:
+                raise ValueError('V2 insertion requires a two-version comparison renderer')
             from utils.version_triplet import VersionTripletRenderer
             renderers[key] = VersionTripletRenderer(renderers[key], spec['middle_path'], spec.get('cache', cache))
+    from utils.version_presentation import VersionPresentationRenderer
+    renderers = {key: VersionPresentationRenderer(renderer) for key, renderer in renderers.items()}
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gaussian-gpu")
     references = {}
     clients = set()
@@ -315,7 +318,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
 
     async def static(request):
         filename = request.match_info.get("file", "index.html")
-        if filename not in {"index.html", "style.css", "app.js", "playback.js", "references.js"}:
+        if filename not in {"index.html", "style.css", "app.js", "playback.js", "references.js", "comparison.js", "comparison.css"}:
             raise web.HTTPNotFound()
         return web.FileResponse(STATIC / filename)
 
@@ -432,6 +435,8 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
     from utils.viewer_experiments import install_exports
     install_exports(app, selected, scenes, references, executor,
                     export_root or Path(__file__).parent/'outputs'/'experiment-exports', loading)
+    from utils.viewer_comparisons import install_comparisons
+    install_comparisons(app, Path(__file__).parent, export_root or Path(__file__).parent/"outputs/experiment-exports")
     app.cleanup_ctx.append(lifecycle)
     app.router.add_get("/api/status", status)
     app.router.add_get("/api/reference/{frame}", reference_frame)

@@ -13,14 +13,15 @@ from urllib.parse import urlsplit
 import aiohttp
 from aiohttp import web
 
-ASSETS = {'style.css', 'app.js', 'playback.js', 'references.js'}
+ASSETS = {'style.css', 'app.js', 'playback.js', 'references.js',
+          'comparison.css', 'comparison.js'}
 HTTP = web.AppKey('http', aiohttp.ClientSession)
 
 
 def read_config(path):
     config = json.loads(path.read_text())
     seen = set()
-    sources = [config['asset_upstream']]
+    sources = [config['asset_upstream'],config.get('comparison_upstream',config['asset_upstream'])]
     for scene in config['objects']:
         key = scene['id']
         if not key or key in seen or not all(c.isascii() and (c.isalnum() or c in '-_') for c in key):
@@ -69,7 +70,7 @@ def create_app(config_path):
         return scene['live'][0].rstrip('/')
 
     async def lifecycle(app):
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300)) as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300), auto_decompress=False) as session:
             app[HTTP] = session
             yield
     app.cleanup_ctx.append(lifecycle)
@@ -102,6 +103,9 @@ def create_app(config_path):
         return web.json_response(data)
 
     async def proxy(request):
+        comparison = (request.path in {'/comparison', '/comparison/'}
+                      or request.path == '/api/comparisons'
+                      or request.path.startswith('/api/comparisons/'))
         if request.path == '/':
             if 'scene' not in request.query:
                 query = request.rel_url.with_query({**request.query, 'scene':config()['default']})
@@ -109,20 +113,33 @@ def create_app(config_path):
             path = '/'
         elif request.path.removeprefix('/') in ASSETS:
             path = request.path
+        elif comparison:
+            path = '/comparison' if request.path == '/comparison/' else request.path
         elif request.path.startswith('/api/reference/') or request.path == '/api/experiments' or request.path.startswith('/api/experiments/'):
             path = request.path
         else:
             raise web.HTTPNotFound()
-        base = (config()['asset_upstream'].rstrip('/') if request.path == '/' or request.path.removeprefix('/') in ASSETS
+        # Comparisons operate on exported data, independent of the selected
+        # renderer. Keep page, jobs and result assets on one stable service.
+        comparison_asset=request.path in ('/comparison.js','/comparison.css')
+        base = (config().get('comparison_upstream',config()['asset_upstream']).rstrip('/') if comparison or comparison_asset
+                else config()['asset_upstream'].rstrip('/') if request.path == '/' or request.path.removeprefix('/') in ASSETS
                 else upstream(request))
         try:
             params = dict(request.query)
-            if path.startswith('/api/'):
+            if path.startswith('/api/') and not comparison:
                 params['scene'] = selected(request)['id']
+            streaming_upload = path == '/api/comparisons' and request.method == 'POST'
+            if streaming_upload and request.content_length and request.content_length > 2*1024**3 + 16*1024**2:
+                raise web.HTTPRequestEntityTooLarge(max_size=2*1024**3, actual_size=request.content_length)
+            body = request.content.iter_chunked(1024*1024) if streaming_upload else await request.read()
             async with app[HTTP].request(request.method, base+path, params=params,
-                    data=await request.read(), headers={'Content-Type': request.content_type},
+                    data=body, headers={'Content-Type': request.headers.get('Content-Type', 'application/octet-stream')},
                     timeout=aiohttp.ClientTimeout(total=None, sock_connect=30, sock_read=300)) as remote:
-                headers = {key: remote.headers[key] for key in ('Content-Type', 'Content-Disposition', 'Content-Length') if key in remote.headers}
+                headers = {key: remote.headers[key] for key in (
+                    'Content-Type', 'Content-Disposition', 'Content-Length', 'Content-Encoding',
+                    'Content-Security-Policy', 'Cache-Control', 'X-Content-Type-Options',
+                    'Referrer-Policy') if key in remote.headers}
                 response = web.StreamResponse(status=remote.status, headers=headers)
                 await response.prepare(request)
                 async for chunk in remote.content.iter_chunked(1024*1024):
@@ -168,6 +185,12 @@ def create_app(config_path):
     app.router.add_post('/api/experiments/plan', proxy)
     app.router.add_get('/api/experiments/{job}', proxy)
     app.router.add_get('/api/experiments/{job}/download', proxy)
+    app.router.add_get('/comparison', proxy)
+    app.router.add_get('/comparison/', proxy)
+    app.router.add_get('/api/comparisons', proxy)
+    app.router.add_post('/api/comparisons', proxy)
+    app.router.add_get('/api/comparisons/{job}', proxy)
+    app.router.add_get('/api/comparisons/{job}/files/{path:.*}', proxy)
     app.router.add_get('/ws', websocket)
     app.router.add_get('/{file}', proxy)
     return app

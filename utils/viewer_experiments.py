@@ -26,6 +26,8 @@ def install_exports(app, selected, scenes, references, executor, output_root, lo
         key, renderer = selected(request)
         if not renderer.status.get('ready') or loading['id'] is not None:
             raise web.HTTPConflict(text='模型尚未就绪')
+        if renderer.info.get('source_preview'):
+            raise web.HTTPConflict(text='当前为新数据初始模型预览，尚无动态实验序列；可使用保存截图。')
         if any(job['status'] == 'running' for job in jobs.values()):
             raise web.HTTPConflict(text='已有导出正在运行，请等待完成')
         try:
@@ -72,6 +74,7 @@ def install_exports(app, selected, scenes, references, executor, output_root, lo
             raise web.HTTPConflict(text='模型尚未就绪')
         try:
             plan = validate_plan(await request.json(), renderer.info)
+            plan = reference_plan(plan, renderer.info, scenes[key].get('evaluation_path'))
             plan['samples'] = [{**sample, 'camera': camera_record(renderer, sample)} for sample in plan['samples']]
         except (ValueError, TypeError, KeyError) as error:
             raise web.HTTPBadRequest(text=str(error))

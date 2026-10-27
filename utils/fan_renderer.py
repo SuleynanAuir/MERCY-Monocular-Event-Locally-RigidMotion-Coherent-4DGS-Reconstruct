@@ -116,6 +116,11 @@ class FanRenderer:
             right.info['dynamic_gaussian_count'] = int((data['groups'] == 1).sum())
             self.surface_refinement = record['report']
             del data, base, parents
+        appearance = None
+        if config.get('appearance_refinement'):
+            if self.surface_refinement: raise ValueError('Appearance stage requires its unmodified sequence parent')
+            from utils.appearance_stage import apply_stage
+            appearance = apply_stage(right.model, self.path, config['appearance_refinement'], config['source_fingerprints']['right']['sequence_sha256'])
         mesh_info = dict(self.mesh.info, default_resolution=1024,
             left_label='V1 Mesh · 修复前', right_label='V3 Mesh · 支架绑定修复后',
             description='左右为修复前 V1／修复后 V3：同一初始高斯表面重建，各自驱动部件运动。V3 支架保持静止；薄片与遮挡表面是高斯推得的近似网格。')
@@ -123,6 +128,7 @@ class FanRenderer:
             left_label='V1 · 修复前', right_label='V3 · 支架绑定修复后',
             name='Fan · 风扇', mesh=mesh_info, cache='cpu', default_resolution=1024, default_background='light',
             cache_gib=sum(side.info['cache_gib'] for side in self.sides),
+            appearance_refinement=appearance,
             hybrid=dict(available=True, default_resolution=1024, default_quality='surface',
                 left_label='V1 Mesh＋GS · 修复前', right_label='V3 Mesh＋GS · 支架绑定修复后',
                 left=self.bindings[0].info, right=self.bindings[1].info,
@@ -143,7 +149,9 @@ class FanRenderer:
             self.info['hybrid'].update(right_label='V3 Mesh＋GS · 表面优化')
             self.info['mesh'].update(right_label='V3 Mesh · 表面优化',
                 description='V1 保留原模型；V3 使用有界表面去噪，保持三角面拓扑及独立部件运动。')
-        if prewarm:
+        if appearance:
+            self.info.update(right_label='V3 · 光度与覆盖校正', description='V2 支架修复后，V3 冻结中心和运动，仅校正颜色、透明度与有界尺度；分离时间帧验证。')
+        if prewarm and getattr(self, 'prewarm', True):
             for mode, quality, clay_style in (('gaussian', 'surface', 'solid'), ('mesh', 'surface', 'wire'), ('clay', 'surface', 'wire'),
                                               ('clay', 'surface', 'solid'), ('pseudocolor', 'surface', 'solid'), ('hybrid', 'surface', 'wire'),
                                               ('hybrid', 'native', 'wire')):
