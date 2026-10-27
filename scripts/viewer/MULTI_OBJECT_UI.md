@@ -6,6 +6,18 @@ downloads to the selected object's service. See
 [experiment exports](../../assets/technical/13-experiment-export.md) for reference
 calibration and independent evaluation. Rendering packets remain unchanged.
 
+The comparison button opens `/comparison` in a new tab on this same unified UI.
+Its page, CSS/JS, `/api/comparisons` jobs and nested report/download assets use
+`asset_upstream`, independently of the selected scene. Multipart uploads stream
+through the proxy with their original boundary, including files larger than the
+8 MiB JSON request limit. Report security headers are preserved for same-origin
+iframe previews.
+
+Workflow: first save all experiment data in the rendering UI. Then select the
+resulting archive under **existing exports** in the comparison page (no download
+and re-upload needed), enter its server path, or upload a local ZIP / extracted
+experiment folder. ZIP uploads do not need manual extraction.
+
 `serve_multi_object_ui.py` serves the existing viewer HTML, JavaScript and CSS
 without modification. It merges the **original object dropdown** and forwards
 each selected object's HTTP/WebSocket requests to its configured GPU service.
@@ -55,3 +67,5 @@ for V3. Preserve source, pose, correction and event-audit checksums. An old
 audit cannot be attached to newly generated assets. Keep `重建版本` in the
 object name when the historical checkpoint was regenerated, and add `live`
 only after checking actual same-frame, same-camera render packets.
+
+对照试验结果按 `experiment/output/物品名_YYYYMMDD_HHMMSS_ffffff/` 保存（北京时间），PNG 和 ZIP 均带同一前缀。渲染页按钮旁的物品名自动传入评测页。可启动 `python -m scripts.viewer.serve_comparison_ui --port 8896`，再在 catalog 设置本机转发地址 `comparison_upstream`；无需重载 GPU 模型。旧报告 ID 和链接继续有效。

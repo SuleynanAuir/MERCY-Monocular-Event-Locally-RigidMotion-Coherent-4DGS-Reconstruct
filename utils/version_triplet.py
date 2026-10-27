@@ -50,7 +50,8 @@ class SingleStageRenderer(GaussianPairRenderer):
         self.sides, self.supersamples, self.detail_normals = [side], [1], None
         self.info = dict(side.info, comparison_modes=['gaussian', 'clay', 'pseudocolor'])
         self.frames = EncodedFrameCache(max_bytes=0, max_entries=0)
-        anchors = [geometry[0] for geometry in base.side_geometry]
+        anchors = ([geometry[0] for geometry in base.side_geometry]
+                   if hasattr(base, 'side_geometry') else [s.model._xyz for s in base.sides])
         with torch.no_grad():
             _, bounds = canonical_coordinates(torch.cat(anchors))
             self.coordinates = [canonical_coordinates(side.model._xyz, bounds)[0]]
@@ -76,7 +77,7 @@ class VersionTripletRenderer:
         started = time.perf_counter()
         # The composite owns its cache. Avoid precomputing unused pair JPEGs.
         self.base.prewarm = False
-        original_progress = self.base.progress
+        original_progress = getattr(self.base, 'progress', lambda value, message: None)
         def base_progress(value, message):
             original_progress(value, message)
             self.status = dict(ready=False, progress=int(value*.65), message=message)
@@ -86,19 +87,24 @@ class VersionTripletRenderer:
         def middle_progress(value, message):
             self.status = dict(ready=False, progress=65+int(value*.34), message='V2 · '+message)
         self.middle.load_stage(self.base, middle_progress)
-        self.base_pose, self.target = self.base.base_pose, self.base.target
+        camera_source = self.base if hasattr(self.base, 'base_pose') else self.base.sides[0]
+        self.base_pose, self.target = camera_source.base_pose, camera_source.target
         validate_stage(self.base.info, self.middle.info, self.base_pose, self.middle.sides[0].base_pose)
         pair = [self.base.info['left_label'], self.base.info['right_label']]
         labels = [pair[0], self.middle.label, pair[1]]
         common = self.middle.info['comparison_modes']
         modes = {mode: labels if mode in common else pair for mode in ('gaussian', 'clay', 'pseudocolor', 'mesh', 'hybrid')}
-        self.info = dict(self.base.info, name='Lego · V1 / V2 / V3', panel_count=3,
+        settings = json.loads(self.middle_path.read_text())
+        self.info = dict(self.base.info, name=self.base.info['name'].split(' · ')[0]+' · V1 / V2 / V3', panel_count=3,
                          export_sample_step=2,
                          version_labels=labels, mode_version_labels=modes,
                          cache_gib=self.base.info['cache_gib']+self.middle.info['cache_gib'],
                          prewarmed_frames=0, image_cache_mib=128,
                          middle_version=self.middle.provenance,
-                         description=self.base.info.get('description', '')+' V2 为已存观测校正分支；三列使用同相机、同时间，不表示严格连续的训练链。')
+                         gaussian_counts=[self.base.sides[0].info['gaussian_count'], self.middle.info['gaussian_count'], self.base.sides[1].info['gaussian_count']] if hasattr(self.base, 'sides') else self.base.info.get('gaussian_counts'),
+                         description=(self.base.info.get('description') or '')+' '+settings.get('description', 'V2 为已存观测校正分支；三列使用同相机、同时间，不表示严格连续的训练链。'))
+        if 'source_to_display' in settings:
+            self.info['source_to_display'] = settings['source_to_display']
         for mode in ('clay', 'pseudocolor', 'mesh', 'hybrid'):
             self.info[mode] = dict(self.base.info.get(mode, {}), prewarmed_frames=0)
             if mode not in common and self.info[mode].get('available'):

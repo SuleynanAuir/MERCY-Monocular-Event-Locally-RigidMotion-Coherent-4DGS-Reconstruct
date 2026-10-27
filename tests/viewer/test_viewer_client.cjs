@@ -14,6 +14,7 @@ async function client(overrides = {}, catalog = null, search = '?autoplay=1&loop
     focus() {}, setPointerCapture() {},
     getContext() {return {drawImage() {},setTransform() {},clearRect() {},save() {},restore() {},strokeRect() {},fillRect() {},fillText() {}};}, getBoundingClientRect() {return {width: 800, height: 500};}});
   const elements = Object.fromEntries(ids.map(id => [id, element()]));
+  const experimentPanel = element();
   const presets = [...fs.readFileSync(path.join(viewer, 'index.html'), 'utf8')
     .matchAll(/class="preset(?: active)?" data-yaw="([^"]+)" data-pitch="([^"]+)"/g)]
     .map(match => Object.assign(element(), {dataset: {yaw: match[1], pitch: match[2]}}));
@@ -32,6 +33,7 @@ async function client(overrides = {}, catalog = null, search = '?autoplay=1&loop
   }
   const context = {
     document: {hidden: false, getElementById(id) {assert.ok(elements[id], `Missing HTML element ${id}`); return elements[id];},
+      querySelector(selector) {return selector === '.experiment-panel' ? experimentPanel : null;},
       querySelectorAll(selector) {return selector === '.preset' ? presets : [];},
       createTextNode: text => text, createElement: element, addEventListener() {}},
     location: {search, protocol: 'http:', host: '127.0.0.1:8892'},
@@ -93,6 +95,21 @@ test('V1 V2 V3 stay synchronized through cached playback, ROI and a two-version 
   assert.equal(c.elements.middleRenderCell.hidden,false);
   assert.equal(c.elements.detailRow.children.length,6);
   assert.equal(c.errors.length,0);
+});
+
+test('renumbered triplet labels and two-version mesh controls follow the supplied mapping', async () => {
+  const c=await client({version_presentation:{revision:'swap-v1-v2-20261027'},
+    version_labels:['V1 · 观测校正存档','V2 · 未校正初始动画','V3 · 修复补全'],
+    left_label:'V1 · 观测校正存档',right_label:'V3 · 修复补全',
+    mode_version_labels:{mesh:['V2 · 原始网格','V3 · 修复网格']},
+    mesh:{available:true,triangle_count:20,left_label:'V2 · 原始网格',right_label:'V3 · 修复网格'}});
+  assert.equal(c.elements.leftCompareLabel.textContent,'V1 · 观测校正存档');
+  assert.equal(c.elements.middleCompareLabel.textContent,'V2 · 未校正初始动画');
+  assert.equal(c.elements.meshOption.textContent,'V2 / V3 纯 Mesh');
+  c.elements.renderMode.onchange({target:{value:'mesh'}});c.tick(160);
+  assert.equal(c.elements.leftCompareLabel.textContent,'V2 · 原始网格');
+  assert.equal(c.elements.middleRenderCell.hidden,true);
+  assert.equal(c.elements.sceneName.textContent,'V2 / V3 Mesh 对比');
 });
 
 test('default cached view selects 60 FPS, new camera selects 30, layout does not restart playback', async () => {
@@ -790,7 +807,7 @@ test('experiment benchmark forwards explicit warmup/repeats and errors do not ex
 });
 
 test('one-click save needs no saved plan, preserves camera and downloads the single folder archive', async () => {
-  const c=await client({export_sample_step:2});
+  const c=await client();
   assert.equal(c.elements.experimentStep.value,'2');
   c.presets[1].onclick();c.tick(20);
   c.elements.experimentStart.value='invalid';c.elements.experimentEnd.value='invalid';
@@ -803,7 +820,7 @@ test('one-click save needs no saved plan, preserves camera and downloads the sin
   await c.elements.experimentAll.onclick();
   assert.equal(submitted.operation,'complete');
   assert.equal(submitted.settings.yaw,35);assert.equal(submitted.settings.pitch,20);
-  assert.equal(submitted.warmup,undefined);assert.equal(submitted.repeats,undefined);
+  assert.equal(submitted.warmup,20);assert.equal(submitted.repeats,5);
   assert.equal(submitted.samples,undefined,'server selects the complete source timeline');
   assert.equal(submitted.sample_step,2);
   assert.equal(downloads,1);assert.equal(c.elements.experimentLocation.hidden,false);
@@ -812,6 +829,27 @@ test('one-click save needs no saved plan, preserves camera and downloads the sin
   assert.match(c.elements.experimentStatus.textContent,/python evaluate.py/);
   assert.match(c.elements.experimentStatus.textContent,/每 4 帧采样，共 5 帧/);
   assert.match(c.elements.experimentLocation.textContent,/仅保留 ZIP/);
+});
+
+test('sequence and benchmark automatically freeze a truth plan without importing a file', async () => {
+  for(const id of ['experimentSequence','experimentBenchmark']) {
+    const c=await client(),requests=[];
+    assert.equal(c.elements[id].disabled,false);
+    const samples=[{frame:0,time_seconds:0,camera:{fixture:'server truth'},background_rgb:[.27,.27,.27]}];
+    c.context.fetch=async(url,options)=>{
+      requests.push({url,body:JSON.parse(options.body)});
+      return {ok:true,json:async()=>url.includes('/plan') ?
+        {format:'scgs_experiment_plan_v1',scene:c.elements.objectSelect.value,samples} :
+        {id:'automatic',status:'complete'}};
+    };
+    await c.elements[id].onclick();
+    assert.equal(requests.length,2);
+    assert.equal(requests[0].body.operation,'complete');
+    assert.equal(requests[0].body.sample_step,2);
+    assert.deepEqual(requests[1].body.samples,samples);
+    assert.equal(requests[1].body.operation,id==='experimentSequence' ? 'sequence' : 'benchmark');
+    assert.equal(c.elements.experimentDownload.hidden,false);
+  }
 });
 
 test('one-click progress follows server stages and bytes until the archive is complete', async () => {
@@ -885,4 +923,14 @@ test('long experiment keeps the displayed frame, pauses preview requests and sch
   await saving;
   assert.equal(waits.length,1,'reconnect after the export completes');
   assert.equal(c.elements.experimentDownload.hidden,false);
+});
+
+test('comparison link carries the editable object name without injecting query parameters', async()=>{
+  const c=await client({},null,'?scene=lego');
+  assert.equal(c.elements.comparisonObjectName.value,'lego');
+  assert.equal(c.elements.comparisonVisualize.href,'/comparison?object_name=lego');
+  c.elements.comparisonObjectName.value='吊机 A';c.elements.comparisonObjectName.oninput();
+  assert.equal(new URL(c.elements.comparisonVisualize.href,'http://localhost').searchParams.get('object_name'),'吊机 A');
+  c.elements.comparisonObjectName.value='a&scene=other';c.elements.comparisonVisualize.onclick();
+  assert.equal(new URL(c.elements.comparisonVisualize.href,'http://localhost').searchParams.has('scene'),false);
 });

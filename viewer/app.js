@@ -242,6 +242,12 @@
   let references = null;
   let pointer = null, wheelTimer = null;
   const launchOptions = new URLSearchParams(window.location.search);
+  const comparisonNameInput=$('comparisonObjectName');
+  comparisonNameInput.value=launchOptions.get('object_name')||launchOptions.get('scene')||'';
+  function updateComparisonLink(){const q=new URLSearchParams();if(comparisonNameInput.value.trim())q.set('object_name',comparisonNameInput.value.trim());$('comparisonVisualize').href='/comparison'+(q.size?'?'+q.toString():'');}
+  comparisonNameInput.oninput=updateComparisonLink;
+  $('comparisonVisualize').onclick=updateComparisonLink;
+  updateComparisonLink();
   function requestQuality(fallback) {
     const value=Number(launchOptions.get('jpeg_quality'));
     return Number.isInteger(value) && value>=60 && value<=95 ? value : fallback;
@@ -270,12 +276,11 @@
       clay_style:state.clayStyle,fovy:state.scene.fovy,
       quality:requestQuality(state.scene.default_stream_quality??95),...dimensions()};
   }
-  function sequenceKey(settings){return JSON.stringify(settings);}
+  function sequenceKey(settings){return JSON.stringify({version_presentation:state.scene?.version_presentation?.revision || 'source-order',settings});}
   let experimentPlan=null, experimentBusy=false;
   const experimentButtons=['experimentAll','experimentFrame','experimentPlanSave','experimentSequence','experimentBenchmark'];
   function experimentControls() {
-    for(const id of experimentButtons) $(id).disabled=experimentBusy || !state.scene ||
-      (['experimentSequence','experimentBenchmark'].includes(id) && !experimentPlan);
+    for(const id of experimentButtons) $(id).disabled=experimentBusy || !state.scene;
   }
   function experimentProgress(job) {
     const finished=job.status==='complete';
@@ -350,14 +355,20 @@
       const complete=operation==='complete';
       if(complete && (!Number.isInteger(Number($('experimentStep').value)) || Number($('experimentStep').value)<1 || Number($('experimentStep').value)>10000))
         throw new Error('请输入有效采样间隔（1–10000）');
-      const samples=complete ? null : operation==='frame' ? experimentSamples(true) : experimentPlan?.samples;
-      if(!complete && !samples)throw new Error('请先保存或载入采样表');
       experimentBusy=true;experimentControls();$('experimentDownload').hidden=true;
       $('experimentLocation').hidden=true;
       experimentProgress({status:'running',stage:'queued',message:'正在提交导出任务…',percent:0,completed:0,total:1});
       text('experimentStatus','正在提交导出任务…');
-      const selection=complete ? {sample_step:Number($('experimentStep').value || state.scene.export_sample_step || 4),settings:{...sequenceSettings(),frame:state.displayedFrame>=0 ? state.displayedFrame : state.frame}} : {samples};
-      const measurement=operation==='benchmark' ? {warmup:Number($('experimentWarmup').value || 20),repeats:Number($('experimentRepeats').value || 5)} : {};
+      const automatic={sample_step:Number($('experimentStep').value || 2),settings:{...sequenceSettings(),frame:state.displayedFrame>=0 ? state.displayedFrame : state.frame}};
+      if(!complete && operation!=='frame' && !experimentPlan) {
+        text('experimentStatus','正在自动读取真值相机并生成采样表…');
+        const frozen=await fetch(`/api/experiments/plan${sceneQuery}`,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({operation:'complete',...automatic})});
+        if(!frozen.ok)throw new Error(await frozen.text());
+        adoptExperimentPlan(await frozen.json());
+      }
+      const selection=complete ? automatic : {samples:operation==='frame' ? experimentSamples(true) : experimentPlan.samples};
+      const measurement=complete || operation==='benchmark' ? {warmup:Number($('experimentWarmup').value || 20),repeats:Number($('experimentRepeats').value || 5)} : {};
       const response=await fetch(`/api/experiments${sceneQuery}`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({operation,...selection,...measurement})});
       if(!response.ok)throw new Error(await response.text());
@@ -378,7 +389,7 @@
         text('experimentLocation',job.output_archive ? `服务器仅保留 ZIP：${job.output_archive}（${(job.output_bytes/1024**2).toFixed(1)} MiB）` : `渲染服务器保存目录：${job.output_directory}`);
         $('experimentLocation').hidden=false;
       }
-      text('experimentStatus',complete ? `关键数据已保存${job.sampled_frames ? `：每 ${job.sample_step || 4} 帧采样，共 ${job.sampled_frames} 帧。` : '。'}${job.missing_data?.length ? '缺失或未对齐的数据已列入 data_availability.json。' : ''}解压后运行 python evaluate.py 进行独立评测。` : '导出完成。下载并解压 ZIP 后，运行独立评测脚本。');
+      text('experimentStatus',complete ? `数据与性能测量已保存${job.sampled_frames ? `：每 ${job.sample_step || 2} 帧采样，共 ${job.sampled_frames} 帧。` : '。'}${job.missing_data?.length ? '缺失或未对齐的数据已列入 data_availability.json。' : ''}解压后运行 python evaluate.py 进行独立评测。` : '导出完成。下载并解压 ZIP 后，运行独立评测脚本。');
       if(complete) $('experimentDownload').click();
     } catch(error) {
       text('experimentStatus',error.message);
@@ -568,6 +579,7 @@
     $("clayOption").disabled = !scene.clay?.available;
     $("pseudocolorOption").disabled = !scene.pseudocolor?.available;
     $("meshOption").disabled = !scene.mesh?.available;
+    $("meshOption").textContent = `${comparisonStages('mesh').join(' / ')} 纯 Mesh`;
     $("hybridOption").disabled = !scene.hybrid?.available;
     $("ultraResolution").disabled = paired;
     $("clayStyleField").hidden = !clay;
@@ -582,7 +594,10 @@
     middleCanvas.hidden = $('middleRenderCell').hidden = $('middleCompareLabel').hidden = !triplet;
     if(!triplet)$('detailMiddle').hidden=true;
     $('middleCompareLabel').textContent=versionLabels()[1] || 'V2';
-    middleCanvas.setAttribute('aria-label','V2 动态渲染，与 V1、V3 同相机同时间');
+    middleCanvas.setAttribute('aria-label',`${versionLabels()[1] || 'V2'} 动态渲染，同相机同时间`);
+    $('leftRenderCell').setAttribute('aria-label',versionLabels()[0] || '当前版本');
+    $('middleRenderCell').setAttribute('aria-label',versionLabels()[1] || '第二版本');
+    $('rightRenderCell').setAttribute('aria-label',versionLabels().at(-1) || '最后版本');
     const detailLayout=renderCanvases().length;
     if(detail.layout!==detailLayout){detail.layout=detailLayout;rebuildDetail();}
     $("detailTools").hidden = !paired;
@@ -605,10 +620,12 @@
     $("leftCompareLabel").hidden = $("rightCompareLabel").hidden = !paired;
     $("sceneKind").textContent = color ? "PSEUDOCOLOR" : clay ? "CLAY SURFACE" : hybrid ? "MESH + GAUSSIAN" : mesh ? "MESH SURFACE" : "GAUSSIAN SCENE";
     $("sceneName").textContent = color ? `${comparisonName()} 伪彩色对比` : clay ? `${comparisonName()} 白模对比` : hybrid ? `${comparisonName()} 混合动态对比` : mesh ? `${comparisonName()} Mesh 对比` : scene.name;
-    $("leftCompareLabel").textContent = clay || color || mesh || hybrid ? (modeInfo.left_label || "V1 Mesh · 原始结果") : scene.left_label;
+    $("leftCompareLabel").textContent = clay || color || mesh || hybrid ? (modeInfo.left_label || versionLabels()[0]) : scene.left_label;
     $("rightCompareLabel").textContent = clay || color || mesh || hybrid ? (modeInfo.right_label || "V3 Mesh · 最新优化结果") : scene.right_label;
-    if(triplet && !/^V1\b/.test($('leftCompareLabel').textContent || ''))
-      $('leftCompareLabel').textContent=['V1',$('leftCompareLabel').textContent].filter(Boolean).join(' · ');
+    if(triplet) {
+      $('leftCompareLabel').textContent=versionLabels()[0];
+      $('rightCompareLabel').textContent=versionLabels()[2];
+    }
     $("sequenceBadge").textContent = color ? "伪彩色 · 同帧同视角" : clay ? "白模 · 同帧同视角" : hybrid ? "Mesh＋Gaussian · 同帧同视角" : mesh ? `${comparisonName()} Mesh · 同帧同视角` : paired ?
       (triplet ? "V1 / V2 / V3 · 同帧同视角" : "原始 / 优化 · 同帧同视角") : scene.event_validation ? "原始事件校正 · 候选预览" : "逐帧高斯 · 实时渲染";
     $("gaussianCount").textContent = (mesh ? modeInfo.triangle_count : scene.gaussian_count).toLocaleString("en-US");
@@ -617,8 +634,8 @@
       (scene.description || "真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。");
     $("snapshot").textContent = color ? `保存 ${comparisonName()} 伪彩色对比图 ↓` : clay ? `保存 ${comparisonName()} 白模对比图 ↓` : hybrid ? "保存 Mesh＋Gaussian 动态对比图 ↓" : mesh ? `保存 ${comparisonName()} Mesh 对比图 ↓` : paired ? "保存原始 / 优化对比图 ↓" : "保存当前画面 ↓";
     if (quad) $("snapshot").textContent = `保存 1×${renderCanvases().length+2} 对比图 ↓`;
-    canvas.setAttribute("aria-label", color ? "伪彩色表面，同步部件动画与对比视角" : clay ? "白色表面，同步部件动画与对比视角" : hybrid ? "V1 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V1 原始高斯重建的 Mesh，与右侧同帧同视角" : "GPU 实时渲染的动态高斯");
-    rightCanvas.setAttribute("aria-label", color ? "伪彩色表面，同步部件动画与对比视角" : clay ? "白色表面，同步部件动画与对比视角" : hybrid ? "V3 Mesh 绑定驱动的高斯混合渲染" : mesh ? "V3 最新优化高斯重建的 Mesh，与左侧同帧同视角" : "优化高斯，同步右视窗");
+    canvas.setAttribute("aria-label", `${versionLabels()[0] || '当前版本'} · ${state.renderMode} 动态渲染，同相机同时间`);
+    rightCanvas.setAttribute("aria-label", `${versionLabels().at(-1) || '最后版本'} · ${state.renderMode} 动态渲染，同相机同时间`);
   }
   function stopStream() {
     if (!state.stream) return;
@@ -644,6 +661,9 @@
   }
   function controls(enabled) {
     ["play", "previous", "next", "restart", "timeline", "snapshot"].forEach(id => $(id).disabled = !enabled);
+    if (state.scene?.source_preview) {
+      ["play", "previous", "next", "restart", "timeline"].forEach(id => $(id).disabled = true);
+    }
     experimentControls();
     if(!enabled) for(const id of experimentButtons) $(id).disabled=true;
   }
@@ -988,8 +1008,9 @@
       }
       const firstLoad = !state.scene;
       state.scene = data.scene; const scene = data.scene;
+      document.querySelector('.experiment-panel').hidden = !!scene.source_preview;
       if (firstLoad) {
-        $('experimentStep').value=String(scene.export_sample_step || 4);
+        $('experimentStep').value=String(scene.export_sample_step || 2);
         $("streamRate").value = scene.comparison ? 'auto' : String(scene.default_stream_rate || 60);
         $("resolution").value = String(scene.default_resolution || 768);
         state.background = scene.default_background || "dark";
@@ -1333,6 +1354,7 @@
       }
       check();files.push({name:'manifest.json',blob:new Blob([JSON.stringify({scene:scene.name,frame_count:count,fps,duration_seconds:duration/1e6,
         width,height:layouts.every(l=>l.height===layouts[0].height)?layouts[0].height:null,layouts,overview:bounds,regions,camera:settings[0],modes:videoModes.map(([id,label])=>({id,label})),
+        version_presentation:scene.version_presentation,mode_version_mapping:scene.mode_version_mapping,
         display_finish:scene.detail_finish||undefined,times_seconds:scene.times_seconds},null,2)],{type:'application/json'})});
       report(`正在打包 ${videoModes.length} 种完整视频…`);const archive=await GaussianPlayback.Media.zip(files);check();
       if(exportURL)URL.revokeObjectURL(exportURL);exportURL=URL.createObjectURL(archive);

@@ -15,7 +15,7 @@ from PIL import Image
 from utils.viewer_state import orbit_pose, validate_request
 from utils.experiment_format import FORMAT, save_json, sha256
 
-SAMPLE_STEP = 4
+SAMPLE_STEP = 2
 MAX_EXPORT_BYTES = 2 * 1024**3
 
 
@@ -31,11 +31,11 @@ class ExportProgress:
     def __init__(self, operation, callback):
         self.callback = callback
         self.stages = [('prepare', '准备相机与配置')]
-        if operation == 'benchmark':
-            self.stages += [('warmup', '预热渲染器'), ('benchmark', '重复性能测量')]
         if operation != 'benchmark':
             self.stages += [('frames', '导出采样帧与关键运动数据'), ('motion', '保存运动轨迹'),
                             ('reference', '保存参考数据')]
+        if operation in ('complete', 'benchmark'):
+            self.stages += [('warmup', '预热渲染器'), ('benchmark', '重复性能测量')]
         self.stages += [('sources', '记录模型来源与哈希'), ('code', '保存配置与评测脚本'),
                         ('hashes', '校验文件哈希'), ('archive', '打包下载文件')]
         self.stage = None
@@ -174,6 +174,11 @@ def validate_plan(data, info):
         if not isinstance(sample, dict):
             raise ValueError('无效采样点')
         request = validate_request(sample, len(times))
+        if 'background_rgb' in sample:
+            color = np.asarray(sample['background_rgb'], dtype=float)
+            if color.shape != (3,) or not np.isfinite(color).all() or np.any((color < 0) | (color > 1)):
+                raise ValueError('Invalid reference background')
+            request['background_rgb'] = color.tolist()
         mode = request['render_mode']
         if mode != 'gaussian' and mode not in info.get('comparison_modes', []) and not info.get(mode, {}).get('available'):
             raise ValueError(f'当前模型不支持显示模式：{mode}')
@@ -201,13 +206,13 @@ def validate_plan(data, info):
         raise ValueError('采样帧必须严格递增，不能重复')
     for key, default, low, high in [('warmup', 20, 1, 100), ('repeats', 5, 1, 100)]:
         value = data.get(key, default)
-        if data['operation'] == 'benchmark' and (type(value) is not int or not low <= value <= high):
+        if data['operation'] in ('complete', 'benchmark') and (type(value) is not int or not low <= value <= high):
             raise ValueError(f'{key} 超出范围 {low}–{high}')
-    if data['operation'] == 'benchmark' and len(samples) * data.get('repeats', 5) > 50000:
+    if data['operation'] in ('complete', 'benchmark') and len(samples) * data.get('repeats', 5) > 50000:
         raise ValueError('性能测量最多 50000 次渲染')
     plan = dict(operation=data['operation'], samples=validated,
                 warmup=data.get('warmup', 20), repeats=data.get('repeats', 5))
-    if data['operation'] != 'benchmark': plan.update(warmup=0, repeats=1)
+    if data['operation'] not in ('complete', 'benchmark'): plan.update(warmup=0, repeats=1)
     if data['operation'] == 'complete': plan.update(selected_frame=settings['frame'], sample_step=step)
     plan['export_profile'] = 'evaluation_compact_v2'
     return plan
@@ -443,7 +448,7 @@ def export_reference(root, reference_path, preview, samples, progress=lambda **v
         save_json(directory / 'source.json', source)
         if not source.get('provenance'):
             raise ValueError('Reference needs independent data and mask provenance')
-        for key in ('part_labels', 'mask_definition', 'source_motion_scope'):
+        for key in ('part_labels', 'mask_definition', 'mask_quality', 'rgb_foreground', 'source_motion_scope'):
             if key in source: result[key] = source[key]
         if source.get('source_motion'):
             path = reference_path.parent/source['source_motion']
@@ -514,6 +519,8 @@ def export_reference(root, reference_path, preview, samples, progress=lambda **v
     for key in ('rgb', 'foreground_mask', 'part_mask', 'events'):
         if not any(key in row for row in result['samples']):
             result['unavailable'][key] = (source or {}).get('unavailable', {}).get(key, 'No independent source configured; not generated from method outputs')
+    if (source or {}).get('unavailable', {}).get('event_response'):
+        result['unavailable']['event_response'] = source['unavailable']['event_response']
     return result
 
 
@@ -568,6 +575,9 @@ def save_bundle_guide(root, manifest, histories):
         'from scripts.evaluation.evaluate_experiment import main\n\n'
         "if __name__ == '__main__':\n    sys.argv.insert(1, str(root))\n    main()\n", encoding='utf-8')
     notes = '\n'.join('- '+item for item in missing) or '无缺失项目。'
+    timing_note = ('timings.json 记录导出耗时；performance/timings.json 记录同一采样表预热后的重复测量，'
+                   '不捕获状态、不写图像。评测脚本自动使用后者。\n' if manifest.get('performance') else
+                   'timings.json 记录本次操作耗时；只有 benchmark 操作是预热后的重复性能测量。\n')
     (root/'README.txt').write_text(
         f"SC-GS 实验数据 — {manifest['scene']}\n\n"
         f'本文件夹保存 {expected} 个采样时刻、{len(manifest["versions"])} 个版本。\n'
@@ -575,7 +585,7 @@ def save_bundle_guide(root, manifest, histories):
         '公共参考数据见 reference/，小型配置与显式指定的小型参数文件见 configs/，来源路径与文件哈希见 manifest.json。\n'
         '不含逐帧完整模型、原始资产副本或 UI 展示视频。原始模型保留在项目目录。\n'
         '本包可独立计算指标；重新渲染必须使用清单所标识的原模型及对应项目代码。\n'
-        'timings.json 记录本次导出耗时（含关键数据捕获）；严格性能比较请单独运行性能测量。\n'
+        f'{timing_note}'
         'code/ 仅包含离线评测需要的三个脚本。\n\n'
         '独立评测（安装 NumPy、Pillow 后，在本文件夹执行）：\n'
         '  python evaluate.py\n'
@@ -636,6 +646,7 @@ def _write_export(renderer, plan, destination, scene, *, reference_path=None, pr
     def version_labels(sample):
         return renderer.info.get('mode_version_labels', {}).get(sample['render_mode'], renderer.info.get('version_labels', []))
     labels = version_labels(samples[0])
+    version_mapping = renderer.info.get('mode_version_mapping', {}).get(samples[0]['render_mode'], [])
     if any(version_labels(sample) != labels for sample in samples):
         raise ValueError('同一个导出计划必须包含相同的版本；请分别导出三版本模式和双版本模式')
     save_json(root / 'plan.json', dict(plan, format='scgs_experiment_plan_v1', scene=scene, samples=samples))
@@ -648,6 +659,9 @@ def _write_export(renderer, plan, destination, scene, *, reference_path=None, pr
                                  'cross_version_keypoints': 'No verified cross-version correspondence between Gaussian row IDs'},
                     timing_scope='serial render of all panels, GPU synchronization and CPU pixel transfer; no JPEG cache',
                     load_seconds=getattr(renderer, 'load_seconds', None))
+    if version_mapping:
+        manifest['version_presentation'] = renderer.info['version_presentation']
+        manifest['version_mapping'] = version_mapping
     def configuration(component):
         return dict(renderer_class=type(component).__name__, cache=getattr(component, 'cache', None),
             side_sampling=getattr(component, 'side_sampling', None), supersamples=getattr(component, 'supersamples', None),
@@ -655,9 +669,10 @@ def _write_export(renderer, plan, destination, scene, *, reference_path=None, pr
                      ('correction', 'completion', 'deformation', 'field', 'mesh', 'hybrid', 'bindings', 'surface_refinement', 'detail_normals')})
     manifest['renderer_config'] = configuration(renderer)
     if hasattr(renderer, 'middle'):
+        displayed = {row['source_panel_index']: i for i,row in enumerate(version_mapping)}
         manifest['renderer_config'] = dict(renderer_class=type(renderer).__name__,
-            components=[dict(versions=[0, len(labels)-1], **configuration(renderer.base)),
-                        dict(versions=[1] if len(labels)==3 else [], **configuration(renderer.middle))])
+            components=[dict(versions=[displayed.get(i,i) for i in (0,len(labels)-1)], **configuration(renderer.base)),
+                        dict(versions=[displayed.get(1,1)] if len(labels)==3 else [], **configuration(renderer.middle))])
     manifest['environment']['packages'] = {}
     for package in ('numpy', 'Pillow', 'torch', 'aiohttp', 'nvdiffrast', 'diff-gaussian-rasterization', 'lpips'):
         try: manifest['environment']['packages'][package] = importlib.metadata.version(package)
@@ -706,7 +721,7 @@ def _write_export(renderer, plan, destination, scene, *, reference_path=None, pr
                     panel_ms=request.get('_panel_timings', []),
                     includes_state_capture=capture, memory=memory)
 
-    if benchmark:
+    def measure_performance():
         reporter.update('warmup', total=plan['warmup'], unit='renders')
         for i in range(plan['warmup']):
             render(i % len(samples))
@@ -741,12 +756,25 @@ def _write_export(renderer, plan, destination, scene, *, reference_path=None, pr
                 times_seconds=np.asarray([sample['time_seconds'] for sample in samples]))
             label = labels[side] if side < len(labels) else renderer.info.get('left_label' if side == 0 else 'right_label', f'版本 {side+1}')
             manifest['versions'].append(dict(id=str(side), label=label,
+                **({'presentation':version_mapping[side]} if version_mapping else {}),
                 point_count=rows[0]['count'], sampled_point_count=len(rows[0]['ids']),
                 point_correspondence='fixed row IDs within this version; cross-version correspondence unverified'))
             reporter.update('motion', completed=len(manifest['versions']), total=len(histories), unit='versions')
         reporter.update('reference', total=len(samples), unit='frames')
         manifest['reference'] = export_reference(root, reference_path, preview, samples,
             progress=lambda **value: reporter.update('reference', **value))
+    if benchmark or plan['operation'] == 'complete':
+        # Reuse the frozen truth camera/time plan. Benchmark only after capture
+        # and reference I/O finish; repeated renders never write duplicate data.
+        measure_performance()
+        if not benchmark:
+            (root / 'performance').mkdir()
+            manifest['performance'] = dict(timings='performance/timings.json', plan='plan.json',
+                warmup=plan['warmup'], repeats=plan['repeats'], measurements=len(measurements))
+            save_json(root / manifest['performance']['timings'], dict(operation='benchmark',
+                warmup=plan['warmup'], repeats=plan['repeats'], samples=measurements,
+                load_seconds=manifest['load_seconds'], memory_baseline=manifest['memory_baseline'],
+                memory_scope='PyTorch process-wide allocations; includes all loaded scenes, not per-version memory'))
     reporter.update('sources')
     base = getattr(renderer, 'base', None)
     manifest['sources'] = bundle_sources(root, [renderer.path, getattr(base, 'path', None), reference_path, *getattr(renderer, 'source_paths', [])],

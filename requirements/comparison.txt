@@ -1,0 +1,7 @@
+# Install in the existing viewer environment. Preserve its torch/torchvision pair.
+# LPIPS uses the existing torch/torchvision installation; official weights cache once.
+numpy>=1.24,<3
+scipy>=1.10
+Pillow>=9
+matplotlib>=3.6
+lpips==0.1.4

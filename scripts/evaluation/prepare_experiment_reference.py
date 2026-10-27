@@ -72,7 +72,7 @@ def prepare(config, output):
     try:
         camera, count, fps = config['camera'], config['frame_count'], config['fps']
         width, height = camera['width'], camera['height']
-        step = config.get('sample_step', 4)
+        step = config.get('sample_step', 2)
         if type(step) is not int or not 1 <= step <= count: raise ValueError('Invalid reference sample_step')
         indices = list(range(0, count, step))
         samples = [dict(frame=i, time_seconds=i/fps) for i in indices]
@@ -101,6 +101,32 @@ def prepare(config, output):
             if frame != count: raise ValueError(f'Video count mismatch: {frame} != {count}')
         finally: video.release()
         print(f'RGB {len(samples)} sampled frames', flush=True)
+        if config.get('rgb_foreground'):
+            if config.get('mesh'): raise ValueError('Choose geometric or RGB-support masks explicitly')
+            annotation = config['rgb_foreground']
+            threshold = annotation['threshold_u8']
+            background = np.asarray(annotation['background_rgb_u8'], dtype=float)
+            if (type(threshold) is not int or not 1 <= threshold <= 64
+                    or background.shape != (3,) or not np.isfinite(background).all()
+                    or np.any((background < 0) | (background > 255))):
+                raise ValueError('Invalid fixed RGB foreground definition')
+            (output/'masks').mkdir()
+            audit = []
+            for row in samples:
+                rgb = np.asarray(Image.open(output/row['rgb']).convert('RGB'), dtype=float)
+                distance = np.max(np.abs(rgb-background), axis=-1)
+                name = f'masks/{row["frame"]:06d}.png'
+                Image.fromarray(distance > threshold).save(output/name, compress_level=3)
+                row['foreground_mask'] = name
+                audit.append(dict(frame=row['frame'], pixels={str(t):int((distance>t).sum())
+                                  for t in sorted({max(1, threshold//2), threshold, threshold*2})}))
+            result['mask_definition'] = ('Fixed original-RGB background-distance support mask; '
+                'max channel distance > '+str(threshold)+'/255. Shared by all methods; '
+                'photometric foreground proxy, not geometric or manual ground truth.')
+            result['mask_quality'] = 'rgb_background_proxy'
+            result['rgb_foreground'] = annotation
+            result['unavailable'].pop('foreground_mask', None)
+            save_json(output/'mask-threshold-audit.json', audit)
         if config.get('mesh') and config.get('parts'):
             (output/'masks').mkdir(); (output/'parts').mkdir()
             fovy = float(np.rad2deg(2*np.arctan(height/(2*camera['K'][1][1]))))
