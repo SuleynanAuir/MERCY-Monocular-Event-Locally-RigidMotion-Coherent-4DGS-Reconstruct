@@ -12,7 +12,19 @@ from experiment.comparison_explorer import HTML as EXPLORER, CSS as EXPLORER_CSS
 def write(output, analysis, figures, warnings):
     output=Path(output);esc=html.escape;names=[r['version'] for r in analysis['summary']]
     def fmt(v):return '不可用' if v is None else f'{v:.5g}'
-    rows=''.join('<tr><th>'+esc(label)+(' ↑' if direction>0 else ' ↓')+(' ('+unit+')' if unit else '')+'</th>'+''.join('<td>'+('∞' if r.get(key+'_infinite') else fmt(r.get(key)))+'</td>' for r in analysis['summary'])+'</tr>' for key,(label,unit,direction) in METRICS.items())
+    rows = ''
+    for key, (label, unit, direction) in METRICS.items():
+        unit_label = unit or ('无量纲 · ln 亮度变化' if key == 'silent' else '无量纲')
+        cells = ''.join('<td>'+('∞' if r.get(key+'_infinite') else fmt(r.get(key)))+'</td>' for r in analysis['summary'])
+        delta = '不可用'
+        if len(analysis['summary']) >= 2:
+            before, after = analysis['summary'][-2:]
+            if all(r.get(key) is not None and np.isfinite(r[key]) and not r.get(key+'_infinite') for r in (before, after)):
+                change = after[key]-before[key]
+                delta_unit = '百分点' if unit == '%' else unit
+                outcome = '改善' if change*direction > 0 else '退步' if change*direction < 0 else '持平'
+                delta = f'{change:+.5g} {delta_unit} · {outcome}'
+        rows += '<tr><th>'+esc(label)+(' ↑' if direction>0 else ' ↓')+'</th><td>'+esc(unit_label)+'</td>'+cells+'<td>'+esc(delta)+'</td></tr>'
     titles={'01_quality':'质量与事件一致性','02_temporal':'动作周期与逐时刻变化','04_qualitative':'固定时刻原始画面对照','05_error_maps':'空间误差与 V3−V2 像素差值','06_parts':'公共部件覆盖','07_efficiency':'效率与质量代价','08_motion':'运动与采样有效性'}
     perf=analysis.get('performance',{})
     with __import__('gzip').open(output/'data/input_manifest.json.gz','rt') as stream:source=json.load(stream)
@@ -38,7 +50,7 @@ __EXPLORER_JS__
 </script></body></html>'''
     meta=identity(output)
     if meta:doc=doc.replace('<h1>对照试验 · 全维度评测</h1>',f'<h1>{esc(meta["object_name"])} · 对照试验</h1><div>{esc(meta["created_at"])} · 北京时间</div>')
-    replacements={'EXPLORER':EXPLORER,'EXPLORER_JS':EXPLORER_JS,'COUNT':str(analysis['protocol']['sample_count']),'VERSIONS':esc(' / '.join(names)),'HEAD':''.join('<th>'+esc(n)+'</th>' for n in names),'ROWS':rows,'IMAGES':images,'RESOURCE_ROWS':resource_rows,'CHECKS':checks,'NOTES':''.join('<li>'+esc(t)+'</li>' for t in notes),'SHA':analysis['protocol']['manifest_sha256'],'TABLELINKS':tablelinks,'PAYLOAD':json.dumps(payload,ensure_ascii=False,allow_nan=False).replace('<','\\u003c')}
+    replacements={'EXPLORER':EXPLORER,'EXPLORER_JS':EXPLORER_JS,'COUNT':str(analysis['protocol']['sample_count']),'VERSIONS':esc(' / '.join(names)),'HEAD':'<th>单位</th>'+''.join('<th>'+esc(n)+'</th>' for n in names)+'<th>'+esc(names[-1]+' − '+names[-2])+' · 原始差值</th>','ROWS':rows,'IMAGES':images,'RESOURCE_ROWS':resource_rows,'CHECKS':checks,'NOTES':''.join('<li>'+esc(t)+'</li>' for t in notes),'SHA':analysis['protocol']['manifest_sha256'],'TABLELINKS':tablelinks,'PAYLOAD':json.dumps(payload,ensure_ascii=False,allow_nan=False).replace('<','\\u003c')}
     for key,value in replacements.items():doc=doc.replace('__'+key+'__',value)
     css=re.search(r'<style>(.*?)</style>',doc,re.S).group(1)
     doc=doc.replace(css,css+EXPLORER_CSS)

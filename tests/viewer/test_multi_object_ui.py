@@ -16,12 +16,14 @@ class MultiObjectUITests(unittest.IsolatedAsyncioTestCase):
         self.payload = b'original-jpeg-byte-payload'
         upstream = web.Application()
         async def status(request):
+            self.status_scene = request.query['scene']
             return web.json_response({'ready': True, 'scene_id': request.query['scene'],
                 'scene': {'left_label': 'V1', 'right_label': 'V3',
                           'clay': {'available': True, 'right_label': 'V3 · 白模'}}})
         async def html(request):
             return web.Response(body=b'<html>original UI</html>', content_type='text/html')
         async def ws(request):
+            self.ws_scene = request.query['scene']
             socket = web.WebSocketResponse(); await socket.prepare(request)
             async for message in socket:
                 if message.type == WSMsgType.TEXT:
@@ -96,6 +98,20 @@ class MultiObjectUITests(unittest.IsolatedAsyncioTestCase):
         c = json.loads(self.config.read_text()); c['asset_upstream']='https://example.com'
         self.config.write_text(json.dumps(c))
         with self.assertRaises(ValueError): read_config(self.config)
+
+    async def test_scene_alias_routes_status_frames_and_exports(self):
+        cfg = json.loads(self.config.read_text())
+        cfg['objects'][1]['upstream_scene'] = 'quality'
+        self.config.write_text(json.dumps(cfg))
+        response = await self.client.get('/api/status?scene=lamp')
+        self.assertEqual((await response.json())['scene_id'], 'lamp')
+        self.assertEqual(self.status_scene, 'quality')
+        async with self.client.ws_connect('/ws?scene=lamp') as socket:
+            await socket.send_json({'frame': 0})
+            self.assertEqual((await socket.receive(timeout=3)).data, self.payload)
+            self.assertEqual(self.ws_scene, 'quality')
+        response = await self.client.post('/api/experiments?scene=lamp', json={})
+        self.assertEqual((await response.json())['scene'], 'quality')
 
     async def test_export_posts_and_streamed_archive_use_selected_upstream(self):
         for endpoint in ('/api/experiments','/api/experiments/plan'):

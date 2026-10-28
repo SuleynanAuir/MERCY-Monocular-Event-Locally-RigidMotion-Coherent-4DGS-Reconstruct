@@ -16,6 +16,30 @@ from utils.viewer_cache import EncodedFrameCache
 from utils.viewer_state import image_packet, orbit_pose
 
 
+def edge_preserving_rgb(rgb, alpha, settings):
+    """Image-space bilateral denoising; no reference pixels or geometry changes.
+
+    Apply identically to preview and exported RGB. Alpha and motion stay raw.
+    Explicitly a rendering operation, not reconstructed geometric detail.
+    """
+    import torch
+    import torch.nn.functional as F
+    size = settings.get('kernel_size', 5)
+    spatial = float(settings.get('spatial_sigma', 1.1))
+    color = float(settings.get('color_sigma', .06))
+    if size not in (3, 5) or not .2 <= spatial <= 3 or not .005 <= color <= .2:
+        raise ValueError('Invalid edge-preserving render filter')
+    h, w = rgb.shape[-2:]; radius = size // 2
+    values = F.unfold(F.pad(rgb[None],(radius,)*4,mode='replicate'),size).view(3,size*size,h,w)
+    support = F.unfold(F.pad(alpha[None],(radius,)*4,mode='replicate'),size).view(size*size,h,w) >= .5
+    delta = (values-rgb[:,None]).square().mean(0)
+    axis = torch.arange(-radius,radius+1,dtype=rgb.dtype,device=rgb.device)
+    yy,xx = torch.meshgrid(axis,axis,indexing='ij')
+    weights = torch.exp(-delta/(2*color*color)-(xx.square()+yy.square()).reshape(-1,1,1)/(2*spatial*spatial))*support
+    result = (values*weights[None]).sum(1)/weights.sum(0).clamp_min(1e-8)[None]
+    return torch.where(alpha>=.5,result,rgb)
+
+
 def validate_pair(left, right):
     for key in ('frame_count', 'fps', 'preview_camera'):
         if key not in left or left[key] != right.get(key):
@@ -84,7 +108,7 @@ class GaussianPairRenderer:
         appearance = None
         if config.get('appearance_refinement'):
             from utils.appearance_stage import apply_stage
-            appearance = apply_stage(self.sides[1].model, self.path, config['appearance_refinement'], config['right']['sha256'])
+            appearance = apply_stage(self.sides[1].model, self.path, config['appearance_refinement'], config['right']['sha256'], self.sides[1].info['frame_count'])
         with torch.no_grad():
             rests = [side.model._xyz for side in self.sides]
             anchors = rests
@@ -128,6 +152,11 @@ class GaussianPairRenderer:
             gaussian_counts=[s.info['gaussian_count'] for s in self.sides],
             cache_gib=sum(s.info['cache_gib'] for s in self.sides),
             clay=gs_clay_info(), pseudocolor=pseudocolor_info())
+        self.rgb_filter = config.get('rgb_filter')
+        if self.rgb_filter:
+            if self.rgb_filter.get('method') != 'bilateral_rgb_v1':
+                raise ValueError('Unsupported RGB render filter')
+            self.info['rgb_filter'] = self.rgb_filter
         # Frozen experimental V2 pairs use this same renderer. Do not silently
         # label their right-hand stage V3 in styled display modes.
         for mode, title in (('clay', '白模'), ('pseudocolor', '伪彩色')):
@@ -143,7 +172,7 @@ class GaussianPairRenderer:
             from utils.lamp_detail import height_weights
             entry = config['detail_finish']
             path = (self.path.parent/entry['path']).resolve()
-            if entry.get('style') != 'normal_detail_v1' or file_sha(path) != entry['sha256']:
+            if entry.get('style') not in ('normal_detail_v1', 'normal_detail_v2') or file_sha(path) != entry['sha256']:
                 raise ValueError('Unsupported or modified detail finish asset')
             self.detail_normals = torch.from_numpy(load_detail_normals(path,
                 config['right']['sha256'], metadata[1]['base_vertices_sha256'],
@@ -181,6 +210,8 @@ class GaussianPairRenderer:
                     factor = self.supersamples[i]
                     def resolve(value):
                         return value if factor == 1 else torch.nn.functional.avg_pool2d(value, factor)
+                    from utils.appearance_stage import reset_geometry, apply_geometry
+                    reset_geometry(side.model)
                     pose = side.poses[request['frame']].to('cuda')
                     if side.dynamic_indices is None:
                         side.model._xyz = pose[:, :3].contiguous()
@@ -188,6 +219,9 @@ class GaussianPairRenderer:
                     else:
                         side.model._xyz[side.dynamic_indices] = pose[:, :3]
                         side.model._rotation[side.dynamic_indices] = pose[:, 3:7]
+                    from utils.appearance_stage import apply_frame
+                    apply_frame(side.model, request['frame'])
+                    apply_geometry(side.model)
                     camera_pose = render_pose(side.base_pose, side.target, request)
                     camera = make_camera(camera_pose,
                         request['width']*factor, request['height']*factor, np.deg2rad(request['fovy']))
@@ -196,6 +230,8 @@ class GaussianPairRenderer:
                         background if mode == 'gaussian' else side.backgrounds['black'], 0., 0., 0.)
                     rgb = output['render'] if factor == 1 else resolve(output['render'].clamp(0, 1))
                     depth, alpha = resolve(output['depth']), resolve(output['alpha'])
+                    if i == 1 and mode == 'gaussian' and getattr(self, 'rgb_filter', None):
+                        rgb = edge_preserving_rgb(rgb, alpha, self.rgb_filter)
                     if mode == 'pseudocolor':
                         material = render(camera, side.model, side.pipe, side.backgrounds['black'],
                             0., 0., 0., override_color=self.colors[i])['render']
@@ -219,8 +255,9 @@ class GaussianPairRenderer:
                         guide = render(camera, side.model, side.pipe, side.backgrounds['black'],
                             0., 0., 0., override_color=(normal*self.detail_weights*.5+.5).contiguous())['render']
                         rgb = detail_finish(rgb, resolve(guide), depth, alpha,
-                                            request['fovy'], background, mode)
-                    capture_gaussians(request, side.model, output.get('alpha'))
+                                            request['fovy'], background, mode,
+                                            **({'style': 'normal_detail_v2'} if self.info['detail_finish']['style'] == 'normal_detail_v2' else {}))
+                    capture_gaussians(request, side.model, alpha)
                     panels.append((rgb.clamp(0, 1).permute(1, 2, 0)*255).byte().contiguous().cpu().numpy())
                     end_panel(request, panel_started)
             if request.get('_raw'):

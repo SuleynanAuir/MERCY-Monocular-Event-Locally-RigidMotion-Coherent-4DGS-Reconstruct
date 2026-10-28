@@ -84,7 +84,7 @@ def create_app(config_path):
                         detail='尚未接入实时三维资产')
         else:
             try:
-                async with app[HTTP].get(upstream(request)+'/api/status', params={'scene':scene['id']}) as r:
+                async with app[HTTP].get(upstream(request)+'/api/status', params={'scene':scene.get('upstream_scene', scene['id'])}) as r:
                     r.raise_for_status()
                     data = await r.json()
             except (aiohttp.ClientError, asyncio.TimeoutError):
@@ -128,7 +128,8 @@ def create_app(config_path):
         try:
             params = dict(request.query)
             if path.startswith('/api/') and not comparison:
-                params['scene'] = selected(request)['id']
+                scene = selected(request)
+                params['scene'] = scene.get('upstream_scene', scene['id'])
             streaming_upload = path == '/api/comparisons' and request.method == 'POST'
             if streaming_upload and request.content_length and request.content_length > 2*1024**3 + 16*1024**2:
                 raise web.HTTPRequestEntityTooLarge(max_size=2*1024**3, actual_size=request.content_length)
@@ -152,7 +153,8 @@ def create_app(config_path):
     async def websocket(request):
         base = upstream(request)
         try:
-            remote = await app[HTTP].ws_connect(base+'/ws', params={**request.query, 'scene':selected(request)['id']},
+            scene = selected(request)
+            remote = await app[HTTP].ws_connect(base+'/ws', params={**request.query, 'scene':scene.get('upstream_scene', scene['id'])},
                                                   max_msg_size=32*1024**2, heartbeat=20)
         except (aiohttp.ClientError, asyncio.TimeoutError):
             raise web.HTTPServiceUnavailable(text='渲染器正在准备或连接暂时不可用')

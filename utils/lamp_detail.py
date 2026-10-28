@@ -23,8 +23,10 @@ def height_weights(xyz, settings=None):
     return (weight.square()*(3-2*weight))[:, None]
 
 
-def detail_finish(rgb, normals, depth, alpha, fovy, background, mode):
+def detail_finish(rgb, normals, depth, alpha, fovy, background, mode, style='normal_detail_v1'):
     """Resolve supported surface normals, local contrast and restrained highlights."""
+    if style not in ('normal_detail_v1', 'normal_detail_v2'):
+        raise ValueError('Unsupported normal finish')
     a=alpha.clamp(0,1)
     direction=normals/a.clamp_min(1e-5)*2-1
     strength=direction.norm(dim=0,keepdim=True).clamp(0,1)
@@ -33,6 +35,22 @@ def detail_finish(rgb, normals, depth, alpha, fovy, background, mode):
     bg=torch.as_tensor(background, dtype=rgb.dtype, device=rgb.device).reshape(3,1,1)
     surface=((rgb-bg*(1-a))/a.clamp_min(1e-5)).clamp(0,1)
     z=depth/a.clamp_min(1e-5)
+    if style == 'normal_detail_v2':
+        # Filter the material guide on the same continuous surface only.
+        # Keep coverage and geometry untouched, including the shade rim.
+        total, mass = n.clone(), torch.ones_like(a)
+        for dy in range(-2, 3):
+            for dx in range(-2, 3):
+                if dx == dy == 0:
+                    continue
+                neighbor = shifted(n, dx, dy)
+                dz = (shifted(z, dx, dy)-z)/z.clamp_min(1e-6)
+                agreement = (neighbor*n).sum(0, keepdim=True)
+                weight = math.exp(-.5*(dx*dx+dy*dy)/1.4**2)*torch.exp(-.5*(dz/.008)**2)
+                weight *= (agreement > .95)*(shifted(a, dx, dy) > .98)*(a > .98)
+                total += weight*neighbor
+                mass += weight
+        n = F.normalize(total/mass, dim=0, eps=1e-6)
     def blur(x,size):
         return F.avg_pool2d(F.pad(x,(size//2,)*4,mode='replicate'),size,1)
     interior=a>.99
@@ -65,8 +83,10 @@ def detail_finish(rgb, normals, depth, alpha, fovy, background, mode):
             occ+=supported*(height/distance).clamp(0,1)*(1-distance/(scale*5).clamp_min(1e-6)).clamp(0,1)
             mass+=1
     ao=1-.30*occ/mass.clamp_min(1)
-    spec_strength=.12 if mode=='gaussian' else .10
-    finish=(surface+.35*detail)*diffuse*ao
+    spec_strength=(.07 if mode=='gaussian' else .06) if style == 'normal_detail_v2' else (.12 if mode=='gaussian' else .10)
+    # V2 avoids the unsharp-mask term: small appearance residuals are not
+    # evidence of actual surface relief.
+    finish=(surface+(0. if style == 'normal_detail_v2' else .35)*detail)*diffuse*ao
     finish=finish+(1-finish)*spec*spec_strength
     enhanced=finish.clamp(0,1)*a+bg*(1-a)
     # A transferred normal must agree with the visible GS surface. Unsupported

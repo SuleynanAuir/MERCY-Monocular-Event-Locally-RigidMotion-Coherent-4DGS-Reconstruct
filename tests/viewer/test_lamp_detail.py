@@ -75,6 +75,23 @@ class LampDetailTests(unittest.TestCase):
                 mask = (alpha == 0).expand_as(output)
                 torch.testing.assert_close(output[mask], rgb[mask], atol=0, rtol=0)
 
+    def test_surface_finish_v2_preserves_unsupported_normals_and_background(self):
+        alpha = torch.zeros(1, 32, 32)
+        alpha[:, 6:26, 6:26] = 1
+        rgb = .45*alpha+(1-alpha)
+        rgb = rgb.expand(3, -1, -1)
+        for direction in ([.5, .5, .5], [1., .5, .5]):
+            normal = torch.tensor(direction)[:, None, None]*alpha
+            output = detail_finish(rgb, normal, alpha*2, alpha, 40,
+                                   [1., 1., 1.], 'gaussian', 'normal_detail_v2')
+            torch.testing.assert_close(output, rgb, atol=0, rtol=0)
+        normal = torch.tensor([.5, .5, 1.])[:, None, None]*alpha
+        output = detail_finish(rgb, normal, alpha*2, alpha, 40,
+                               [1., 1., 1.], 'gaussian', 'normal_detail_v2')
+        self.assertTrue(torch.isfinite(output).all())
+        mask = (alpha == 0).expand_as(output)
+        torch.testing.assert_close(output[mask], rgb[mask], atol=0, rtol=0)
+
 
 if __name__ == '__main__':
     unittest.main()
