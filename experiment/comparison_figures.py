@@ -31,6 +31,26 @@ def finite(x):
     return a[np.isfinite(a)]
 
 
+def comparable_keys(summary, keys):
+    return [k for k in keys if all(r.get(k) is not None and np.isfinite(r[k]) and r[k] >= 0 for r in summary)]
+
+
+def profile_groups(summary):
+    image = comparable_keys(summary, ['psnr', 'foreground_psnr', 'ssim', 'foreground_ssim', 'lpips', 'iou'])
+    structure = comparable_keys(summary, ['missing', 'part_missing', 'event_l1', 'event_cosine', 'polarity', 'silent'])
+    title = 'Structure & event response'
+    if len(structure) < 3:
+        title = 'Coverage & image structure (events unavailable)'
+        structure = comparable_keys(summary, ['missing', 'part_missing', 'iou', 'foreground_ssim', 'ssim'])
+    return [('Image reconstruction', image), (title, structure)]
+
+
+def temporal_keys(series):
+    preferred = ['foreground_psnr', 'lpips', 'iou', 'missing', 'event_l1', 'polarity',
+                 'psnr', 'foreground_ssim', 'ssim', 'event_cosine', 'silent', 'part_missing']
+    return [k for k in preferred if k in series and finite(series[k]).size][:6]
+
+
 def nice_cap(value):
     if value <= 0 or not np.isfinite(value):
         return 1.
@@ -187,8 +207,7 @@ def quality(a, z, output, note, audit):
     f = canvas('01  /  Raw-magnitude profiles & measured gains',
                'Raw-magnitude spokes · green ↑ / +: higher is better · red ↑ / +: higher is worse', (16, 14))
     method_legend(f, names, .91)
-    groups = [('Image reconstruction', ['psnr', 'foreground_psnr', 'ssim', 'foreground_ssim', 'lpips', 'iou']),
-              ('Structure & event response', ['missing', 'part_missing', 'event_l1', 'event_cosine', 'polarity', 'silent'])]
+    groups = profile_groups(a['summary'])
     audit['radar'] = {}
     for j, (title, keys) in enumerate(groups):
         ax = f.add_axes([.14 + j*.34, .52, .36, .30], projection='polar')
@@ -273,7 +292,8 @@ def temporal(output, a=None):
                cycle_label, (18, 13))
     method_legend(f, names, .9)
     outer = f.add_gridspec(2,3,left=.055,right=.965,bottom=.14,top=.835,wspace=.27,hspace=.36)
-    for cell,k in zip(outer, ('foreground_psnr','lpips','iou','missing','event_l1','polarity')):
+    keys = temporal_keys(z)
+    for cell,k in zip(outer, keys):
         grid = cell.subgridspec(2,2,width_ratios=[4,1],height_ratios=[3,1],hspace=.08,wspace=.08)
         ax = f.add_subplot(grid[0,0]); density = f.add_subplot(grid[0,1], sharey=ax); delta = f.add_subplot(grid[1,0],sharex=ax)
         values = z[k]; t = z['times'] if values.shape[1] == len(z['times']) else z['event_times']
@@ -305,7 +325,7 @@ def temporal(output, a=None):
              [f'{names[p]} → {names[p+1]} · oriented raw delta' for p in range(min(2,nv-1))],
              loc='center',bbox_to_anchor=(.5,.086),ncol=2,frameon=False,fontsize=9)
     save_figure(f, output, '02_temporal',
-        'Cycle boundaries use common source-motion recurrence, not quality peaks. Curves are unsmoothed. Grey = excluded event windows.\nLower strips orient raw differences toward improvement; they retain each metric’s own unit. Distribution spread is not a confidence interval.',
+        'Cycle boundaries use common source-motion recurrence, not quality peaks. Curves are unsmoothed. Grey = excluded event windows.\nOnly available metrics are shown; missing event metrics are not replaced by synthetic events. Lower strips retain each metric’s own unit.',
         a['protocol'].get('figure_mapping_note','Version numbering follows the source mapping in data/version_mapping.json.'))
 
 
@@ -380,13 +400,75 @@ def spatial(root,a,z,manifest,output,note,audit):
         'Same four maximum-gap times; full frames, fixed GT, common color ranges. Display saturation only; Δ statistics are unclipped.\nRight: full-foreground CDF, p95 markers and logarithmic exceedance tails. Extreme diagnostic times; sequence-wide scores are unchanged.',note)
 
 
-def parts(a,z,output,note,audit):
+def foreground_coverage(root,manifest,a,z,output,note,audit):
+    """Missing parts are not zero loss: use explicitly scoped shared foreground evidence."""
+    names=[r['version'] for r in a['summary']];ids=a['protocol']['source_version_ids']
+    times=np.asarray(z['times']);nv=len(names);rates=np.full((nv,len(times)),np.nan)
+    visibility=None;missing=None;used=[]
+    for i,ref in enumerate(manifest.get('reference',{}).get('samples',[])[:len(times)]):
+        mask_path=ref.get('foreground_mask')
+        paths=[root/f'versions/{v}/alpha/{i:06d}.png' for v in ids]
+        if not mask_path or not ref.get('aligned') or not (root/mask_path).is_file() or not all(p.is_file() for p in paths):continue
+        mask=np.asarray(Image.open(root/mask_path))>0
+        alpha=np.stack([np.asarray(Image.open(p),float)/65535 for p in paths])
+        if mask.ndim!=2 or alpha.shape!=(nv,*mask.shape):raise ValueError('Foreground/alpha dimensions must match')
+        if not mask.any():continue
+        if visibility is None:
+            visibility=np.zeros(mask.shape,np.uint32);missing=np.zeros(alpha.shape,np.uint32)
+        loss=mask[None,:,:]&(alpha<.5)
+        visibility+=mask;missing+=loss;rates[:,i]=loss.sum((1,2))/mask.sum()*100;used.append(i)
+    f=canvas('06  /  Shared foreground coverage & missing-area distribution',
+             'Shared RGB foreground proxy · fixed alpha 0.50 · part annotations unavailable',(18.5,11))
+    method_legend(f,names,.895)
+    audit['parts']=dict(scope='shared foreground proxy; not part-level ground truth',alpha_threshold=.5,
+                       sample_indices=used,part_annotations_available=False)
+    if visibility is None:
+        ax=f.add_axes([.1,.25,.8,.55])
+        for v,name in enumerate(names):
+            if 'missing' in z:ax.plot(times,z['missing'][v],color=COLORS[v],label=name)
+        ax.set(xlabel='Time (s)',ylabel='Foreground missing (%)')
+        panel(ax,'Stored foreground measurements · spatial masks unavailable')
+        save_figure(f,output,'06_parts','No common part annotations. Spatial coverage requires exported foreground masks and alpha.',note);return
+    freq=np.divide(missing*100.,visibility[None],out=np.full(missing.shape,np.nan),where=visibility[None]>0)
+    pooled=missing.sum((1,2))/visibility.sum()*100
+    cmap=LinearSegmentedColormap.from_list('foreground_loss',['#F1F7F8','#A3CCD5','#508B9F','#173F58']);cmap.set_bad('#FFFFFF')
+    gs=f.add_gridspec(1,nv,left=.055,right=.91,bottom=.46,top=.825,wspace=.07)
+    yy,xx=np.where(visibility>0);pad=12
+    for v,name in enumerate(names):
+        ax=f.add_subplot(gs[0,v]);im=ax.imshow(freq[v],cmap=cmap,norm=PowerNorm(.5,vmin=0,vmax=100))
+        ax.contour(visibility>0,levels=[.5],colors=['#829DA7'],linewidths=.35)
+        ax.set(xlim=(max(0,xx.min()-pad),min(visibility.shape[1],xx.max()+pad)),ylim=(min(visibility.shape[0],yy.max()+pad),max(0,yy.min()-pad)))
+        ax.set_xticks([]);ax.set_yticks([])
+        ax.set_title(f'{name}  ·  pooled missing {pooled[v]:.3f}%',color=COLORS[v],fontsize=12)
+    cb=f.colorbar(im,cax=f.add_axes([.935,.49,.009,.29]),ticks=[0,5,25,50,100]);cb.set_label('Missing / GT-visible samples (%) · √ scale',fontsize=9)
+    ax=f.add_axes([.07,.15,.52,.24]);cdf=f.add_axes([.68,.15,.27,.24])
+    shade_cycles(ax,audit.get('cycles',{}),float(times[0]),float(times[-1]))
+    for v,name in enumerate(names):
+        ax.plot(times,rates[v],color=COLORS[v],lw=1.7,ls=['-','--',':'][v%3],label=name)
+        vals=np.sort(finite(rates[v]))
+        if len(vals):
+            cdf.step(vals,100*np.arange(1,len(vals)+1)/len(vals),where='post',color=COLORS[v],lw=1.7,ls=['-','--',':'][v%3])
+        ax.fill_between(times,0,rates[v],color=COLORS[v],alpha=.045)
+    ax.set(xlabel='Time (s)',ylabel='Missing GT foreground (%)',ylim=(0,None));panel(ax,'Matched-time missing area')
+    cdf.set(xlabel='Missing foreground (%)',ylabel='Cumulative frames (%)',ylim=(0,102));panel(cdf,'Temporal loss distribution')
+    ax.legend(frameon=False,ncol=nv,fontsize=9)
+    from experiment.export_report_analysis import table
+    table(output/'tables/foreground_coverage.csv',[dict(version=name,sample_index=i,time_seconds=float(times[i]),missing_percent=float(rates[v,i])) for v,name in enumerate(names) for i in used])
+    audit['parts'].update(gt_area_pooled_percent=pooled.tolist(),spatial_definition='100 * missing observations / GT-visible observations per pixel; invisible pixels masked',heatmap_range=[0,100])
+    save_figure(f,output,'06_parts',
+        'All matched frames; shared masks, threshold and color scale. Maps condition on GT visibility, not total frame count.\nNo semantic part claims. Equal curves remain equal; line styles distinguish overlapping versions.',note)
+
+
+def parts(a,z,output,note,audit,root=None,manifest=None):
     names=[r['version'] for r in a['summary']];nv=len(names);n=len(z['times'])
     support=z.get('part_visibility',np.zeros((n,0)));detail=z.get('part_missing_detail',np.empty((nv,n,0)))
     f=canvas('06  /  Cycle-resolved missing area & part-loss distribution',
              'Common GT cycles · embedded total-loss traces · every observed part · fixed alpha 0.50',(18.5,13))
     method_legend(f,names,.895)
     if not support.shape[1] or not np.isfinite(detail).any():
+        if root is not None and manifest is not None:
+            plt.close(f)
+            return foreground_coverage(root,manifest,a,z,output,note,audit)
         empty(f.add_axes([.1,.2,.8,.6]),'Common fixed part masks unavailable')
         save_figure(f,output,'06_parts','No comparable fixed part masks.',note);return
     c=area_contributions(support,detail);blocks=np.array_split(np.arange(n),min(24,n));denom=c['denominator']
@@ -558,16 +640,35 @@ def efficiency(a,z,output,note,audit=None):
         density='50x40 equal-width 2D histogram; Gaussian sigma 1.2 bins; contours enclose 50/90% smoothed grid mass',latency_quantiles=qrows,latency_limits=[xmin,xmax])
     save_figure(f,output,'07_efficiency','Density lanes: offset, not PSNR. Contours: distribution mass, not confidence regions. Timing scope: export record.',note)
 
+def motion_profile_keys(rows):
+    """Only show observed quantities; absent constraints are never treated as zero."""
+    constraints=[('joint_gap_max','Joint gap\nscene units',True),
+                 ('swing_max_rad','Off-axis swing\nrad',True),
+                 ('rotation_jerk_rms','SO(3) jerk\nrad / s³',False)]
+    available=lambda key:any(r.get(key) is not None and np.isfinite(r[key]) for r in rows)
+    measured=[item for item in constraints if available(item[0])]
+    if measured:return measured, 'Measured constraint profiles'
+    diagnostics=[('motion_amplitude','Point amplitude\nscene units',False),
+                 ('position_jerk_rms','Point jerk RMS\nscene units / s³',False),
+                 ('points','Tracked points\ncount',False)]
+    return [item for item in diagnostics if available(item[0])], 'Measured point-motion diagnostics'
+
+
 def motion(a,z,output,note,audit):
     names=[r['version'] for r in a['summary']];nv=len(names);rows=a.get('motion',[])
-    f=canvas('08  /  Constraint signature & resolved motion differences',
-             'Native constraint axes · source-aligned cycles · point-jerk trajectories and residuals',(17,10))
+    f=canvas('08  /  Measured motion profiles & trajectory differences',
+             'Available native quantities · point-jerk trajectories and residuals',(17,10))
     method_legend(f,names,.895)
     ax=f.add_axes([.075,.27,.31,.45]);main=f.add_axes([.50,.45,.45,.36]);res=f.add_axes([.50,.17,.45,.17])
-    keys=[('joint_gap_max','Joint gap\nscene units',True),('swing_max_rad','Off-axis swing\nrad',True),('rotation_jerk_rms','SO(3) jerk\nrad / s³',False)]
+    keys,profile_title=motion_profile_keys(rows)
     scales=[]
     for j,(key,label,log) in enumerate(keys):
         vals=np.array([r.get(key) if r.get(key) is not None else np.nan for r in rows],float)
+        if not finite(vals).size:
+            scales.append(np.full(len(rows), np.nan))
+            ax.text(j,.5,'Not measured',ha='center',color=MUTED,fontsize=9)
+            ax.text(j,1.12,label,ha='center',fontsize=10,weight='bold')
+            continue
         vv=finite(vals);lo,hi=(0.,1.) if not len(vv) else ((10.**np.floor(np.log10(max(vv.min(),1e-12))),10.**np.ceil(np.log10(max(vv.max(),1e-12)))) if log else (0.,nice_cap(vv.max())))
         if hi<=lo:hi=lo*10 if log else lo+1
         scaled=(np.log10(np.maximum(vals,1e-12))-np.log10(lo))/(np.log10(hi)-np.log10(lo)) if log else (vals-lo)/(hi-lo)
@@ -581,9 +682,15 @@ def motion(a,z,output,note,audit):
     if rows:
         scaled=np.array(scales).T
         for v,values in enumerate(scaled):
-            ax.plot(range(3),values,'o-',color=COLORS[v],lw=2,ms=5,alpha=.8)
-    ax.set(xlim=(-.35,2.3),ylim=(-.08,1.1));ax.set_axis_off()
-    f.text(.075,.86,'Constraint profiles',fontsize=13,weight='bold')
+            ax.plot(range(len(keys)),values,'o',color=COLORS[v],lw=1.5,ms=6,alpha=.8,ls=['-','--',':'][v%3])
+            for j,(key,_,_) in enumerate(keys):
+                value=rows[v].get(key)
+                if value is not None and np.isfinite(value):
+                    ax.annotate(f'{names[v]}  {value:.4g}',(j,values[j]),xytext=(8,12-v*15),textcoords='offset points',fontsize=8,color=COLORS[v])
+    ax.set(xlim=(-.35,max(len(keys)-.45,.65)),ylim=(-.08,1.1));ax.set_axis_off()
+    f.text(.075,.86,profile_title,fontsize=13,weight='bold')
+    if profile_title=='Measured point-motion diagnostics':
+        f.text(.075,.19,'Joint pivots / part rotations were not exported.\nPoint diagnostics do not replace joint constraints.',fontsize=9,color=MUTED)
     cycle=audit.get('cycles',{})
     if len(z['times']):
         shade_cycles(main,cycle,float(z['times'][0]),float(z['times'][-1]))
@@ -594,7 +701,7 @@ def motion(a,z,output,note,audit):
     for v in range(nv):
         curve=z.get(f'position_{v}',np.array([]));curves.append(curve)
         if not len(curve):continue
-        t=z['times'][3:3+len(curve)];main.plot(t,curve,color=COLORS[v],lw=1.5,label=names[v])
+        t=z['times'][3:3+len(curve)];main.plot(t,curve,color=COLORS[v],lw=1.5,ls=['-','--',':'][v%3],label=names[v])
         peak=int(np.nanargmax(curve)) if np.isfinite(curve).any() else None
         if peak is not None:main.annotate(f'{names[v]} peak {curve[peak]:.2f}',(t[peak],curve[peak]),xytext=(12,12+v*18),textcoords='offset points',fontsize=9,color=COLORS[v],arrowprops=dict(arrowstyle='-',color=COLORS[v]))
     main.set(xlabel='Time (s)',ylabel='Point jerk · scene units / s³');main.margins(y=.35);main.set_ylim(bottom=0);panel(main,'Raw 3D jerk · full scale')
@@ -602,12 +709,12 @@ def motion(a,z,output,note,audit):
         base=curves[0]
         for v in range(1,nv):
             if len(curves[v]) != len(base):continue
-            residual=curves[v]-base;res.plot(z['times'][3:3+len(base)],residual,color=COLORS[v],lw=1.5,label=f'{names[v]} − {names[0]}')
+            residual=curves[v]-base;res.plot(z['times'][3:3+len(base)],residual,color=COLORS[v],lw=1.5,ls=['-','--',':'][v%3],label=f'{names[v]} − {names[0]}')
         res.set_yscale('symlog',linthresh=.1,linscale=1)
         res.axhline(0,color=MUTED,lw=.8)
         res.legend(frameon=False,fontsize=8,loc='lower right')
     res.set(xlabel='Time (s)',ylabel='Jerk difference · symlog');panel(res,'Residual · linear ±0.1 / logarithmic tails')
-    audit['motion_display']=dict(constraints='parallel independent native axes; gap/swing log, SO3 jerk linear',residual='position_v - position_0',residual_scale='symlog linthresh=0.1',causal_smoothing_claim=False)
+    audit['motion_display']=dict(profile_title=profile_title,profile_metrics=[k for k,_,_ in keys],constraints='only available measured quantities; independent native axes',residual='position_v - position_0',residual_scale='symlog linthresh=0.1',causal_smoothing_claim=False)
     save_figure(f,output,'08_motion',
         'Common GT cycles; dotted lines mark half-cycles. Native constraint axes retain independent units. Scene units are not metres.\nPoint populations differ across versions: lower raw point jerk cannot establish improved smoothing. No independent motion truth; no cross-version point matching.',note)
 
@@ -619,14 +726,14 @@ def generate(root, output, progress=None):
         if path.is_file() and (path.suffix.lower() in ('.svg','.pdf') or path.name=='03_paired_deltas.png'):path.unlink()
     a=json.loads((output/'data/analysis.json').read_text());manifest=json.loads((root/'manifest.json').read_text())
     with np.load(output/'data/series.npz',allow_pickle=False) as series:z=dict(series)
-    style();note=a['protocol'].get('figure_mapping_note','Display renumbering: V1 = original V2; V2 = original V1; V3 unchanged. Source artifacts are unchanged.')
+    style();note=a['protocol'].get('figure_mapping_note','Version numbering follows the source mapping in data/version_mapping.json. Source artifacts are unchanged.')
     audit={'revision':'cycle-integrated-atlas-20261027','numerical_metrics_recomputed':False};files=[]
     audit['cycles']=source_cycle(root,manifest)
     (output/'data/cycle_protocol.json').write_text(json.dumps(audit['cycles'],indent=2,allow_nan=False))
     for name,action in [
         ('01_quality',lambda:quality(a,z,output,note,audit)),
         ('05_error_maps',lambda:spatial(root,a,z,manifest,output,note,audit)),
-        ('06_parts',lambda:parts(a,z,output,note,audit)),
+        ('06_parts',lambda:parts(a,z,output,note,audit,root,manifest)),
         ('07_efficiency',lambda:efficiency(a,z,output,note,audit)),
         ('08_motion',lambda:motion(a,z,output,note,audit))]:
         action();files.append(name)

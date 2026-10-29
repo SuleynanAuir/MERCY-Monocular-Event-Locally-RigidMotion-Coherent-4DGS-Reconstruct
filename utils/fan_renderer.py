@@ -120,7 +120,7 @@ class FanRenderer:
         if config.get('appearance_refinement'):
             if self.surface_refinement: raise ValueError('Appearance stage requires its unmodified sequence parent')
             from utils.appearance_stage import apply_stage
-            appearance = apply_stage(right.model, self.path, config['appearance_refinement'], config['source_fingerprints']['right']['sequence_sha256'])
+            appearance = apply_stage(right.model, self.path, config['appearance_refinement'], config['source_fingerprints']['right']['sequence_sha256'], frame_count=frames)
         mesh_info = dict(self.mesh.info, default_resolution=1024,
             left_label='V1 Mesh · 修复前', right_label='V3 Mesh · 支架绑定修复后',
             description='左右为修复前 V1／修复后 V3：同一初始高斯表面重建，各自驱动部件运动。V3 支架保持静止；薄片与遮挡表面是高斯推得的近似网格。')
@@ -151,6 +151,8 @@ class FanRenderer:
                 description='V1 保留原模型；V3 使用有界表面去噪，保持三角面拓扑及独立部件运动。')
         if appearance:
             self.info.update(right_label='V3 · 光度与覆盖校正', description='V2 支架修复后，V3 冻结中心和运动，仅校正颜色、透明度与有界尺度；分离时间帧验证。')
+            if appearance.get('temporal', {}).get('kind') == 'rotor_fourier':
+                self.info.update(right_label='V3 · 旋转周期外观', description='按原始转子角度复用周期外观；初始颜色、静止部件、透明度、尺度及运动保持不变。RGB 监督，非事件训练。')
         if prewarm and getattr(self, 'prewarm', True):
             for mode, quality, clay_style in (('gaussian', 'surface', 'solid'), ('mesh', 'surface', 'wire'), ('clay', 'surface', 'wire'),
                                               ('clay', 'surface', 'solid'), ('pseudocolor', 'surface', 'solid'), ('hybrid', 'surface', 'wire'),
@@ -200,6 +202,9 @@ class FanRenderer:
                         else:
                             side.model._xyz[side.dynamic_indices] = motion[:, :3]
                             side.model._rotation[side.dynamic_indices] = motion[:, 3:7]
+                        from utils.appearance_stage import apply_frame, apply_geometry
+                        apply_frame(side.model, request['frame'])
+                        apply_geometry(side.model)
                         camera = make_camera(render_pose(side.base_pose, side.target, request),
                             request['width'], request['height'], np.deg2rad(request['fovy']))
                         output = render(camera, side.model, side.pipe, render_background(side.backgrounds, request) if mode == 'gaussian' else side.backgrounds['black'], 0., 0., 0.)
@@ -230,6 +235,9 @@ class FanRenderer:
                     for side, binding in zip(self.sides, self.bindings):
                         panel_started = begin_panel(request)
                         binding.apply(side.model, request['frame'])
+                        from utils.appearance_stage import apply_frame, apply_geometry
+                        apply_frame(side.model, request['frame'])
+                        apply_geometry(side.model)
                         camera = make_camera(render_pose(side.base_pose, side.target, request), width, height,
                                              np.deg2rad(request['fovy']))
                         output = render(camera, side.model, side.pipe, side.backgrounds[request['background']], 0., 0., 0.)

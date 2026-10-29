@@ -16,7 +16,11 @@ const cards=groups.map(([title,unit,keys])=>{const card=document.createElement('
 card.querySelector('.metric-lines').innerHTML=keys.map((key,j)=>`<span><i class="metric-line" data-line="${j}"></i>${escape(D.metrics[key].label)}</span>`).join('');grid.append(card);return{card,keys,svg:card.querySelector('svg'),readout:card.querySelector('.metric-reading')}});
 function draw(){const enabled=[...toggle.querySelectorAll('input:checked')].map(c=>+c.dataset.v),selected=+slider.value,current=D.times[selected]||0;
 document.getElementById('values').textContent=`t = ${current.toFixed(4)} s · ${selected+1} / ${D.times.length}`;
-for(const {keys,svg,readout}of cards){let all=[];for(const key of keys)for(const v of enabled)all.push(...D.metrics[key].values[v].filter(x=>x!==null));
+for(const {keys,svg,readout}of cards){
+const available=keys.some(key=>D.metrics[key].values.some(row=>row.some(x=>x!==null)));
+svg.style.display=available?'':'none';
+if(!available){readout.innerHTML='<div class="atlas-empty">'+keys.map(key=>'<b>'+escape(D.metrics[key].label)+'</b><br>'+escape(D.metrics[key].unavailable_reason||'缺少有效参考数据')).join('<br>')+'<br>补齐参考数据后，请重新导出并计算报告。</div>';continue}
+let all=[];for(const key of keys)for(const v of enabled)all.push(...D.metrics[key].values[v].filter(x=>x!==null));
 let lo=all.length?Math.min(...all):0,hi=all.length?Math.max(...all):1,pad=(hi-lo||1)*.08;lo-=pad;hi+=pad;
 const start=D.times[0]||0,end=D.times.at(-1)||1,X=t=>64+(t-start)/(end-start||1)*472,Y=v=>210-(v-lo)/(hi-lo)*178;
 let h='';for(let j=0;j<=4;j++){let val=lo+(hi-lo)*j/4,t=start+(end-start)*j/4;h+=`<path d="M64 ${Y(val)}H536" stroke="#dfe8eb"/><text x="57" y="${Y(val)+4}" text-anchor="end" font-size="10" fill="#526a74">${Math.abs(val)<.01&&val!==0?val.toExponential(1):Number(val.toPrecision(3))}</text><text x="${X(t)}" y="236" text-anchor="middle" font-size="10" fill="#526a74">${t.toFixed(2)} s</text>`}
@@ -28,7 +32,7 @@ for(const v of enabled){let path='',open=false;m.values[v].forEach((value,j)=>{i
 if(matched&&m.values[v][nearest]!==null)h+=`<circle cx="${X(current)}" cy="${Y(m.values[v][nearest])}" r="3" fill="${C[v]}" stroke="white"/>`}
 readings.push(`<div><b>${escape(m.label)}</b> `+enabled.map(v=>`<span class="version-${v}">${escape(D.names[v])}: ${!matched?'无对应窗口':m.values[v][nearest]===null?'不可用 / 排除':Number(m.values[v][nearest].toPrecision(5))}</span>`).join('')+'</div>');
 });
-h+=`<path d="M${X(current)} 25V210" stroke="#8399a4" stroke-dasharray="4 4"/>`;if(!all.length)h+='<text x="285" y="125" text-anchor="middle" fill="#657d85">没有可用数据 / 未选择版本</text>';
+h+=`<path d="M${X(current)} 25V210" stroke="#8399a4" stroke-dasharray="4 4"/>`;if(!all.length)h+='<text x="285" y="125" text-anchor="middle" fill="#657d85">请勾选至少一个有有效数据的版本</text>';
 svg.innerHTML=h;readout.innerHTML=readings.join('');
 }
 }

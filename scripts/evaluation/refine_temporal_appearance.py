@@ -15,7 +15,7 @@ import numpy as np
 from utils.experiment_format import sha256, save_json
 
 
-def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, initialize=None, degree=5, spatial_weight=.01, ssim_weight=0., neighbor_count=4, freeze_surface=False, color_bound=None, smooth_field=False, geometry_bound=0., freeze_appearance=False, freeze_geometry=False, geometry_groups=None):
+def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, initialize=None, degree=5, spatial_weight=.01, ssim_weight=0., neighbor_count=4, freeze_surface=False, color_bound=None, smooth_field=False, geometry_bound=0., freeze_appearance=False, freeze_geometry=False, geometry_groups=None, rotation_trajectory=None):
     import torch
     from PIL import Image
     from viewer import Renderer
@@ -63,7 +63,21 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
     displacement=torch.nn.Parameter(torch.zeros_like(rest_xyz)) if geometry_bound else None
     if geometry_bound < 0 or geometry_bound > .1:raise ValueError('Geometry bound must be in [0, .1] scene units')
     coefficients = torch.nn.Parameter(torch.zeros((len(model._xyz), degree, 3), device='cuda'))
-    basis = torch.tensor(temporal_basis(len(r.poses), degree), device='cuda')
+    temporal_metadata = dict(kind='legendre',degree=degree,frame_count=len(r.poses))
+    temporal_values = temporal_basis(len(r.poses), degree)
+    static_rows = None
+    if rotation_trajectory:
+        from utils.appearance_stage import rotor_basis
+        if initialize or smooth_field or not freeze_surface or geometry_bound or freeze_appearance:
+            raise ValueError('Rotor appearance requires fresh, fixed geometry and original DC anchor')
+        angles=json.loads(rotation_trajectory.read_text())['angles_rad']
+        temporal_values=rotor_basis(angles,degree)
+        if len(angles)!=len(r.poses) or r.dynamic_indices is None:raise ValueError('Rotor motion identity mismatch')
+        temporal_metadata=dict(kind='rotor_fourier',degree=degree,frame_count=len(r.poses),angles_rad=angles,
+                               trajectory_sha256=sha256(rotation_trajectory))
+        static_rows=torch.ones(len(dc),dtype=torch.bool,device='cuda');static_rows[r.dynamic_indices]=False
+        dc.requires_grad_(False)
+    basis = torch.tensor(temporal_values, device='cuda')
     temporal_active = False
     geometry_field=None;geometry_bases=[];geometry_indices=[]
     if geometry_groups:
@@ -97,6 +111,7 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
         neighbors = torch.tensor(nearest[:,1:].copy(),dtype=torch.long,device='cuda')
     for attr in ('_features_rest','_xyz','_rotation'):getattr(model,attr).requires_grad_(False)
     parameters=([{'params':[field],'lr':.004}] if smooth_field else [{'params':[dc],'lr':.008}, {'params':[coefficients],'lr':.008}])
+    if rotation_trajectory:parameters=[{'params':[coefficients],'lr':.008}]
     if freeze_appearance:
         if smooth_field:raise ValueError('Cannot freeze a newly initialized appearance field')
         dc.requires_grad_(False);coefficients.requires_grad_(False);parameters=[]
@@ -233,6 +248,9 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
                 factor=(limit/budget.clamp_min(1e-8)).clamp(max=1)
                 dc.copy_(original['_features_dc']+residual*factor)
                 coefficients.mul_(factor)
+            if rotation_trajectory:
+                dc.copy_(original['_features_dc'])
+                coefficients[static_rows]=0
             if not freeze_surface:
                 model._opacity.copy_(torch.maximum(torch.minimum(model._opacity,opacity_center+2),opacity_center-2))
                 model._scaling.copy_(torch.maximum(torch.minimum(model._scaling,original['_scaling']+.2),original['_scaling']-.2))
@@ -250,7 +268,8 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
                 metadata=dict(format='scgs_appearance_stage_v1',parent_sha256=sha256(sequence),
                     reference_sha256=sha256(reference),train_frames=[rows[i]['frame'] for i in training],
                     initialization_sha256=sha256(initialize) if initialize else None,perceptual_weight=perceptual_weight,
-                    temporal=dict(kind='legendre',degree=degree,frame_count=len(r.poses)),
+                    temporal=temporal_metadata,
+                    dc_anchor='original parent; static rows unchanged' if rotation_trajectory else None,
                     achromatic_reference=achromatic,spatial_weight=spatial_weight,
                     freeze_surface=freeze_surface,color_bound_rgb=color_bound,smooth_field=smooth_field,
                     spatial_field_basis='normalized Gaussian RBF 4x4x4, sigma 0.65' if smooth_field else None,
@@ -267,7 +286,7 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
                     temporal_dc=coefficients.detach().cpu().numpy(),
                     **{field:(dc if field=='features_dc' else getattr(model,attr)).detach().cpu().numpy() for field,attr in FIELDS.items()})
     save_json(output/'training.json',dict(baseline=baseline,selected=best,history=history,iterations=iterations,
-        previous_v3=previous, temporal_degree=degree,
+        previous_v3=previous, temporal_degree=degree, temporal=temporal_metadata,
         geometry_bound=geometry_bound,freeze_appearance=freeze_appearance,freeze_geometry=freeze_geometry,
         geometry_groups=str(geometry_groups) if geometry_groups else None,geometry_groups_sha256=sha256(geometry_groups) if geometry_groups else None,
         geometry_loss_weights=dict(dice=.5,displacement=.01,neighbor=.1,balanced_parts=.4 if geometry_groups else 0.) if geometry_bound else None,
@@ -293,8 +312,9 @@ if __name__=='__main__':
     p.add_argument('--freeze-appearance',action='store_true')
     p.add_argument('--freeze-geometry',action='store_true')
     p.add_argument('--geometry-groups',type=Path)
+    p.add_argument('--rotation-trajectory',type=Path)
     p.add_argument('--degree',type=int,default=5)
     p.add_argument('--spatial-weight',type=float,default=.01)
     p.add_argument('--ssim-weight',type=float,default=0.)
     p.add_argument('--neighbor-count',type=int,default=4)
-    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize,a.degree,a.spatial_weight,a.ssim_weight,a.neighbor_count,a.freeze_surface,a.color_bound,a.smooth_field,a.geometry_bound,a.freeze_appearance,a.freeze_geometry,a.geometry_groups)
+    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize,a.degree,a.spatial_weight,a.ssim_weight,a.neighbor_count,a.freeze_surface,a.color_bound,a.smooth_field,a.geometry_bound,a.freeze_appearance,a.freeze_geometry,a.geometry_groups,a.rotation_trajectory)

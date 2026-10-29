@@ -4,6 +4,20 @@ from utils.appearance_stage import validate_attribute, temporal_basis, validate_
 
 
 class AppearanceStageTests(unittest.TestCase):
+    def test_rotor_response_is_periodic_and_anchored(self):
+        from utils.appearance_stage import rotor_basis
+        angles=[.3, .9, .9+2*np.pi, .3+2*np.pi]
+        basis=rotor_basis(angles,8)
+        np.testing.assert_allclose(basis[0],0,atol=1e-6)
+        np.testing.assert_allclose(basis[1],basis[2],atol=1e-6)
+        np.testing.assert_allclose(basis[3],0,atol=1e-6)
+        self.assertLessEqual(np.abs(basis).max(),1.)
+        meta=dict(kind='rotor_fourier',degree=8,frame_count=4,angles_rad=angles)
+        np.testing.assert_array_equal(validate_temporal(np.zeros((2,8,3),np.float32),meta,2),basis)
+        with self.assertRaises(ValueError):rotor_basis([0,np.nan],8)
+        with self.assertRaises(ValueError):rotor_basis([0,1],3)
+        with self.assertRaises(ValueError):validate_temporal(np.zeros((2,8,3),np.float32),dict(meta,frame_count=5),2)
+
     def test_geometry_offsets_follow_rotation_and_never_accumulate(self):
         import torch
         from types import SimpleNamespace

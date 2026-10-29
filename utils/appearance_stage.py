@@ -27,10 +27,24 @@ def temporal_basis(frame_count, degree):
 
 def validate_temporal(coefficients, metadata, count):
     basis = temporal_basis(metadata['frame_count'], metadata['degree'])
-    if (metadata.get('kind') != 'legendre' or coefficients.shape != (count, metadata['degree'], 3)
+    if metadata.get('kind') == 'rotor_fourier':
+        basis = rotor_basis(metadata['angles_rad'], metadata['degree'])
+        if len(basis) != metadata['frame_count']:
+            raise ValueError('Rotor trajectory does not match source timeline')
+    if (metadata.get('kind') not in ('legendre', 'rotor_fourier') or coefficients.shape != (count, metadata['degree'], 3)
             or coefficients.dtype.kind != 'f' or not np.isfinite(coefficients).all()):
         raise ValueError('Invalid temporal appearance coefficients')
     return basis
+
+
+def rotor_basis(angles, degree):
+    """Periodic material response, anchored to the first source orientation."""
+    angles = np.asarray(angles, dtype=float)
+    if angles.ndim != 1 or len(angles) < 2 or not np.isfinite(angles).all() or type(degree) is not int or degree not in (2, 4, 6, 8):
+        raise ValueError('Invalid rotor appearance trajectory')
+    theta = angles - angles[0]
+    return np.stack([value for k in range(1, degree//2+1)
+                     for value in ((np.cos(k*theta)-1)/2, np.sin(k*theta))], axis=1).astype(np.float32)
 
 
 def apply_frame(model, frame):

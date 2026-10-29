@@ -10,6 +10,7 @@
 /runs/
 
 # Model checkpoints and array dumps
+experiment/reference-cache/
 *.pth
 *.pt
 *.ckpt
