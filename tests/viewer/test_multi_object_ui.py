@@ -20,8 +20,9 @@ class MultiObjectUITests(unittest.IsolatedAsyncioTestCase):
             return web.json_response({'ready': True, 'scene_id': request.query['scene'],
                 'scene': {'left_label': 'V1', 'right_label': 'V3',
                           'clay': {'available': True, 'right_label': 'V3 · 白模'}}})
+        self.html = b'<html>original UI</html>'
         async def html(request):
-            return web.Response(body=b'<html>original UI</html>', content_type='text/html')
+            return web.Response(body=self.html, content_type='text/html')
         async def ws(request):
             self.ws_scene = request.query['scene']
             socket = web.WebSocketResponse(); await socket.prepare(request)
@@ -66,6 +67,16 @@ class MultiObjectUITests(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         await self.client.close(); await self.remote.close(); self.temp.cleanup()
+
+    async def test_optional_fvv_entry_keeps_scene_and_original_html(self):
+        self.html=b'<html><body><aside>original controls</aside><canvas id="original"></canvas></body></html>'
+        cfg=json.loads(self.config.read_text());cfg['fvv_entry']=True;self.config.write_text(json.dumps(cfg))
+        response=await self.client.get('/?scene=lamp');html=await response.text()
+        self.assertIn('href="/fvv?scene=lamp"',html)
+        self.assertIn('/fvv/fvv-entry.js',html)
+        self.assertIn('original controls',html)
+        self.assertIn('<canvas id="original"></canvas>',html)
+        self.assertEqual(html.count('id="realtimeGaussian"'),1)
 
     async def test_original_ui_and_missing_asset(self):
         r = await self.client.get('/api/status?scene=lego'); value = await r.json()

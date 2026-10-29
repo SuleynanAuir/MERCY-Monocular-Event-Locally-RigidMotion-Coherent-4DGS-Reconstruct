@@ -141,6 +141,24 @@ def create_app(config_path):
                     'Content-Type', 'Content-Disposition', 'Content-Length', 'Content-Encoding',
                     'Content-Security-Policy', 'Cache-Control', 'X-Content-Type-Options',
                     'Referrer-Policy') if key in remote.headers}
+                if path == '/' and remote.status == 200 and config().get('fvv_entry', False):
+                    content = await remote.read()
+                    if remote.headers.get('Content-Encoding') == 'gzip':
+                        import gzip
+                        content = gzip.decompress(content)
+                    html = content.decode('utf-8')
+                    if 'id="realtimeGaussian"' not in html:
+                        scene_id = selected(request)['id']
+                        entry = ('<section class="panel"><h2>自由视角</h2>'
+                                 f'<a id="realtimeGaussian" class="secondary-button" href="/fvv?scene={scene_id}">'
+                                 '实时动态浏览高斯 ↗</a><p class="setting-note">独立训练、模型导入与自由视角浏览</p></section>')
+                        marker = '</aside>' if '</aside>' in html else '</body>'
+                        html = html.replace(marker, entry+marker, 1)
+                    if '/fvv/fvv-entry.js' not in html:
+                        html = html.replace('</body>', '<script src="/fvv/fvv-entry.js" defer></script></body>', 1)
+                    # Only the optional entry HTML changes; original assets and
+                    # binary render/experiment packets retain the existing path.
+                    return web.Response(text=html,content_type='text/html')
                 response = web.StreamResponse(status=remote.status, headers=headers)
                 await response.prepare(request)
                 async for chunk in remote.content.iter_chunked(1024*1024):
@@ -180,6 +198,8 @@ def create_app(config_path):
             await client.close()
         return client
 
+    from utils.fvv_gateway import install_fvv
+    install_fvv(app)
     app.router.add_get('/', proxy)
     app.router.add_get('/api/status', status)
     app.router.add_get('/api/reference/{frame:\\d+}', proxy)

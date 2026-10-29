@@ -1367,3 +1367,8 @@
   window.addEventListener("beforeunload", () => {presetViews.close();exportJob?.store?.close();state.socket?.close();});
   reset(); poll(); requestAnimationFrame(tick);
 })();
+
+// Independent FVV entry keeps the selected scene, without changing playback.
+document.getElementById("realtimeGaussian")?.addEventListener("click", (event) => {
+  event.currentTarget.href = "/fvv" + window.location.search;
+});

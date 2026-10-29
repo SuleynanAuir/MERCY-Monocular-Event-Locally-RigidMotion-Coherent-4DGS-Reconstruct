@@ -1,0 +1,59 @@
+# Measured Lego fixed-camera profile. Recompute extent/FOV for other datasets.
+ModelParams:
+  data_device: cuda
+  dataloader: false
+  eval: true
+  extension: .png
+  frame_ratio: 1
+  images: images
+  loaded_pth: ''
+  num_extra_pts: 0
+  resolution: 1
+  sh_degree: 3
+  white_background: false
+OptimizationParams:
+  densification_interval: 100
+  densify_from_iter: 500
+  densify_grad_t_threshold: 5.0e-06
+  densify_grad_threshold: 0.0002
+  densify_until_iter: 9000
+  densify_until_num_points: 450000
+  feature_lr: 0.0025
+  final_prune_from_iter: -1
+  iterations: 18000
+  lambda_dssim: 0.2
+  lambda_motion: 0.0
+  lambda_opa_mask: 0.0
+  lambda_rigid: 0.0
+  opacity_lr: 0.05
+  opacity_reset_interval: 30000
+  percent_dense: 0.01
+  position_lr_delay_mult: 0.01
+  position_lr_final: 1.6e-06
+  position_lr_init: 0.00016
+  position_lr_max_steps: 18000
+  position_t_lr_init: -1.0
+  rotation_lr: 0.001
+  scaling_lr: 0.005
+  sh_increase_interval: 1000
+  thresh_opa_prune: 0.005
+PipelineParams:
+  compute_cov3D_python: false
+  convert_SHs_python: false
+  debug: false
+  env_map_res: 0
+  env_optimize_from: 0
+  env_optimize_until: 5000000000
+  eval_shfs_4d: false
+batch_size: 2
+exhaust_test: false
+force_sh_3d: true
+gaussian_dim: 4
+num_pts: 150000
+num_pts_ratio: 1.0
+rot_4d: true
+single_view_extent: 0.5633205124553113
+time_duration:
+- 0.0
+- 6.633333333333334
+viewer_fov: 39.59775410217631

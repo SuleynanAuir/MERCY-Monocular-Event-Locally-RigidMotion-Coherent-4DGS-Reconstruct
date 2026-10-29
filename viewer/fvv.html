@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实时动态浏览高斯 · MERCY</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/fvv/fvv.css"><script src="/fvv/fvv.js" defer></script><script src="/fvv/fvv-manager.js" defer></script></head>
+<body><header><a id="back" href="/">← 返回原视图</a><strong>实时动态浏览高斯</strong><span>Hybrid 3D-4DGS · FVV</span></header>
+<main><section class="view"><canvas id="fvvCanvas" tabindex="0" aria-label="自由视角动态高斯；拖动旋转，WASD 移动，QE 升降"></canvas><div id="message" role="status">正在检查离线模型…</div></section>
+<aside><section class="model-panel"><h1>模型与训练</h1>
+<p>可直接加载已训练模型，也可独立训练；原视图的模型与质量设置保持不变。</p>
+<label>已有模型<select id="modelSelect" aria-label="已有模型"></select></label><button id="loadModel" disabled>加载并浏览</button>
+<label>训练方案<select id="trainingProfile" aria-label="训练方案"></select></label><button id="startTraining" disabled>开始独立训练</button>
+<p class="note">训练使用已配置的真实场景数据。训练完成后再加载新模型；共用 GPU 时训练会占用算力。</p>
+<label>导入训练好的模型包<input id="modelFile" type="file" accept=".zip,application/zip"></label><button id="importModel" disabled>导入并加载</button>
+<p class="note">ZIP 根目录包含 model.pth、effective.yaml、manifest.json；上传最多 512 MiB。原项目的 PLY／NPZ 不属于此格式。</p>
+<progress id="modelProgress" max="100" value="0" hidden aria-label="模型任务进度"></progress><p id="modelTask" role="status">正在读取模型列表…</p>
+<button id="loadTrained" hidden>加载训练结果</button></section><h2>自由视角</h2><p>拖动画面旋转；W / S 前后，A / D 左右，Q / E 升降；滚轮前进后退。点击画面后使用键盘。</p><button id="reset">重置相机</button>
+<label>移动速度 <input id="speed" type="number" min="0.01" max="100" step="0.1" value="1"> 场景单位 / 秒</label>
+<label>浏览分辨率<select id="resolution"><option value="640">640 px</option><option value="960" selected>960 px</option><option value="1280">1280 px</option></select></label>
+<label>垂直视野<input id="fov" type="range" min="20" max="100" value="60"></label>
+<h2>动态时间</h2><button id="play" disabled>暂停</button><input id="time" aria-label="模型时间" type="range" min="0" max="1" step="0.001" value="0" disabled><output id="timestamp">—</output>
+<p id="metrics">等待渲染</p><button id="reconnect">重新连接</button><button id="report">下载性能记录</button>
+<p class="note">图像由 GPU 按当前相机实时渲染。浏览传输使用 JPEG 92；模型参数保持原精度。低帧率会如实显示，不自动降低模型质量。</p><p class="note">尚未训练的场景不会替换成视频或其他模型。部署与验收见 assets/technical/14-hybrid-fvv.md。</p></aside></main></body></html>

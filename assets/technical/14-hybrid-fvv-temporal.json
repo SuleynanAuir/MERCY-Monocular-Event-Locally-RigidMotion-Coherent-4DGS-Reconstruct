@@ -1,0 +1,141 @@
+{
+  "date": "2026-10-30",
+  "model_sha256": "f536f42e0cf1ab131bbe18366879d8b8923644a4d4ee96c88224511f836f14f3",
+  "selected": "prefilter_60",
+  "sigma_seconds": 0.016666666666666666,
+  "scope": "63 fixed-camera time triplets, delta=1/240s, 640x640; 20 previously used development holdout RGB frames. Temporal second difference includes legitimate motion and is not a perceptual flicker score. No browser visual verification.",
+  "results": {
+    "baseline": {
+      "temporal_jerk": {
+        "bucket": {
+          "mean": 0.002527100322786571,
+          "p95": 0.004468030575662851
+        },
+        "arm": {
+          "mean": 0.0009912331468455258,
+          "p95": 0.0014283826807513834
+        },
+        "body": {
+          "mean": 0.00022306711443455978,
+          "p95": 0.0002850446820957586
+        }
+      },
+      "quality": {
+        "ssim": 0.9898482233285903,
+        "edge_mae": 0.015233140252530575,
+        "psnr": 36.6005256652832,
+        "foreground_psnr": 30.241157817840577
+      },
+      "render_jpeg_mean_ms": 8.971578379472097
+    },
+    "alpha_bound": {
+      "temporal_jerk": {
+        "bucket": {
+          "mean": 0.002446007923156555,
+          "p95": 0.004346449160948396
+        },
+        "arm": {
+          "mean": 0.0009311015642846801,
+          "p95": 0.001357562921475619
+        },
+        "body": {
+          "mean": 0.00020470209525979405,
+          "p95": 0.00026566309679765254
+        }
+      },
+      "quality": {
+        "ssim": 0.9898104518651962,
+        "edge_mae": 0.015201675426214933,
+        "psnr": 36.6134635925293,
+        "foreground_psnr": 30.272238063812257
+      },
+      "render_jpeg_mean_ms": 8.848149453600248
+    },
+    "prefilter_240": {
+      "temporal_jerk": {
+        "bucket": {
+          "mean": 0.002442424830016015,
+          "p95": 0.004345685709267855
+        },
+        "arm": {
+          "mean": 0.0009301779907204151,
+          "p95": 0.0013536854996345938
+        },
+        "body": {
+          "mean": 0.0002044873507989068,
+          "p95": 0.000264982070075348
+        }
+      },
+      "quality": {
+        "ssim": 0.9898155510425568,
+        "edge_mae": 0.015194569434970617,
+        "psnr": 36.62621231079102,
+        "foreground_psnr": 30.288978862762452
+      },
+      "render_jpeg_mean_ms": 9.036034345626831
+    },
+    "prefilter_120": {
+      "temporal_jerk": {
+        "bucket": {
+          "mean": 0.0024323362980910117,
+          "p95": 0.004347371170297265
+        },
+        "arm": {
+          "mean": 0.0009283555361131827,
+          "p95": 0.0013494779239408671
+        },
+        "body": {
+          "mean": 0.00020409714488778263,
+          "p95": 0.0002632806630572304
+        }
+      },
+      "quality": {
+        "ssim": 0.989827886223793,
+        "edge_mae": 0.015174759784713387,
+        "psnr": 36.66069507598877,
+        "foreground_psnr": 30.334282875061035
+      },
+      "render_jpeg_mean_ms": 8.90409362812837
+    },
+    "prefilter_60": {
+      "temporal_jerk": {
+        "bucket": {
+          "mean": 0.002398784747273321,
+          "p95": 0.004262434225529433
+        },
+        "arm": {
+          "mean": 0.0009231586808464416,
+          "p95": 0.0013418821967206896
+        },
+        "body": {
+          "mean": 0.0002032935262254868,
+          "p95": 0.00025819772563409057
+        }
+      },
+      "quality": {
+        "ssim": 0.9898424744606018,
+        "edge_mae": 0.01511578494682908,
+        "psnr": 36.75679683685303,
+        "foreground_psnr": 30.4633807182312
+      },
+      "render_jpeg_mean_ms": 8.680609737833342
+    }
+  },
+  "network": {
+    "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+    "scene": "lego",
+    "model_sha256": "f536f42e0cf1ab131bbe18366879d8b8923644a4d4ee96c88224511f836f14f3",
+    "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+    "max_in_flight": 3,
+    "frames": 2100,
+    "width": 960,
+    "height": 640,
+    "duration_seconds": 58.79503416642547,
+    "mean_ms": 27.99763531734546,
+    "p95_ms": 47.835707664489746,
+    "mean_fps": 35.71730214588755,
+    "roundtrip_mean_ms": 82.4412322403597,
+    "roundtrip_p95_ms": 100.40020756423473,
+    "mean_jpeg_bytes": 53448.98619047619
+  }
+}

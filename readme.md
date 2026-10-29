@@ -507,6 +507,8 @@ python viewer.py --scenes_path /path/to/scenes.json   --host 127.0.0.1 --port 88
 
 打开 `http://127.0.0.1:8892/?scene=lego` 或 `?scene=fan`。服务器 GPU 负责渲染，浏览器负责交互与播放；远程服务可通过 SSH 转发到本地。完整的显示、参考帧、选区与视频导出说明见 [查看器操作](assets/technical/09-viewer-reference.md)。
 
+新增“实时动态浏览高斯”独立入口：支持 Hybrid 3D-4DGS 离线训练／检查点加载与自由视角浏览，不替换原渲染流程。当前 Lego 模型累计训练 52000 步，使用原视频及所提供源场景生成的补充视角，针对滚轮拉远时的铲子遮挡修正几何并精修细节：新距离参照 PSNR 25.61 → 36.37 dB，原相机同序列 PSNR 41.79 → 42.69 dB；前者不是新拍摄数据，后者不是留出集成绩。连续拉远网络传输加 JPEG 解码实测约 33.93 FPS，不代表浏览器显示帧率。模型约 118 MB，旧版保留回退，中间权重已清理。部署、存储控制及完整验收记录见 [Hybrid FVV 集成说明](assets/technical/14-hybrid-fvv.md)。
+
 ## 本地目录组织
 
 根目录保留 README、LICENSE、基础依赖 `requirements.txt`，以及 `train.py`、`train_gui.py`、`edit_gui.py`、`render.py`、`viewer.py` 五个主要入口。辅助导出、渲染、评测与预处理工具按功能放入 `scripts/`，公共模块放入 `utils/`，可选依赖集中在 `requirements/`。

@@ -1,0 +1,16 @@
+# Additional dependencies in the ISOLATED upstream Hybrid CUDA environment.
+# Adapter requires Python >=3.10; tested CUDA runtime: PyTorch 2.1.2.
+# Legacy NumPy-scalar checkpoints require PyTorch >=2.4 for safe packing.
+# Do not pip install these over MERCY's existing rendering environment.
+aiohttp>=3.9,<4
+Pillow>=9
+omegaconf>=2.3,<3
+ninja>=1.11
+# PyTorch 2.1 native extensions require NumPy 1.x; newer plyfile requests NumPy 2.
+numpy>=1.24,<2
+plyfile>=1.0,<1.1
+kornia==0.6.12
+imagesize>=1.4
+mediapy>=1.1
+torchmetrics==0.11.4
+pytorch-msssim>=1.0,<2

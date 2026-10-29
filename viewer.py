@@ -438,6 +438,8 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
     from utils.viewer_comparisons import install_comparisons
     install_comparisons(app, Path(__file__).parent, export_root or Path(__file__).parent/"outputs/experiment-exports")
     app.cleanup_ctx.append(lifecycle)
+    from utils.fvv_gateway import install_fvv
+    install_fvv(app)
     app.router.add_get("/api/status", status)
     app.router.add_get("/api/reference/{frame}", reference_frame)
     app.router.add_get("/ws", websocket)

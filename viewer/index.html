@@ -81,6 +81,7 @@
       </section>
     </section>
     <aside class="inspector" aria-label="场景与视图设置">
+      <section class="panel"><h2>自由视角</h2><a id="realtimeGaussian" class="secondary-button" href="/fvv">实时动态浏览高斯 ↗</a><p class="setting-note">打开独立 Hybrid 4DGS 浏览模式。</p></section>
       <section class="panel"><h2>物件选择</h2><div class="field"><label for="objectSelect">当前物件</label><select id="objectSelect" disabled><option>正在读取物件…</option></select></div></section>
       <section class="panel"><div class="panel-title"><h2>场景信息</h2><span class="small-badge">BAKED</span></div><p id="sceneDescription" class="scene-description">真实高斯序列，随时间更新位置与朝向。改变视角时重新进行 3D 渲染。</p><div class="big-number" id="gaussianCount">—</div><div id="primitiveLabel" class="number-label">GAUSSIANS / 高斯数量</div><dl class="scene-stats"><div><dt>序列帧数</dt><dd id="frameCount">—</dd></div><div><dt>采样频率</dt><dd id="sourceFps">—</dd></div><div><dt>持续时间</dt><dd id="duration">—</dd></div><div><dt>当前转速</dt><dd id="rpm">—</dd></div></dl></section>
       <section class="panel"><h2>视角</h2><div class="preset-row"><button class="preset active" data-yaw="0" data-pitch="0">正视</button><button class="preset" data-yaw="35" data-pitch="20">斜视</button><button class="preset" data-yaw="80" data-pitch="0">侧视</button></div><div class="preset-row"><button class="preset" data-yaw="180" data-pitch="0">背面</button><button class="preset" data-yaw="0" data-pitch="35">俯视</button><button class="preset" data-yaw="0" data-pitch="-35">仰视</button></div><button id="reset" class="secondary-button">重置视角 <kbd>R</kbd></button></section>

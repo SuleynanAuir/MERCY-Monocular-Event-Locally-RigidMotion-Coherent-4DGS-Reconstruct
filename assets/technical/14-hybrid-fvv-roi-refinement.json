@@ -1,0 +1,269 @@
+{
+  "date": "2026-10-30",
+  "evaluation_note": "Production model uses all real frames inside the existing playback interval. Reconstruction metrics are in-sequence, NOT held-out generalization. Temporal residual measures error against real adjacent-frame differences; offgrid second difference also includes genuine motion.",
+  "development": {
+    "previous": {
+      "sha256": "f536f42e0cf1ab131bbe18366879d8b8923644a4d4ee96c88224511f836f14f3",
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.005119722430715946,
+          "second_difference_residual": 0.008323353072464165,
+          "holdout_mse": 0.0006387496527167968,
+          "odd_holdout_mse": 0.0004935133532853797
+        },
+        "arm": {
+          "temporal_residual": 0.003539008338498092,
+          "second_difference_residual": 0.005426660522886597,
+          "holdout_mse": 0.0004029415707918815,
+          "odd_holdout_mse": 0.00034988143888767807
+        },
+        "body": {
+          "temporal_residual": 0.00022124632885232076,
+          "second_difference_residual": 0.0002679517776725851,
+          "holdout_mse": 2.107376767526148e-05,
+          "odd_holdout_mse": 1.82891581516742e-05
+        }
+      },
+      "holdout_quality": {
+        "psnr": 36.75679683685303,
+        "ssim": 0.9898424744606018,
+        "foreground_psnr": 30.4633807182312,
+        "edge_mae": 0.01511578494682908
+      }
+    },
+    "refined": {
+      "sha256": "316db1cff2f8fd4dacc68630fe1b89bb1658a162d0e4287dc9d2b240494a8dea",
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.004137227011917056,
+          "second_difference_residual": 0.0068325815641412735,
+          "holdout_mse": 0.0004633403237676248,
+          "odd_holdout_mse": 0.0003655196036561392
+        },
+        "arm": {
+          "temporal_residual": 0.0030117433586323997,
+          "second_difference_residual": 0.004764700470602501,
+          "holdout_mse": 0.00027844590731547215,
+          "odd_holdout_mse": 0.0002397921991359908
+        },
+        "body": {
+          "temporal_residual": 0.00015064163051821156,
+          "second_difference_residual": 0.00021270630816018246,
+          "holdout_mse": 9.187333512272744e-06,
+          "odd_holdout_mse": 8.10258031833655e-06
+        }
+      },
+      "holdout_quality": {
+        "psnr": 38.232042694091795,
+        "ssim": 0.9922544926404953,
+        "foreground_psnr": 31.977521419525146,
+        "edge_mae": 0.013336527440696955
+      }
+    }
+  },
+  "full_frame": {
+    "previous": {
+      "sha256": "f536f42e0cf1ab131bbe18366879d8b8923644a4d4ee96c88224511f836f14f3",
+      "evaluation_scope": "previous development holdouts",
+      "offgrid_second_difference": {
+        "bucket": 0.0015165246976909066,
+        "arm": 0.0006364314578517917,
+        "body": 3.661747668668376e-05
+      },
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.005119722430715946,
+          "second_difference_residual": 0.008323353072464165,
+          "legacy_evaluation_mse": 0.0006387496527167968,
+          "odd_frame_mse": 0.0004935133532853797
+        },
+        "arm": {
+          "temporal_residual": 0.003539008338498092,
+          "second_difference_residual": 0.005426660522886597,
+          "legacy_evaluation_mse": 0.0004029415707918815,
+          "odd_frame_mse": 0.00034988143888767807
+        },
+        "body": {
+          "temporal_residual": 0.00022124632885232076,
+          "second_difference_residual": 0.0002679517776725851,
+          "legacy_evaluation_mse": 2.107376767526148e-05,
+          "odd_frame_mse": 1.82891581516742e-05
+        }
+      },
+      "legacy_evaluation_frame_quality": {
+        "psnr": 36.75679683685303,
+        "ssim": 0.9898424744606018,
+        "foreground_psnr": 30.4633807182312,
+        "edge_mae": 0.01511578494682908
+      }
+    },
+    "refined": {
+      "sha256": "1dfc768b22d636aafd0a8355d5aa9b5305e14ac150304b7a43a47da63a7890ed",
+      "evaluation_scope": "in-sequence production fit; no held-out quality claim",
+      "offgrid_second_difference": {
+        "bucket": 0.0013958165035878737,
+        "arm": 0.0005415056380332403,
+        "body": 2.849237511875958e-05
+      },
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.0036291576633534052,
+          "second_difference_residual": 0.006016640507226684,
+          "legacy_evaluation_mse": 0.0002126236788171809,
+          "odd_frame_mse": 0.00018459549464751036
+        },
+        "arm": {
+          "temporal_residual": 0.0027698906733485957,
+          "second_difference_residual": 0.00441351402841241,
+          "legacy_evaluation_mse": 0.0001727023409330286,
+          "odd_frame_mse": 0.00016365949195460417
+        },
+        "body": {
+          "temporal_residual": 0.00012878653614275187,
+          "second_difference_residual": 0.00018678936726189047,
+          "legacy_evaluation_mse": 6.040980224497616e-06,
+          "odd_frame_mse": 5.937652531429194e-06
+        }
+      },
+      "legacy_evaluation_frame_quality": {
+        "psnr": 41.1781587600708,
+        "ssim": 0.9956573575735093,
+        "foreground_psnr": 34.75650424957276,
+        "edge_mae": 0.011626540357246995
+      }
+    }
+  },
+  "selected_model": "lego-roi-stable-v3",
+  "stable_surface": {
+    "previous": {
+      "sha256": "f536f42e0cf1ab131bbe18366879d8b8923644a4d4ee96c88224511f836f14f3",
+      "evaluation_scope": "previous development holdouts",
+      "checks": {
+        "same_pose_time_max_difference": 0,
+        "changed_view_mean_difference": 0.06241871416568756,
+        "changed_time_mean_difference": 0.03412232920527458,
+        "model_bytes": 118471316,
+        "dynamic_points": 450458,
+        "static_points": 5707
+      },
+      "offgrid_second_difference": {
+        "bucket": 0.0015165246976909066,
+        "arm": 0.0006364314578517917,
+        "body": 3.661747668668376e-05
+      },
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.005119722430715946,
+          "interior_temporal_residual": 0.0028555016899153816,
+          "second_difference_residual": 0.008323353072464165,
+          "legacy_evaluation_mse": 0.0006387496527167968,
+          "odd_frame_mse": 0.0004935133532853797
+        },
+        "arm": {
+          "temporal_residual": 0.003539008338498092,
+          "interior_temporal_residual": 0.002011679760215514,
+          "second_difference_residual": 0.005426660522886597,
+          "legacy_evaluation_mse": 0.0004029415707918815,
+          "odd_frame_mse": 0.00034988143888767807
+        },
+        "body": {
+          "temporal_residual": 0.00022124632885232076,
+          "interior_temporal_residual": 0.0011575805415556153,
+          "second_difference_residual": 0.0002679517776725851,
+          "legacy_evaluation_mse": 2.107376767526148e-05,
+          "odd_frame_mse": 1.82891581516742e-05
+        }
+      },
+      "legacy_evaluation_frame_quality": {
+        "psnr": 36.75679683685303,
+        "ssim": 0.9898424744606018,
+        "foreground_psnr": 30.4633807182312,
+        "edge_mae": 0.01511578494682908
+      }
+    },
+    "refined": {
+      "sha256": "2759be2d2921503866677b7ac5011046c18e648bdfed7cdcb97b631120f7e10a",
+      "evaluation_scope": "in-sequence production fit; no held-out quality claim",
+      "checks": {
+        "same_pose_time_max_difference": 0,
+        "changed_view_mean_difference": 0.06241687759757042,
+        "changed_time_mean_difference": 0.033554766327142715,
+        "model_bytes": 118471316,
+        "dynamic_points": 450458,
+        "static_points": 5707
+      },
+      "offgrid_second_difference": {
+        "bucket": 0.001387462728113557,
+        "arm": 0.0005380913628161781,
+        "body": 2.83807893004176e-05
+      },
+      "rois": {
+        "bucket": {
+          "temporal_residual": 0.003558647543912632,
+          "interior_temporal_residual": 0.002250037287085799,
+          "second_difference_residual": 0.005904356741125904,
+          "legacy_evaluation_mse": 0.0001804310129955411,
+          "odd_frame_mse": 0.0001650224225159036
+        },
+        "arm": {
+          "temporal_residual": 0.0027454185572186084,
+          "interior_temporal_residual": 0.0015576783571762019,
+          "second_difference_residual": 0.0043767502295939485,
+          "legacy_evaluation_mse": 0.0001558554380608257,
+          "odd_frame_mse": 0.00015198142027657014
+        },
+        "body": {
+          "temporal_residual": 0.00012763718362078925,
+          "interior_temporal_residual": 0.0007000110105841874,
+          "second_difference_residual": 0.00018695751407420643,
+          "legacy_evaluation_mse": 5.512546272257168e-06,
+          "odd_frame_mse": 5.52811006855336e-06
+        }
+      },
+      "legacy_evaluation_frame_quality": {
+        "psnr": 41.78788795471191,
+        "ssim": 0.996102237701416,
+        "foreground_psnr": 35.311513137817386,
+        "edge_mae": 0.011189515888690948
+      }
+    }
+  },
+  "training_stages": [
+    {
+      "model": "lego-roi-refine-v1",
+      "steps": 3000,
+      "seconds": 87.26584583520889,
+      "training_frames": 339
+    },
+    {
+      "model": "lego-roi-full-v2",
+      "steps": 6000,
+      "seconds": 178.5557752251625,
+      "training_frames": 399
+    },
+    {
+      "model": "lego-roi-stable-v3",
+      "steps": 3000,
+      "seconds": 113.11024685204029,
+      "training_frames": 399
+    }
+  ],
+  "storage": "Original and final model retained; two intermediate refinement checkpoints deleted; provenance retained. Final model 118471316 bytes, same as original.",
+  "network": {
+    "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+    "scene": "lego",
+    "model_sha256": "2759be2d2921503866677b7ac5011046c18e648bdfed7cdcb97b631120f7e10a",
+    "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+    "max_in_flight": 3,
+    "frames": 2400,
+    "width": 960,
+    "height": 640,
+    "duration_seconds": 68.01118329167366,
+    "mean_ms": 28.337993038197357,
+    "p95_ms": 46.647584065794945,
+    "mean_fps": 35.28831412485985,
+    "roundtrip_mean_ms": 83.6928880517371,
+    "roundtrip_p95_ms": 100.38879234343767,
+    "mean_jpeg_bytes": 53678.68583333334
+  }
+}
