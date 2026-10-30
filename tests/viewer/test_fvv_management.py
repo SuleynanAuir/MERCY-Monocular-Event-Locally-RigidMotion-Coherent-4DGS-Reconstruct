@@ -7,8 +7,9 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import zipfile
+import shutil
 
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
@@ -20,6 +21,34 @@ with patch.dict(sys.modules,{'common':common}):spec.loader.exec_module(managemen
 
 
 class ManagementTests(unittest.IsolatedAsyncioTestCase):
+    def test_training_error_preserves_cause_instead_of_supervisor_traceback(self):
+        output='RuntimeError: CUDA error: an illegal memory access was encountered\nRuntimeError: Offline worker failed; inspect its console output'
+        self.assertIn('非法内存访问',management.training_error(output))
+        self.assertNotIn('Offline worker',management.training_error(output))
+        self.assertIn('尚未开始训练',management.training_error(output+'\nGPU health check failed'))
+        oom=management.training_error('CUDA error: out of memory\nGPU health check failed')
+        self.assertIn('显存不足',oom)
+        self.assertNotIn('修复 GPU',oom)
+        self.assertIn('训练期间',management.training_error('torch.cuda.OutOfMemoryError: CUDA out of memory'))
+        self.assertEqual(management.training_error('ValueError: invalid dataset\nRuntimeError: Offline worker failed'),'ValueError: invalid dataset')
+
+    async def test_failed_training_keeps_bounded_log_and_preserves_current_model(self):
+        folder=self.root/'failed-job';folder.mkdir()
+        self.manager.job=dict(id=folder.name,iterations=6000,state='running')
+        stdout=asyncio.StreamReader()
+        stdout.feed_data(b'x'*(management.TRAINING_LOG_LIMIT*2)+b'\nRuntimeError: CUDA error: an illegal memory access was encountered')
+        stdout.feed_eof()
+        process=SimpleNamespace(stdout=stdout,wait=AsyncMock(return_value=1))
+        profile=dict(config='config.yaml',source='dataset',scene='lego',position=[0,0,0])
+        with patch.object(management.asyncio,'create_subprocess_exec',AsyncMock(return_value=process)) as launch:
+            await self.manager.run_training(profile,folder.name)
+        self.assertEqual(self.manager.job['state'],'failed')
+        self.assertEqual((folder/'training-console.log').stat().st_size,management.TRAINING_LOG_LIMIT)
+        self.assertIn('非法内存访问',self.manager.job['error'])
+        self.assertEqual(common.digest(self.old/'model.pth'),self.meta['sha256'])
+        self.assertFalse((folder/'manifest.json').exists())
+        self.assertEqual(self.loaded,[])
+
     async def asyncSetUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name);self.old=self.root/'existing';self.old.mkdir()
         (self.old/'model.pth').write_bytes(b'tensor-only-test-fixture');(self.old/'effective.yaml').write_text('gaussian_dim: 4')
@@ -68,3 +97,27 @@ class ManagementTests(unittest.IsolatedAsyncioTestCase):
         r=await self.client.post('/models/import?scene=lego',data=self.bundle());self.assertEqual(r.status,409)
     async def test_train_rejects_unconfigured_profiles(self):
         r=await self.client.post('/training?scene=lego',json={'profile':'arbitrary-command'});self.assertEqual(r.status,400)
+
+    async def test_delete_rejects_active_wrong_scene_traversal_and_stale_hash(self):
+        other=self.root/'other';shutil.copytree(self.old,other)
+        for name,scene,sha,status in [('existing','lego',self.meta['sha256'],409),
+            ('../other','lego',self.meta['sha256'],400),('other','fan',self.meta['sha256'],400),
+            ('other','lego','stale',409)]:
+            r=await self.client.post('/models/delete?scene='+scene,json={'id':name,'sha256':sha})
+            self.assertEqual(r.status,status);self.assertTrue(other.exists());self.assertTrue(self.old.exists())
+
+    async def test_delete_removes_only_selected_model_and_clears_completed_job(self):
+        other=self.root/'other';shutil.copytree(self.old,other)
+        self.manager.job=dict(id='other',state='complete',scene='lego')
+        r=await self.client.post('/models/delete?scene=lego',json={'id':'other','sha256':self.meta['sha256']})
+        self.assertEqual(r.status,200);self.assertFalse(other.exists());self.assertTrue(self.old.exists())
+        self.assertIsNone(self.manager.job);self.assertEqual(list(self.root.iterdir()),[self.old])
+
+    async def test_delete_rejects_loading_or_writer_lock_and_exposes_timestamp(self):
+        other=self.root/'other';shutil.copytree(self.old,other)
+        for loading in [True,False]:
+            self.manager.loading=loading
+            if not loading:(self.root/'.fvv-writer.lock').touch()
+            r=await self.client.post('/models/delete?scene=lego',json={'id':'other','sha256':self.meta['sha256']})
+            self.assertEqual(r.status,409);self.assertTrue(other.exists())
+        rows=self.manager.models('lego');self.assertIn('trained_at',rows[0])

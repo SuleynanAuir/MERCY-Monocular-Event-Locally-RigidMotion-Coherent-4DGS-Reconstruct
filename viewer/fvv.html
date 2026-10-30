@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实时动态浏览高斯 · MERCY</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/fvv/fvv.css"><script src="/fvv/fvv.js" defer></script><script src="/fvv/fvv-manager.js" defer></script></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实时动态浏览高斯 · MERCY</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/fvv/fvv.css"><script src="/fvv/fvv-loop-cache.js" defer></script><script src="/fvv/fvv.js" defer></script><script src="/fvv/fvv-manager.js" defer></script></head>
 <body><header><a id="back" href="/">← 返回原视图</a><strong>实时动态浏览高斯</strong><span>Hybrid 3D-4DGS · FVV</span></header>
 <main><section class="view"><canvas id="fvvCanvas" tabindex="0" aria-label="自由视角动态高斯；拖动旋转，WASD 移动，QE 升降"></canvas><div id="message" role="status">正在检查离线模型…</div></section>
 <aside><section class="model-panel"><h1>模型与训练</h1>
 <p>可直接加载已训练模型，也可独立训练；原视图的模型与质量设置保持不变。</p>
-<label>已有模型<select id="modelSelect" aria-label="已有模型"></select></label><button id="loadModel" disabled>加载并浏览</button>
+<label>已有模型<select id="modelSelect" aria-label="已有模型"></select></label><button id="loadModel" disabled>加载并浏览</button><button id="deleteModel" disabled>删除所选模型</button><p class="note">名称显示物件与训练完成时间。当前浏览模型不可删除；删除会释放模型文件占用。</p>
 <label>训练方案<select id="trainingProfile" aria-label="训练方案"></select></label><button id="startTraining" disabled>开始独立训练</button>
 <p class="note">训练使用已配置的真实场景数据。训练完成后再加载新模型；共用 GPU 时训练会占用算力。</p>
 <label>导入训练好的模型包<input id="modelFile" type="file" accept=".zip,application/zip"></label><button id="importModel" disabled>导入并加载</button>
@@ -13,7 +13,12 @@
 <button id="loadTrained" hidden>加载训练结果</button></section><h2>自由视角</h2><p>拖动画面旋转；W / S 前后，A / D 左右，Q / E 升降；滚轮前进后退。点击画面后使用键盘。</p><button id="reset">重置相机</button>
 <label>移动速度 <input id="speed" type="number" min="0.01" max="100" step="0.1" value="1"> 场景单位 / 秒</label>
 <label>浏览分辨率<select id="resolution"><option value="640">640 px</option><option value="960" selected>960 px</option><option value="1280">1280 px</option></select></label>
+<label>传输画质<select id="imageQuality"><option value="92">标准</option><option value="95" selected>高 · 更多表面细节</option><option value="98">精细 · 更高带宽</option></select></label>
+<label>动态画质<select id="temporalSamples"><option value="3" selected>抗闪烁 · 短曝光采样</option><option value="1">单次采样 · 更高帧率</option></select></label><p class="note">抗闪烁增加 GPU 开销，快速运动边缘可能略微柔化；暂停时恢复单次采样。</p>
+<label>目标帧率<select id="frameRate"><option value="60">60 FPS</option><option value="90" selected>90 FPS</option><option value="120">120 FPS</option></select></label><p class="note">显示帧率受屏幕刷新率、网络与 GPU 限制；目标帧率不会降低画质。网络实时预览使用有上限的缓冲；完整预载后在本机连续播放。</p>
 <label>垂直视野<input id="fov" type="range" min="20" max="100" value="60"></label>
+<label><input id="adaptivePreview" type="checkbox" checked>移动时自适应预览（最低 640 px）</label><p class="note">移动中用单次采样提高响应速度；停稳后恢复抗闪烁。关闭自适应可固定所选分辨率，模型精度不变。</p>
+<label><input id="smoothLoop" type="checkbox">视角停稳后预载，流畅循环播放</label><p id="cacheStatus" class="note">当前视角预载完成后不依赖网络逐帧传输；移动视角立即重新渲染。仅内存缓存，最多 96 MiB 图像数据。</p>
 <h2>动态时间</h2><button id="play" disabled>暂停</button><input id="time" aria-label="模型时间" type="range" min="0" max="1" step="0.001" value="0" disabled><output id="timestamp">—</output>
 <p id="metrics">等待渲染</p><button id="reconnect">重新连接</button><button id="report">下载性能记录</button>
-<p class="note">图像由 GPU 按当前相机实时渲染。浏览传输使用 JPEG 92；模型参数保持原精度。低帧率会如实显示，不自动降低模型质量。</p><p class="note">尚未训练的场景不会替换成视频或其他模型。部署与验收见 assets/technical/14-hybrid-fvv.md。</p></aside></main></body></html>
+<p class="note">图像由 GPU 按当前相机实时渲染。默认提高图像传输质量；模型参数保持原精度。低帧率会如实显示，不自动降低模型质量。</p><p class="note">尚未训练的场景不会替换成视频或其他模型。部署与验收见 assets/technical/14-hybrid-fvv.md。</p></aside></main></body></html>

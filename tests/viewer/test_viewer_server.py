@@ -42,6 +42,53 @@ class ViewerServerTests(unittest.IsolatedAsyncioTestCase):
         response = await self.client.get("/api/status")
         self.assertTrue((await response.json())["ready"])
 
+    async def test_lazy_worker_rejects_other_pipeline_and_loads_once(self):
+        calls = []
+        class LazyRenderer(FakeRenderer):
+            def load(self): calls.append('load')
+        client = TestClient(TestServer(viewer.create_app('unused', renderer_factory=LazyRenderer,
+                                                       lazy=True, pipeline='observations')))
+        await client.start_server()
+        try:
+            await client.get('/')
+            self.assertEqual(calls, [])
+            self.assertEqual((await client.get('/api/status?pipeline=live')).status, 409)
+            self.assertEqual(calls, [])
+            await client.get('/api/status?pipeline=observations')
+            for _ in range(20):
+                if calls: break
+                await asyncio.sleep(.01)
+            await client.get('/api/status?pipeline=observations')
+            self.assertEqual(calls, ['load'])
+        finally:
+            await client.close()
+
+    async def test_cuda_fault_marks_only_its_worker_failed(self):
+        calls = []
+        class BrokenRenderer(FakeRenderer):
+            def render(self, request):
+                calls.append(request)
+                raise RuntimeError('CUDA error: an illegal memory access was encountered')
+        broken = TestClient(TestServer(viewer.create_app('unused', renderer_factory=BrokenRenderer,
+                                                       pipeline='observations')))
+        await broken.start_server()
+        try:
+            for _ in range(20):
+                if (await (await broken.get('/api/status')).json())['ready']: break
+                await asyncio.sleep(.01)
+            async with broken.ws_connect('/ws?pipeline=observations') as socket:
+                for _ in range(2):
+                    await socket.send_json({'frame':0})
+                    self.assertIn('CUDA', (await socket.receive_json())['message'])
+            self.assertEqual(len(calls), 1)
+            state = await (await broken.get('/api/status')).json()
+            self.assertFalse(state['ready']); self.assertEqual(state['detail'], 'cuda_context_failed')
+            async with self.client.ws_connect('/ws') as socket:
+                await socket.send_json({'frame':0})
+                self.assertEqual((await socket.receive()).type, WSMsgType.BINARY)
+        finally:
+            await broken.close()
+
     async def test_unknown_file(self):
         response = await self.client.get("/viewer.py")
         self.assertEqual(response.status, 404)

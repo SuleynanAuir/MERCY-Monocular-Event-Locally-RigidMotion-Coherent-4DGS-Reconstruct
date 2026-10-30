@@ -221,6 +221,7 @@
   function updateDetailHint() {
     $("viewHint").textContent=detail.enabled && comparisonView()
       ? `选区：拖动框内移动 · 拖动边框 / 角点调整大小 · 下排同步对比 ${comparisonName()}`
+      : observationMode ? '六面观测 · 使用预设按钮切换视角；任意移动请使用“实时动态浏览高斯”'
       : comparisonView() && state.scene?.reference?.available
         ? `${comparisonName()}：拖动旋转 · Shift 平移 · 滚轮缩放；RGB / 事件：固定相机视角`
         : "拖动旋转 · Shift 平移 · 滚轮缩放";
@@ -242,6 +243,19 @@
   let references = null;
   let pointer = null, wheelTimer = null;
   const launchOptions = new URLSearchParams(window.location.search);
+  const observationMode = launchOptions.get('pipeline') === 'observations';
+  $('smoothPlayback').checked = observationMode;
+  // Switching modes creates a new document/socket/cache, never a queued job
+  // on the currently active renderer. Links stay available during preparation.
+  for (const [id, pipeline] of [['observationViewLink','observations']]) {
+    const query = new URLSearchParams(window.location.search);
+    query.set('pipeline', pipeline); query.delete('autoplay');
+    $(id).href = '?' + query.toString();
+    $(id).setAttribute('aria-current', observationMode === (pipeline === 'observations') ? 'page' : 'false');
+  }
+  $('pipelineNote').textContent = observationMode
+    ? '六面观测：固定六个相机，完整预渲染后本地播放。任意视角请使用下方“实时动态浏览高斯”。'
+    : '六面观测使用固定相机；自由浏览与独立训练请使用下方“实时动态浏览高斯”。';
   const comparisonNameInput=$('comparisonObjectName');
   comparisonNameInput.value=launchOptions.get('object_name')||launchOptions.get('scene')||'';
   function updateComparisonLink(){const q=new URLSearchParams();if(comparisonNameInput.value.trim())q.set('object_name',comparisonNameInput.value.trim());$('comparisonVisualize').href='/comparison'+(q.size?'?'+q.toString():'');}
@@ -252,7 +266,10 @@
     const value=Number(launchOptions.get('jpeg_quality'));
     return Number.isInteger(value) && value>=60 && value<=95 ? value : fallback;
   }
-  const sceneQuery = launchOptions.has('scene') ? `?scene=${encodeURIComponent(launchOptions.get('scene'))}` : '';
+  const renderQuery = new URLSearchParams();
+  if (launchOptions.has('scene')) renderQuery.set('scene', launchOptions.get('scene'));
+  renderQuery.set('pipeline', observationMode ? 'observations' : 'live');
+  const sceneQuery = '?' + renderQuery.toString();
   $('objectSelect').onchange = () => {
     setPlaying(false);
     const query = new URLSearchParams(window.location.search);
@@ -276,7 +293,7 @@
       clay_style:state.clayStyle,fovy:state.scene.fovy,
       quality:requestQuality(state.scene.default_stream_quality??95),...dimensions()};
   }
-  function sequenceKey(settings){return JSON.stringify({version_presentation:state.scene?.version_presentation?.revision || 'source-order',settings});}
+  function sequenceKey(settings){return JSON.stringify({channel:sceneQuery,version_presentation:state.scene?.version_presentation?.revision || 'source-order',settings});}
   let experimentPlan=null, experimentBusy=false;
   const experimentButtons=['experimentAll','experimentFrame','experimentPlanSave','experimentSequence','experimentBenchmark'];
   function experimentControls() {
@@ -1000,7 +1017,7 @@
       }
       loadingProgress(data.progress || 0);
       if (data.error) {
-        overlay("场景加载失败", `${data.message}（${data.detail}）`, true);
+        overlay("场景加载失败", `${data.message}${data.detail ? `（${data.detail}）` : ""}`, true);
         status("加载失败", "error"); return;
       }
       if (!data.ready) {
@@ -1089,7 +1106,9 @@
     if (now - state.lastReceived > 1500) $("displayFps").textContent = "0.0";
     requestFrame(); requestAnimationFrame(tick);
   }
-  $("smoothPlayback").onchange=()=>{setPlaying(false);failedViewGroup=null;controls(true);state.dirty=true;};
+  $("smoothPlayback").onchange=()=>{window.location.search = new URLSearchParams({
+    ...Object.fromEntries(launchOptions), pipeline: $('smoothPlayback').checked ? 'observations' : 'live'
+  }).toString();};
   $("play").onclick = () => setPlaying(!(state.playing || state.preparing));
   $("restart").onclick = () => {setPlaying(false); setFrame(0);};
   $("previous").onclick = () => {setPlaying(false); setFrame(state.frame - 1);};
@@ -1158,6 +1177,7 @@
       if (renderCanvases().includes(event.target)) startDetail(event,event.target);
       return;
     }
+    if (observationMode) return;
     stage.focus({preventScroll: true}); stage.setPointerCapture(event.pointerId);
     state.interacting = true; stopStream();
     pointer = {x: event.clientX, y: event.clientY, id: event.pointerId, pan: event.button === 2 || event.shiftKey};
@@ -1193,6 +1213,7 @@
   };
   stage.ondblclick = event => {if (!state.exporting && !viewPreparation && !failedViewGroup && !(detail.enabled && comparisonView()) && !event.target.closest(".reference-cell")) reset();};
   stage.addEventListener("wheel", event => {
+    if(observationMode)return;
     if(state.exporting || viewPreparation || failedViewGroup)return;
     if (event.target.closest(".reference-cell") || event.target.closest(".compare-label")) return;
     if (detail.enabled && comparisonView()) return;

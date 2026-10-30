@@ -368,7 +368,7 @@ test('surface and native hybrid use the same resolution as GS and both warmed qu
 test('object picker scopes sockets and navigation and falls back when Mesh is unavailable', async () => {
   const c = await client({comparison: false}, {scene_id: 'fan', objects: [
     {id: 'fan', name: 'Fan'}, {id: 'lego', name: 'Lego'}]}, '?scene=fan&mode=hybrid&quality=surface');
-  assert.ok(c.socket.url.endsWith('/ws?scene=fan'));
+  assert.ok(c.socket.url.endsWith('/ws?scene=fan&pipeline=live'));
   assert.equal(c.elements.objectSelect.value, 'fan');
   assert.equal(c.elements.objectSelect.disabled, false);
   assert.equal(c.elements.renderMode.value, 'gaussian');
@@ -933,4 +933,29 @@ test('comparison link carries the editable object name without injecting query p
   assert.equal(new URL(c.elements.comparisonVisualize.href,'http://localhost').searchParams.get('object_name'),'吊机 A');
   c.elements.comparisonObjectName.value='a&scene=other';c.elements.comparisonVisualize.onclick();
   assert.equal(new URL(c.elements.comparisonVisualize.href,'http://localhost').searchParams.has('scene'),false);
+});
+
+test('free view starts directly and mode links retain the selected object', async()=>{
+ const c=await client({},null,'?scene=lego');
+ assert.equal(c.elements.smoothPlayback.checked,false);
+ assert.ok(c.socket.url.endsWith('/ws?scene=lego&pipeline=live'));
+ assert.ok(c.socket.sent.length>0);
+ assert.ok(c.socket.sent.every(r=>r.yaw===0),'no six-view preparation');
+ const q=new URLSearchParams(c.elements.observationViewLink.href.slice(1));
+ assert.equal(q.get('scene'),'lego');assert.equal(q.get('pipeline'),'observations');
+ c.elements.smoothPlayback.checked=true;c.elements.smoothPlayback.onchange();
+ assert.equal(new URLSearchParams(c.context.location.search).get('pipeline'),'observations');
+});
+
+test('observation page uses its own socket and prevents arbitrary orbit', async()=>{
+ const c=await client({},null,'?scene=lego&pipeline=observations');
+ assert.equal(c.elements.smoothPlayback.checked,true);
+ assert.ok(c.socket.url.endsWith('/ws?scene=lego&pipeline=observations'));
+ assert.equal(c.elements.liveViewLink,undefined);
+ assert.ok(c.elements.realtimeGaussian,'Hybrid entry remains');
+ const before=c.socket.sent.length;
+ c.elements.stage.onpointerdown({target:{closest:()=>null},pointerId:1,clientX:0,clientY:0});
+ c.elements.stage.onpointermove({pointerId:1,clientX:100,clientY:40});
+ c.tick(16);
+ assert.equal(c.socket.sent.length,before);
 });

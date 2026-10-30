@@ -105,6 +105,63 @@ class MultiObjectUITests(unittest.IsolatedAsyncioTestCase):
         for headers in ({'Origin':'https://example.com'}, {'Host':'untrusted.example'}):
             self.assertEqual((await self.client.get('/api/status?scene=lamp', headers=headers)).status, 403)
 
+    async def test_observation_failure_never_falls_back_to_live(self):
+        response = await self.client.get('/api/status?scene=lamp&pipeline=observations')
+        self.assertFalse((await response.json())['ready'])
+        self.assertEqual((await self.client.get('/ws?scene=lamp&pipeline=observations')).status, 503)
+        self.assertEqual((await self.client.get('/api/status?scene=lamp&pipeline=unknown')).status, 400)
+        dedicated = web.Application()
+        async def status(request):
+            return web.json_response(dict(ready=True, render_pipeline='observations'))
+        async def ws(request):
+            socket = web.WebSocketResponse(); await socket.prepare(request)
+            async for message in socket:
+                await socket.send_bytes(b'observation-image')
+            return socket
+        dedicated.router.add_get('/api/status', status)
+        dedicated.router.add_get('/ws', ws)
+        server = TestServer(dedicated); await server.start_server()
+        try:
+            cfg = json.loads(self.config.read_text())
+            cfg['objects'][1]['observations'] = [str(server.make_url('')).rstrip('/')]
+            self.config.write_text(json.dumps(cfg))
+            async with self.client.ws_connect('/ws?scene=lamp&pipeline=observations') as socket:
+                await socket.send_json({'frame':0})
+                self.assertEqual((await socket.receive(timeout=3)).data, b'observation-image')
+        finally:
+            await server.close()
+        self.assertFalse((await (await self.client.get('/api/status?scene=lamp&pipeline=observations')).json())['ready'])
+        async with self.client.ws_connect('/ws?scene=lamp&pipeline=live') as socket:
+            await socket.send_json({'frame':0})
+            self.assertEqual((await socket.receive(timeout=3)).data, self.payload)
+
+    async def test_channels_cannot_share_a_local_forward(self):
+        cfg = json.loads(self.config.read_text())
+        cfg['objects'][1]['observations'] = [cfg['objects'][1]['live'][0].replace('127.0.0.1', 'localhost')]
+        self.config.write_text(json.dumps(cfg))
+        with self.assertRaisesRegex(ValueError, 'separate processes'):
+            read_config(self.config)
+
+    async def test_stale_ui_cannot_submit_six_view_jobs_to_live(self):
+        cfg = json.loads(self.config.read_text()); cfg['require_pipeline'] = True
+        self.config.write_text(json.dumps(cfg))
+        state = await (await self.client.get('/api/status?scene=lamp')).json()
+        self.assertTrue(state['error']); self.assertIn('刷新', state['message'])
+        self.assertEqual((await self.client.get('/ws?scene=lamp')).status, 409)
+        self.assertTrue((await (await self.client.get('/api/status?scene=lamp&pipeline=live')).json())['ready'])
+
+    async def test_local_navigation_survives_paused_gpu_workers(self):
+        cfg=json.loads(self.config.read_text());cfg['local_assets']=True;cfg['fvv_entry']=True
+        self.config.write_text(json.dumps(cfg))
+        await self.remote.close()
+        response=await self.client.get('/?scene=lamp')
+        self.assertEqual(response.status,200)
+        html=await response.text()
+        self.assertNotIn('id="liveViewLink"',html)
+        self.assertIn('id="realtimeGaussian"',html)
+        self.assertIn('/fvv/fvv-entry.js',html)
+        self.assertEqual((await self.client.get('/app.js')).status,200)
+
     async def test_external_upstream_rejected(self):
         c = json.loads(self.config.read_text()); c['asset_upstream']='https://example.com'
         self.config.write_text(json.dumps(c))

@@ -1,5 +1,6 @@
 """FVV contracts and gateway isolation, runnable without CUDA."""
 import io
+import asyncio
 import importlib.util
 import sys
 import tempfile
@@ -20,7 +21,7 @@ class Contracts(unittest.TestCase):
         valid = dict(position=[1,2,3], yaw=45, pitch=20, time=.5, width=640, height=480)
         self.assertEqual(validate_pose(valid, [0,1])['position'], [1,2,3])
         for key, value in [('position',[1,2]), ('yaw',float('nan')), ('time',2),
-                           ('width',4096), ('pitch',90), ('height',True)]:
+                           ('width',4096), ('pitch',90), ('height',True), ('jpeg_quality',91), ('jpeg_quality',99), ('temporal_samples',2), ('temporal_samples',True), ('temporal_samples',3.0)]:
             with self.assertRaises(ValueError):
                 validate_pose({**valid,key:value}, [0,1])
 
@@ -54,7 +55,7 @@ class Gateway(unittest.IsolatedAsyncioTestCase):
         app=web.Application(); install_fvv(app,''); client=await self.client(app)
         status=await (await client.get('/fvv/status')).json()
         self.assertFalse(status['ready'])
-        for path in ('/fvv','/fvv/fvv.js','/fvv/fvv.css'):
+        for path in ('/fvv','/fvv/fvv.js','/fvv/fvv.css','/fvv/fvv-loop-cache.js'):
             self.assertEqual((await client.get(path)).status,200)
         self.assertEqual((await client.get('/fvv/secret')).status,404)
         self.assertEqual((await client.get('/fvv/ws')).status,503)
@@ -85,6 +86,7 @@ class Gateway(unittest.IsolatedAsyncioTestCase):
             async for chunk in request.content.iter_chunked(65536):count+=len(chunk)
             return web.json_response({'bytes':count,'scene':request.query['scene']},status=201)
         upstream.router.add_post('/models/import',upload)
+        upstream.router.add_post('/models/delete',upload)
         server=TestServer(upstream);await server.start_server();self.servers.append(server)
         app=web.Application();install_fvv(app,str(server.make_url('')).rstrip('/'))
         client=await self.client(app)
@@ -94,6 +96,10 @@ class Gateway(unittest.IsolatedAsyncioTestCase):
         response=await client.post('/fvv/api/models/import',data=b'x',headers={'Origin':'http://evil.example'})
         self.assertEqual(response.status,403)
         self.assertEqual((await client.post('/fvv/api/arbitrary')).status,404)
+        response=await client.post('/fvv/api/models/delete?scene=lego',json={'id':'old','sha256':'known'})
+        self.assertEqual(response.status,201)
+        self.assertEqual((await response.json())['scene'],'lego')
+        self.assertEqual((await client.post('/fvv/api/models/delete',headers={'Origin':'http://evil.example'})).status,403)
 
     async def test_offline_upstream_reports_not_ready(self):
         app=web.Application(); install_fvv(app,'http://127.0.0.1:1')
@@ -160,5 +166,106 @@ class OfflineSafety(unittest.TestCase):
             with self.assertRaises(OSError):module.supervise(args)
             self.assertFalse(root.exists())
 
-if __name__ == '__main__':
+
+class CudaPreflightTests(unittest.TestCase):
+    def test_training_priority_restores_viewers_when_health_fails(self):
+        from unittest.mock import Mock
+        module=OfflineSafety().adapter()
+        records=[]
+        def pause(registries,paused):
+            self.assertEqual(registries,['trusted.json']);paused.append('viewer');records.append('paused')
+        helper=SimpleNamespace(pause=pause,resume=Mock(side_effect=lambda paused:records.append('resumed')))
+        with tempfile.TemporaryDirectory() as directory:
+            args=SimpleNamespace(output=Path(directory)/'new',total_budget_gib=1,budget_gib=.01,command='train')
+            with patch.dict(sys.modules,{'training_resources':helper}), \
+                 patch.dict(module.os.environ,{'MERCY_FVV_RENDER_REGISTRIES':'["trusted.json"]'}), \
+                 patch.object(module.subprocess,'run',return_value=SimpleNamespace(returncode=1,stdout=b'CUDA out of memory')), \
+                 patch('builtins.print'):
+                with self.assertRaisesRegex(RuntimeError,'GPU health check'):module.supervise(args)
+            self.assertEqual(records,['paused','resumed'])
+            helper.resume.assert_called_once_with(['viewer'])
+            self.assertFalse((args.output.parent/'.fvv-writer.lock').exists())
+
+    def test_failed_or_timed_out_health_check_never_starts_training(self):
+        module=OfflineSafety().adapter()
+        cases=[SimpleNamespace(returncode=1,stdout=b'CUDA failure'*10000),
+               module.subprocess.TimeoutExpired('health',90,output=b'timed out')]
+        for result in cases:
+            with self.subTest(result=type(result).__name__),tempfile.TemporaryDirectory() as directory:
+                root=Path(directory)/'new'
+                args=SimpleNamespace(output=root,total_budget_gib=1,budget_gib=.01,command='train')
+                options={'side_effect':result} if isinstance(result,Exception) else {'return_value':result}
+                with patch.object(module.subprocess,'run',**options),patch.object(module.subprocess,'Popen') as worker,patch('builtins.print'):
+                    with self.assertRaisesRegex(RuntimeError,'GPU health check'):module.supervise(args)
+                worker.assert_not_called()
+                self.assertFalse((root/'manifest.json').exists())
+                self.assertFalse((root.parent/'.fvv-writer.lock').exists())
+                self.assertLessEqual((root/'cuda-health.log').stat().st_size,65536)
+
+
+class FramePipelineTests(unittest.IsolatedAsyncioTestCase):
+    async def test_pipeline_is_ordered_and_bounds_render_ahead(self):
+        from concurrent.futures import ThreadPoolExecutor
+        import threading
+        module=OfflineSafety().adapter()
+        gate=threading.Event(); rendered=[]
+        class Renderer:
+            def frame(self,pose,pixels=False):
+                rendered.append(pose['time']);return pose['time']
+            def encode(self,pixels,quality):
+                gate.wait(2);return str(pixels).encode()
+        class Socket:
+            def __init__(self):self.incoming=asyncio.Queue();self.output=[]
+            def __aiter__(self):return self
+            async def __anext__(self):
+                message=await self.incoming.get()
+                if message is None:raise StopAsyncIteration
+                return message
+            async def send_bytes(self,value):
+                self.output.append(value)
+                if len(self.output)==10:await self.incoming.put(None)
+        ws=Socket()
+        for i in range(10):
+            pose=dict(position=[0,0,0],yaw=0,pitch=0,time=i/10,width=640,height=640)
+            await ws.incoming.put(SimpleNamespace(type=__import__('aiohttp').WSMsgType.TEXT,data=json.dumps(pose)))
+        with ThreadPoolExecutor(max_workers=1) as render_pool,ThreadPoolExecutor(max_workers=1) as encode_pool:
+            task=asyncio.create_task(module.stream_frames(ws,Renderer(),[0,1],render_pool,encode_pool))
+            try:
+                await asyncio.sleep(.1);self.assertLessEqual(len(rendered),4)
+                gate.set();await asyncio.wait_for(task,3)
+            finally:
+                gate.set();task.cancel();await asyncio.gather(task,return_exceptions=True)
+        self.assertEqual(ws.output,[str(i/10).encode() for i in range(10)])
+
+    async def test_identified_live_camera_refresh_preserves_frame_credits(self):
+        from concurrent.futures import ThreadPoolExecutor
+        module=OfflineSafety().adapter()
+        for coalesce in (True,False):
+            class Renderer:
+                def frame(self,pose,pixels=False):return pose['yaw']
+                def encode(self,pixels,quality):return str(pixels).encode()
+            class Socket:
+                def __init__(self):self.output=[];self.index=0
+                def __aiter__(self):return self
+                async def __anext__(self):
+                    if self.index==10:raise StopAsyncIteration
+                    i=self.index;self.index+=1
+                    return SimpleNamespace(type=WSMsgType.TEXT,data=json.dumps(dict(
+                        position=[0,0,0],yaw=i,pitch=0,time=i/10,width=640,height=640,
+                        request_id=i,coalesce=coalesce)))
+                async def send_bytes(self,value):self.output.append(value)
+            ws=Socket()
+            with ThreadPoolExecutor(1) as rp,ThreadPoolExecutor(1) as ep:
+                await asyncio.wait_for(module.stream_frames(ws,Renderer(),[0,1],rp,ep),3)
+            ids=[int.from_bytes(frame[4:8],'big') for frame in ws.output]
+            self.assertEqual(ids,list(range(10)))
+            yaws=[float(frame[8:]) for frame in ws.output]
+            if coalesce:
+                self.assertGreater(yaws[0],0)
+                self.assertEqual(yaws[-1],9)
+            else:self.assertEqual(yaws,list(range(10)))
+            for frame in ws.output:self.assertEqual(frame[:4],b'FVV1')
+
+
+if __name__ == "__main__":
     unittest.main()

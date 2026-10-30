@@ -19,7 +19,7 @@ def install_fvv(app, upstream=None):
 
     async def asset(request):
         name = request.match_info.get('asset', 'fvv.html')
-        if name not in {'fvv.html', 'fvv.js', 'fvv.css', 'fvv-manager.js', 'fvv-entry.js'}:
+        if name not in {'fvv.html', 'fvv.js', 'fvv-loop-cache.js', 'fvv.css', 'fvv-manager.js', 'fvv-entry.js'}:
             raise web.HTTPNotFound()
         return web.FileResponse(static / name, headers={'Cache-Control': 'no-store'})
 
@@ -39,7 +39,7 @@ def install_fvv(app, upstream=None):
         if request.headers.get('Origin') not in (None, f'{request.scheme}://{request.host}'):
             raise web.HTTPForbidden()
         endpoint = request.match_info['endpoint']
-        allowed = {('GET','models'),('POST','models/load'),('POST','models/import'),('POST','training')}
+        allowed = {('GET','models'),('POST','models/load'),('POST','models/import'),('POST','models/delete'),('POST','training')}
         if (request.method,endpoint) not in allowed:
             raise web.HTTPNotFound()
         limit = 512*1024**2 if endpoint == 'models/import' else 4096

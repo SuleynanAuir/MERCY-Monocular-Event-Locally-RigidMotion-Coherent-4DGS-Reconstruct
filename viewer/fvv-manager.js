@@ -2,6 +2,14 @@
 (() => {
   const $=id=>document.getElementById(id), query=location.search;
   let data, timer, working=false, polling=false, awaitingLoad=false, selectedResult=null, upload=null, stopped=false, notice=null;
+  function modelLabel(model) {
+    const date=new Date(model.trained_at || NaN);
+    return `${model.scene || '模型'} · ${Number.isNaN(date.getTime()) ? '时间未知' : date.toLocaleString('zh-CN',{hour12:false})}`;
+  }
+  function deleteState() {
+    const selected=data?.models.find(x=>x.id===$('modelSelect').value);
+    $('deleteModel').disabled=working||data?.loading||data?.job?.state==='running'||!selected||selected.active;
+  }
   function progress(message,value) {
     notice=message; $('modelTask').textContent=message; $('modelProgress').hidden=false;
     if(value===null) $('modelProgress').removeAttribute('value');
@@ -26,7 +34,9 @@
     polling=true;
     try {
       data=await api('models');
-      options($('modelSelect'),data.models,x=>`${x.active?'当前 · ':''}${x.id} · ${(x.bytes/1048576).toFixed(1)} MiB`);
+      options($('modelSelect'),data.models,x=>`${x.active?'当前 · ':''}${modelLabel(x)} · ${(x.bytes/1048576).toFixed(1)} MiB`);
+      if(selectedResult && !data.models.some(x=>x.id===selectedResult)) selectedResult=null;
+      deleteState();
       options($('trainingProfile'),data.profiles,x=>`${x.label} · ${x.iterations} 次`);
       const running=data.job?.state==='running';
       $('loadModel').disabled=working||data.loading||!data.models.length;
@@ -56,6 +66,18 @@
     finally {working=false;}
   }
   $('loadModel').onclick=()=>load($('modelSelect').value);
+  $('modelSelect').onchange=deleteState;
+  $('deleteModel').onclick=async()=>{
+    const selected=data?.models.find(x=>x.id===$('modelSelect').value);
+    if(working||data.loading||selected?.active||!selected) return;
+    if(!window.confirm(`删除 ${modelLabel(selected)}？模型文件将永久移除。`)) return;
+    working=true;deleteState();
+    try {await api('models/delete',{id:selected.id,sha256:selected.sha256});
+      if(selectedResult===selected.id) selectedResult=null;
+      progress('模型已删除，存储空间已释放。',100);
+    } catch(error) {progress('删除失败：'+error.message,0);}
+    finally {working=false;clearTimeout(timer);await refresh();}
+  };
   $('loadTrained').onclick=()=>load(selectedResult);
   $('startTraining').onclick=async()=>{
     if(working) return; working=true;$('startTraining').disabled=true;selectedResult=null;

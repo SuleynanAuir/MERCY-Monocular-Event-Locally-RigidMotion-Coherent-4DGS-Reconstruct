@@ -7,6 +7,7 @@ there is no video replay or substitute reconstruction fallback.
 import argparse
 import asyncio
 import json
+import os
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -28,6 +29,13 @@ def read_config(path):
             raise ValueError('Scene identifiers must be unique ASCII names')
         seen.add(key)
         sources.extend(scene.get('live', []))
+        sources.extend(scene.get('observations', []))
+    # localhost and 127.0.0.1 name the same local forward. A mode must
+    # never silently share a worker with the other mode, even across objects.
+    live_ports = {urlsplit(u).port or 80 for s in config['objects'] for u in s.get('live', [])}
+    observation_ports = {urlsplit(u).port or 80 for s in config['objects'] for u in s.get('observations', [])}
+    if live_ports & observation_ports:
+        raise ValueError('Live and observation renderers require separate processes and ports')
     if config['default'] not in seen:
         raise ValueError('Default scene is missing')
     for source in sources:
@@ -64,10 +72,15 @@ def create_app(config_path):
         return next((s for s in config()['objects'] if s['id'] == key), None)
 
     def upstream(request):
+        if config().get('require_pipeline') and 'pipeline' not in request.query:
+            raise web.HTTPConflict(text='界面已更新，请刷新页面以选择独立渲染模式')
         scene = selected(request)
-        if not scene or not scene.get('live'):
-            raise web.HTTPServiceUnavailable(text='该物件的原版三维资产尚未恢复')
-        return scene['live'][0].rstrip('/')
+        channel = request.query.get('pipeline', 'live')
+        if channel not in {'live', 'observations'}:
+            raise web.HTTPBadRequest(text='Unknown rendering pipeline')
+        if not scene or not scene.get(channel):
+            raise web.HTTPServiceUnavailable(text='该模式的独立渲染服务尚未配置')
+        return scene[channel][0].rstrip('/')
 
     async def lifecycle(app):
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300), auto_decompress=False) as session:
@@ -76,20 +89,39 @@ def create_app(config_path):
     app.cleanup_ctx.append(lifecycle)
 
     async def status(request):
+        if config().get('require_pipeline') and 'pipeline' not in request.query:
+            return web.json_response(dict(ready=False, error=True, progress=0,
+                message='渲染模式已拆分，请刷新页面', detail='需要加载新版界面'))
         scene = selected(request)
         if scene is None:
             raise web.HTTPNotFound()
-        if not scene.get('live'):
+        channel = request.query.get('pipeline', 'live')
+        if channel not in {'live', 'observations'}:
+            raise web.HTTPBadRequest(text='Unknown rendering pipeline')
+        if not scene.get(channel):
             data = dict(ready=False, error=not scene.get('pending', False), progress=0, message=scene.get('note', '原版资产待恢复'),
                         detail='尚未接入实时三维资产')
+            if channel == 'observations':
+                data.update(error=True, message='六面观测独立服务尚未配置；自由视角可继续使用')
         else:
             try:
-                async with app[HTTP].get(upstream(request)+'/api/status', params={'scene':scene.get('upstream_scene', scene['id'])}) as r:
+                async with app[HTTP].get(upstream(request)+'/api/status', params={'scene':scene.get('upstream_scene', scene['id']), 'pipeline':channel}) as r:
                     r.raise_for_status()
                     data = await r.json()
+                    if channel == 'observations' and data.get('render_pipeline') != channel:
+                        data = dict(ready=False, error=True, progress=0, message='六面观测服务未隔离，已拒绝使用自由视角进程')
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 data = dict(ready=False, progress=0, message='正在连接渲染服务，请保持 SSH 隧道运行')
+                fvv = os.environ.get('MERCY_FVV_URL')
+                if fvv:
+                    try:
+                        async with app[HTTP].get(fvv.rstrip('/')+'/models', timeout=aiohttp.ClientTimeout(total=2)) as job:
+                            if (await job.json()).get('gpu_training_active'):
+                                data['message']='独立训练优先：原场景渲染暂时暂停，训练结束后自动恢复'
+                    except (aiohttp.ClientError, asyncio.TimeoutError, ValueError):
+                        pass
         data['scene_id'] = scene['id']
+        data['render_pipeline'] = channel
         # Identify regenerated checkpoints in the existing UI's labels, without
         # changing its renderer, reference frames or any binary render packets.
         if scene.get('revision_label') and isinstance(data.get('scene'), dict):
@@ -98,7 +130,7 @@ def create_app(config_path):
             for labels in (info, *(info.get(mode) for mode in ('clay', 'pseudocolor', 'mesh', 'hybrid'))):
                 if isinstance(labels, dict) and labels.get('right_label'):
                     labels['right_label'] += suffix
-        data['objects'] = [dict(id=s['id'], name=s['name'], ready=bool(s.get('live')))
+        data['objects'] = [dict(id=s['id'], name=s['name'], ready=bool(s.get(channel)))
                            for s in config()['objects']]
         return web.json_response(data)
 
@@ -119,6 +151,15 @@ def create_app(config_path):
             path = request.path
         else:
             raise web.HTTPNotFound()
+        if config().get('local_assets') and (path == '/' or path.lstrip('/') in ASSETS - {'comparison.js', 'comparison.css'}):
+            # Keep navigation available while GPU processes release memory.
+            asset = Path(__file__).resolve().parents[2]/'viewer'/('index.html' if path == '/' else path.lstrip('/'))
+            if path == '/':
+                html = asset.read_text()
+                if config().get('fvv_entry') and '/fvv/fvv-entry.js' not in html:
+                    html = html.replace('</body>', '<script src="/fvv/fvv-entry.js" defer></script></body>', 1)
+                return web.Response(text=html, content_type='text/html')
+            return web.FileResponse(asset)
         # Comparisons operate on exported data, independent of the selected
         # renderer. Keep page, jobs and result assets on one stable service.
         comparison_asset=request.path in ('/comparison.js','/comparison.css')
@@ -172,6 +213,12 @@ def create_app(config_path):
         base = upstream(request)
         try:
             scene = selected(request)
+            if request.query.get('pipeline') == 'observations':
+                async with app[HTTP].get(base+'/api/status', params={
+                        'scene':scene.get('upstream_scene', scene['id']), 'pipeline':'observations'}) as check:
+                    check.raise_for_status()
+                    if (await check.json()).get('render_pipeline') != 'observations':
+                        raise web.HTTPServiceUnavailable(text='六面观测必须使用独立模式进程')
             remote = await app[HTTP].ws_connect(base+'/ws', params={**request.query, 'scene':scene.get('upstream_scene', scene['id'])},
                                                   max_msg_size=32*1024**2, heartbeat=20)
         except (aiohttp.ClientError, asyncio.TimeoutError):

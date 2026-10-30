@@ -2,14 +2,14 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-async function fixture(){
+async function fixture(confirm=true){
  const ids=[...fs.readFileSync('viewer/fvv.html','utf8').matchAll(/id="([^"]+)"/g)].map(x=>x[1]),elements={};
  for(const id of ids)elements[id]={value:'',dataset:{},files:[],children:[],hidden:false,disabled:false,
   replaceChildren(){this.children=[];this.value='';},append(o){this.children.push(o);if(!this.value)this.value=o.value;},removeAttribute(){this.value=undefined;}};
  let next,disconnected=0,connected=0;const calls=[];
  const response={models:[{id:'lego-18000-v1',bytes:118471316,active:true}],profiles:[{id:'quality',label:'Quality',iterations:18000}],job:null,loading:false,load_error:''};
  const context={document:{getElementById:id=>elements[id],createElement:()=>({})},location:{search:'?scene=lego'},
-  window:{FVV:{disconnect(){disconnected++;},connect(){connected++;}},addEventListener(){}},
+  window:{confirm:()=>confirm,FVV:{disconnect(){disconnected++;},connect(){connected++;}},addEventListener(){}},
   setTimeout:f=>{next=f;return 1;},clearTimeout(){},XMLHttpRequest:class{},
   fetch:async(url,opt)=>{calls.push({url,opt});return {ok:true,json:async()=>opt.method?{loading:true}:response};}};
  vm.runInNewContext(fs.readFileSync('viewer/fvv-manager.js','utf8'),context);
@@ -32,4 +32,21 @@ test('training progress follows server iterations and does not switch the browsi
 });
 test('oversized uploads are rejected before opening a connection',async()=>{
  const f=await fixture();f.elements.modelFile.files=[{size:513*1048576}];f.elements.importModel.onclick();assert.match(f.elements.modelTask.textContent,/512 MiB/);
+});
+test('model names show completion time and active model deletion is disabled',async()=>{
+ const f=await fixture();f.response.models[0].scene='lego';f.response.models[0].trained_at='2026-10-30T08:00:00Z';await f.poll();
+ assert.match(f.elements.modelSelect.children[0].textContent,/lego.*2026/);
+ assert.doesNotMatch(f.elements.modelSelect.children[0].textContent,/18000/);
+ assert.equal(f.elements.deleteModel.disabled,true);
+ await f.elements.deleteModel.onclick();assert.equal(f.calls.filter(x=>x.url.includes('models/delete')).length,0);
+});
+
+test('deletion requires confirmation and sends the selected model identity',async()=>{
+ for(const approved of [false,true]){
+  const f=await fixture(approved);f.response.models.push({id:'old',scene:'lego',trained_at:'2026-10-29T08:00:00Z',bytes:100,sha256:'known',active:false});await f.poll();
+  f.elements.modelSelect.value='old';f.elements.modelSelect.onchange();assert.equal(f.elements.deleteModel.disabled,false);
+  await f.elements.deleteModel.onclick();const calls=f.calls.filter(x=>x.url.includes('models/delete'));
+  assert.equal(calls.length,approved?1:0);if(approved)assert.deepEqual(JSON.parse(calls[0].opt.body),{id:'old',sha256:'known'});
+  assert.equal(f.disconnected,0);
+ }
 });

@@ -1,0 +1,66 @@
+{
+  "gpu": "RTX 3080",
+  "capability": "8.6",
+  "original_error": "CUDA out of memory. Tried to allocate 130789.46 GiB",
+  "old_extension_cubin": "sm_75",
+  "new_extension_cubin": "sm_86",
+  "extension_sha256": "8a6e8a8fce581688c9bbf431a39c721e26af7cb3cdc5e8812606d012471cdd81",
+  "torch_health": {
+    "completed": 10000,
+    "passed": true
+  },
+  "native_rasterizer_probe": {
+    "rendered_frames": 8,
+    "passed": true
+  },
+  "hybrid_check": {
+    "rendered_frames": 30,
+    "passed": true,
+    "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a"
+  },
+  "original_model_test": {
+    "passed": true,
+    "resolution": [
+      800,
+      800
+    ],
+    "frames_per_mode": 12,
+    "modes": [
+      "gaussian",
+      "clay",
+      "pseudocolor"
+    ],
+    "camera_presets": 6
+  },
+  "changes": "Recompiled original native extension for current GPU; no model or quality setting changes",
+  "previous_failed_view": {
+    "passed": true,
+    "request": {
+      "frame": 50,
+      "yaw": 35,
+      "pitch": 20,
+      "zoom": 1.5,
+      "render_mode": "pseudocolor"
+    },
+    "metadata": {
+      "id": 50,
+      "frame": 50,
+      "comparison": true,
+      "panel_count": 3,
+      "panel_frames": [
+        50,
+        50,
+        50
+      ],
+      "panel_width": 800,
+      "left_frame": 50,
+      "right_frame": 50,
+      "width": 2400,
+      "height": 800,
+      "render_mode": "pseudocolor",
+      "cache_hit": false,
+      "render_ms": 323.96,
+      "encode_ms": 15.64
+    }
+  }
+}

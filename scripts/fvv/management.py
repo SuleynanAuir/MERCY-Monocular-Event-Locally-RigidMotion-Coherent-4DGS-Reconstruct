@@ -9,14 +9,31 @@ import signal
 import sys
 import uuid
 import zipfile
+from datetime import datetime, timezone
 
 from aiohttp import web
-from common import digest, usage, validate_pose
+from common import digest, usage, validate_pose, model_name, model_timestamp
 
 UPLOAD_LIMIT = 512 * 1024**2
 UNPACK_LIMIT = 1024**3
 STORE_LIMIT = 8 * 1024**3
 FILES = {'manifest.json', 'effective.yaml', 'model.pth'}
+TRAINING_LOG_LIMIT = 64 * 1024
+
+
+def training_error(output):
+    """Keep the causal CUDA error instead of the supervisor's final traceback."""
+    if 'out of memory' in output.lower() or 'OutOfMemoryError' in output:
+        return ('GPU 显存不足，尚未开始训练；请释放其他渲染进程占用的显存后重试。原模型未变。'
+                if 'GPU health check' in output else
+                '训练期间 GPU 显存不足；本次结果未发布，原模型未变。请释放其他渲染进程占用后重试。')
+    if 'GPU health check' in output:
+        return 'GPU 基础运算自检未通过，尚未开始训练；原模型未变。请先修复 GPU/CUDA 运行环境。'
+    if 'an illegal memory access was encountered' in output:
+        return '训练 CUDA 内核发生非法内存访问；本次结果未发布，原模型未变。诊断日志已保留。'
+    lines = [line.strip() for line in output.splitlines() if re.match(
+        r'^(?:RuntimeError|ValueError|OSError|TimeoutError|torch\..*Error):', line.strip())]
+    return (lines[0] if lines else output[-2000:]) or '训练未生成有效模型'
 
 
 def unpack_model(archive, target, revision, scene):
@@ -80,7 +97,8 @@ class ModelManager:
                 if meta.get('scene') != scene or not (path/'model.pth').is_file():
                     continue
                 result.append(dict(id=path.name,scene=scene,bytes=(path/'model.pth').stat().st_size,
-                                   sha256=meta['sha256'],active=path == self.current()))
+                                   trained_at=meta.get('trained_at') or (None if meta.get('imported_at') else datetime.fromtimestamp((path/'model.pth').stat().st_mtime,timezone.utc).isoformat()),
+                                   sha256=meta['sha256'],active=self.current() is not None and path.resolve() == Path(self.current()).resolve()))
             except (OSError, ValueError, KeyError):
                 continue
         return result
@@ -100,7 +118,7 @@ class ModelManager:
                 job['progress'] = min(99,100*row['iteration']/job['iterations'])
                 job['stage'] = '训练与最终验证'
             except (OSError, ValueError, IndexError):
-                job['stage'] = '加载训练数据与初始化'
+                pass  # Keep resource preparation/self-check progress visible.
         return job
 
     async def list_models(self, request):
@@ -108,6 +126,7 @@ class ModelManager:
         profiles = [dict(id=k,label=v['label'],iterations=v['iterations']) for k,v in self.profiles.items() if v['scene']==scene]
         job = self.progress()
         return web.json_response(dict(models=self.models(scene),profiles=profiles,job=job if job and job['scene']==scene else None,
+                                      gpu_training_active=bool(self.job and self.job['state']=='running'),
                                       loading=self.loading,load_error=self.load_error,upload_limit=UPLOAD_LIMIT))
 
     async def select(self, request):
@@ -139,9 +158,9 @@ class ModelManager:
                 raise web.HTTPConflict(text='已有离线任务或模型导入正在进行')
             if usage(self.root)+4*1024**3 > STORE_LIMIT or shutil.disk_usage(self.root).free < 5*1024**3:
                 raise web.HTTPInsufficientStorage(text='模型存储预算或磁盘空间不足')
-            name='train-'+uuid.uuid4().hex[:12]
+            name=model_name(profile['scene'])
             self.job=dict(id=name,scene=profile['scene'],state='running',progress=0,iteration=0,
-                          iterations=profile['iterations'],stage='准备训练',error='')
+                          iterations=profile['iterations'],stage='GPU 自检与数据准备',error='')
             self.launch(self.run_training(profile,name))
         return web.json_response(self.job,status=202)
 
@@ -153,13 +172,24 @@ class ModelManager:
             '--pitch',str(profile.get('pitch',0))]
         tail=b''
         try:
+            env = dict(os.environ)
+            # Only trusted server profiles can opt into pausing registered
+            # viewers. Never accept process lists from the training request.
+            env['MERCY_FVV_RENDER_REGISTRIES'] = json.dumps(profile.get('render_process_registries', []))
             self.process=await asyncio.create_subprocess_exec(*command,stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.STDOUT,start_new_session=True)
+                stderr=asyncio.subprocess.STDOUT,start_new_session=True,env=env)
             while block := await self.process.stdout.read(4096):
-                tail=(tail+block)[-8192:]
+                tail=(tail+block)[-TRAINING_LOG_LIMIT:]
+                if b'pausing original viewer' in tail:
+                    self.job['stage']='训练优先：原场景渲染暂时暂停'
+                if b'Restoring original viewer' in tail:
+                    self.job['stage']='正在恢复原场景渲染服务'
             code=await self.process.wait()
+            folder=self.root/name
+            if folder.is_dir():
+                (folder/'training-console.log').write_bytes(tail)
             if code or not (self.root/name/'manifest.json').is_file():
-                raise RuntimeError(tail.decode(errors='replace')[-2000:] or '训练未生成有效模型')
+                raise RuntimeError(training_error(tail.decode(errors='replace')))
             self.job.update(state='complete',progress=100,iteration=self.job['iterations'],stage='训练完成，可加载浏览')
         except asyncio.CancelledError:
             raise
@@ -179,7 +209,7 @@ class ModelManager:
                 fd=os.open(self.root/'.fvv-writer.lock',os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
             except FileExistsError:
                 raise web.HTTPConflict(text='已有离线任务正在写入')
-            name='import-'+uuid.uuid4().hex[:12]
+            name=model_name(scene)
             archive=self.root/('.'+name+'.zip');target=self.root/('.'+name)
             try:
                 if usage(self.root)+UPLOAD_LIMIT+UNPACK_LIMIT > STORE_LIMIT or shutil.disk_usage(self.root).free < UPLOAD_LIMIT+UNPACK_LIMIT+1024**3:
@@ -198,6 +228,8 @@ class ModelManager:
                     existing_meta=json.loads((self.root/existing['id']/'manifest.json').read_text())
                     if existing['sha256']==meta['sha256'] and existing_meta['config_sha256']==meta['config_sha256']:
                         return web.json_response({'id':existing['id'],'deduplicated':True})
+                meta['imported_at']=model_timestamp()
+                (target/'manifest.json').write_text(json.dumps(meta,indent=2))
                 target.rename(self.root/name)
                 return web.json_response({'id':name,'deduplicated':False},status=201)
             except (ValueError,KeyError,zipfile.BadZipFile,RuntimeError) as exc:
@@ -205,6 +237,34 @@ class ModelManager:
             finally:
                 archive.unlink(missing_ok=True)
                 shutil.rmtree(target,ignore_errors=True)
+                os.close(fd)
+                (self.root/'.fvv-writer.lock').unlink(missing_ok=True)
+
+    async def delete(self, request):
+        data=await request.json()
+        scene=request.query.get('scene','lego')
+        async with self.lock:
+            if self.loading or (self.job and self.job['state']=='running'):
+                raise web.HTTPConflict(text='请等待模型加载或训练完成')
+            selected=next((x for x in self.models(scene) if x['id']==data.get('id')),None)
+            if not selected:
+                raise web.HTTPBadRequest(text='模型不存在或场景不匹配')
+            if selected['active']:
+                raise web.HTTPConflict(text='不能删除正在浏览的模型，请先加载另一个模型')
+            if data.get('sha256')!=selected['sha256']:
+                raise web.HTTPConflict(text='模型已变化，请刷新列表后重试')
+            try:
+                fd=os.open(self.root/'.fvv-writer.lock',os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+            except FileExistsError:
+                raise web.HTTPConflict(text='已有离线任务正在写入')
+            try:
+                target=self.root/selected['id']
+                tombstone=self.root/('.deleting-'+uuid.uuid4().hex)
+                target.rename(tombstone)
+                await asyncio.to_thread(shutil.rmtree,tombstone)
+                if self.job and self.job['id']==selected['id']:self.job=None
+                return web.json_response({'deleted':selected['id'],'freed_model_bytes':selected['bytes']})
+            finally:
                 os.close(fd)
                 (self.root/'.fvv-writer.lock').unlink(missing_ok=True)
 
@@ -225,5 +285,6 @@ class ModelManager:
         app.router.add_get('/models',self.list_models)
         app.router.add_post('/models/load',self.select)
         app.router.add_post('/models/import',self.upload)
+        app.router.add_post('/models/delete',self.delete)
         app.router.add_post('/training',self.train)
         app.on_shutdown.append(self.cleanup)

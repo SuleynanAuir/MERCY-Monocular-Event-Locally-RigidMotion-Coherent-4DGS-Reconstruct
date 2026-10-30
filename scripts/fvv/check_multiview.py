@@ -1,4 +1,4 @@
-"""Evaluate held-out source-scene pullback views and the original RGB view."""
+"""Evaluate held-out timestamps in supplied source-scene camera views."""
 import argparse,json,math,time
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,7 +13,8 @@ def run(a):
     torch.set_num_threads(4);a.output.mkdir(parents=True,exist_ok=False)
     views=json.loads((a.views/'views.json').read_text())['views']
     validation=[v for v in views if v['split']=='validation']
-    selected=[validation[i] for i in [0,1,len(validation)//2,len(validation)//2+1]]
+    if not validation:raise ValueError('No validation views')
+    selected=validation[:4] if any(v.get('angle',0) for v in validation) else [validation[i] for i in [0,1,len(validation)//2,len(validation)//2+1]]
     panel=Image.new('RGB',(4*480,3*500));results={}
     for name,model,row in [('previous',a.previous,1),('candidate',a.model,2)]:
         r=hybrid.Renderer(SimpleNamespace(repo=a.repo.resolve(),model=model.resolve(),temporal_sigma=1/60))
@@ -29,7 +30,7 @@ def run(a):
                 mask=torch.zeros((640,640),dtype=torch.bool);mask[lo:hi,lo:right]=True
                 mask &= target.mean(0)>.2
                 dx=error[:,:,1:]-error[:,:,:-1];dy=error[:,1:,:]-error[:,:-1,:]
-                rows.append(dict(time=v['time'],distance=v['distance'],psnr=float(-10*torch.log10(error.square().mean())),
+                rows.append(dict(time=v['time'],distance=v['distance'],angle=v.get('angle',0),psnr=float(-10*torch.log10(error.square().mean())),
                     foreground_psnr=float(-10*torch.log10(error[:,fg].square().mean())),ssim=float(ssim(image,target)),
                     bucket_mse=float(error[:,mask].square().mean()),
                     bucket_dark_pixel_fraction=float(((image.mean(0)[mask]-target.mean(0)[mask])<-.15).float().mean()),
@@ -40,7 +41,8 @@ def run(a):
                         rgb=Image.fromarray((im.permute(1,2,0).numpy()*255).astype('uint8')).resize((480,480))
                         panel.paste(rgb,(col*480,rr*500+20))
             results[name]=dict(sha256=r.meta['sha256'],rows=rows,
-                means={k:float(np.mean([x[k] for x in rows])) for k in rows[0] if k not in ['time','distance']})
+                scope='Supplied Blender source scene; held-out timestamps, not captured novel camera views. Bucket mask is approximate for orbit angles.',
+                means={k:float(np.mean([x[k] for x in rows])) for k in rows[0] if k not in ['time','distance','angle']})
         del r;torch.cuda.empty_cache()
     for i,label in enumerate(['Source scene reference (not captured RGB)','Previous FVV','Multiview candidate']):ImageDraw.Draw(panel).text((5,i*500+3),label,fill='white')
     panel.save(a.output/'pullback-comparison.jpg',quality=94)

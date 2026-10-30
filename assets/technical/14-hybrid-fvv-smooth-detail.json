@@ -1,0 +1,613 @@
+{
+  "date": "2026-10-30",
+  "scope": "Actual GPU/JPEG/network tests; browser display performance is not measured",
+  "active_model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+  "model_weights_changed": false,
+  "quality": {
+    "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+    "scope": "Eight actual GPU renders; compression fidelity relative to identical raw render, not scene reconstruction quality",
+    "optimized_decoded_pixels_identical": true,
+    "rows": [
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 51876,
+        "encode_ms": 8.459806442260742,
+        "foreground_psnr": 42.06317901611328
+      },
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 43323,
+        "encode_ms": 5.9281885623931885,
+        "foreground_psnr": 42.06317901611328
+      },
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 60814,
+        "encode_ms": 3.9112865924835205,
+        "foreground_psnr": 45.05330562591553
+      },
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 51124,
+        "encode_ms": 7.514208555221558,
+        "foreground_psnr": 45.05330562591553
+      },
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 73555,
+        "encode_ms": 4.0289610624313354,
+        "foreground_psnr": 51.09198570251465
+      },
+      {
+        "time": 1,
+        "distance": 0,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 62952,
+        "encode_ms": 7.412374019622803,
+        "foreground_psnr": 51.09198570251465
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 35715,
+        "encode_ms": 3.8724690675735474,
+        "foreground_psnr": 40.809574127197266
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 27209,
+        "encode_ms": 5.604863166809082,
+        "foreground_psnr": 40.809574127197266
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 40447,
+        "encode_ms": 3.689408302307129,
+        "foreground_psnr": 43.98214340209961
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 31342,
+        "encode_ms": 5.713760852813721,
+        "foreground_psnr": 43.98214340209961
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 47188,
+        "encode_ms": 3.732249140739441,
+        "foreground_psnr": 50.41233539581299
+      },
+      {
+        "time": 1,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 37562,
+        "encode_ms": 5.823418498039246,
+        "foreground_psnr": 50.41233539581299
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 52455,
+        "encode_ms": 3.952428698539734,
+        "foreground_psnr": 42.038068771362305
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 43946,
+        "encode_ms": 5.955398082733154,
+        "foreground_psnr": 42.038068771362305
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 61570,
+        "encode_ms": 3.8567036390304565,
+        "foreground_psnr": 44.989562034606934
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 51898,
+        "encode_ms": 6.216675043106079,
+        "foreground_psnr": 44.989562034606934
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 74510,
+        "encode_ms": 3.947809338569641,
+        "foreground_psnr": 51.10593318939209
+      },
+      {
+        "time": 2.5,
+        "distance": 0,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 63868,
+        "encode_ms": 6.401658058166504,
+        "foreground_psnr": 51.10593318939209
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 35892,
+        "encode_ms": 4.052162170410156,
+        "foreground_psnr": 40.77005386352539
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 27370,
+        "encode_ms": 6.325230002403259,
+        "foreground_psnr": 40.77005386352539
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 40664,
+        "encode_ms": 3.7332922220230103,
+        "foreground_psnr": 43.93415451049805
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 31561,
+        "encode_ms": 5.660772323608398,
+        "foreground_psnr": 43.93415451049805
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 47524,
+        "encode_ms": 3.699362277984619,
+        "foreground_psnr": 50.46442985534668
+      },
+      {
+        "time": 2.5,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 37869,
+        "encode_ms": 5.643248558044434,
+        "foreground_psnr": 50.46442985534668
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 52821,
+        "encode_ms": 4.525184631347656,
+        "foreground_psnr": 41.98099613189697
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 44359,
+        "encode_ms": 5.953475832939148,
+        "foreground_psnr": 41.98099613189697
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 61984,
+        "encode_ms": 4.074782133102417,
+        "foreground_psnr": 44.954848289489746
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 52369,
+        "encode_ms": 6.163567304611206,
+        "foreground_psnr": 44.954848289489746
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 75160,
+        "encode_ms": 4.00872528553009,
+        "foreground_psnr": 51.037607192993164
+      },
+      {
+        "time": 4,
+        "distance": 0,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 64443,
+        "encode_ms": 6.275609135627747,
+        "foreground_psnr": 51.037607192993164
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 36101,
+        "encode_ms": 4.067122936248779,
+        "foreground_psnr": 40.706748962402344
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 27574,
+        "encode_ms": 5.883142352104187,
+        "foreground_psnr": 40.706748962402344
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 40887,
+        "encode_ms": 3.9760172367095947,
+        "foreground_psnr": 43.91945838928223
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 31785,
+        "encode_ms": 6.000101566314697,
+        "foreground_psnr": 43.91945838928223
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 47840,
+        "encode_ms": 3.905162215232849,
+        "foreground_psnr": 50.397891998291016
+      },
+      {
+        "time": 4,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 38241,
+        "encode_ms": 6.108999252319336,
+        "foreground_psnr": 50.397891998291016
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 51530,
+        "encode_ms": 4.027366638183594,
+        "foreground_psnr": 42.08796501159668
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 43026,
+        "encode_ms": 6.167978048324585,
+        "foreground_psnr": 42.08796501159668
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 60374,
+        "encode_ms": 4.118412733078003,
+        "foreground_psnr": 45.0687313079834
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 50731,
+        "encode_ms": 6.239950656890869,
+        "foreground_psnr": 45.0687313079834
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 72957,
+        "encode_ms": 3.9785951375961304,
+        "foreground_psnr": 51.10940933227539
+      },
+      {
+        "time": 5.5,
+        "distance": 0,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 62329,
+        "encode_ms": 6.276726722717285,
+        "foreground_psnr": 51.10940933227539
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": false,
+        "bytes": 35464,
+        "encode_ms": 3.982722759246826,
+        "foreground_psnr": 40.839500427246094
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 92,
+        "optimize": true,
+        "bytes": 26917,
+        "encode_ms": 5.719348788261414,
+        "foreground_psnr": 40.839500427246094
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": false,
+        "bytes": 40161,
+        "encode_ms": 3.830656409263611,
+        "foreground_psnr": 44.00120258331299
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 95,
+        "optimize": true,
+        "bytes": 31038,
+        "encode_ms": 5.638793110847473,
+        "foreground_psnr": 44.00120258331299
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": false,
+        "bytes": 46882,
+        "encode_ms": 3.80098819732666,
+        "foreground_psnr": 50.416202545166016
+      },
+      {
+        "time": 5.5,
+        "distance": 0.75,
+        "quality": 98,
+        "optimize": true,
+        "bytes": 37276,
+        "encode_ms": 5.717620253562927,
+        "foreground_psnr": 50.416202545166016
+      }
+    ],
+    "means": {
+      "92-optimized-False": {
+        "bytes": 43981.75,
+        "encode_ms": 4.617407917976379,
+        "foreground_psnr": 41.41201078891754
+      },
+      "92-optimized-True": {
+        "bytes": 35465.5,
+        "encode_ms": 5.942203104496002,
+        "foreground_psnr": 41.41201078891754
+      },
+      "95-optimized-False": {
+        "bytes": 50862.625,
+        "encode_ms": 3.8988199084997177,
+        "foreground_psnr": 44.48792576789856
+      },
+      "95-optimized-True": {
+        "bytes": 41481,
+        "encode_ms": 6.14347867667675,
+        "foreground_psnr": 44.48792576789856
+      },
+      "98-optimized-False": {
+        "bytes": 60702,
+        "encode_ms": 3.887731581926346,
+        "foreground_psnr": 50.754474401474
+      },
+      "98-optimized-True": {
+        "bytes": 50567.5,
+        "encode_ms": 6.207456812262535,
+        "foreground_psnr": 50.754474401474
+      }
+    }
+  },
+  "cleanup": {
+    "active": "lego-20261029T192250510289Z",
+    "deleted": [
+      "lego-18000-v1",
+      "lego-6000-v2",
+      "lego-detail-debug",
+      "lego-detail-nocache",
+      "lego-roi-stable-v3",
+      "train-572652a7185b",
+      "train-6d3028074e5f",
+      "lego-6000",
+      "lego-roi-refine-v1",
+      "lego-roi-full-v2",
+      "lego-geometry-v4",
+      "lego-multiview-v5",
+      "lego-multiview-v6",
+      "lego-detail-v8",
+      "lego-detail-v9",
+      "lego-detail-v10",
+      "lego-detail-diagnostic",
+      "lego-detail-memcheck",
+      "lego-detail-async",
+      "lego-detail-memcheck2",
+      "lego-detail-chunked",
+      "lego-detail-production",
+      "lego-appearance-refine"
+    ],
+    "freed_bytes": 767485916,
+    "remaining_model_bytes": 118464020
+  },
+  "training_attempts": {
+    "accepted_new_model": false,
+    "reason": "Repeated CUDA illegal memory access during native refinement; unvalidated trial weights removed. Previous verified weights retained."
+  },
+  "network": {
+    "window3": {
+      "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+      "scene": "lego",
+      "motion": "dolly",
+      "target_fps": 60,
+      "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+      "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+      "max_in_flight": 3,
+      "jpeg_quality": 95,
+      "frames": 240,
+      "width": 960,
+      "height": 640,
+      "duration_seconds": 7.307505707256496,
+      "mean_ms": 30.447940446902066,
+      "p95_ms": 61.97316665202379,
+      "mean_fps": 32.8429439010462,
+      "roundtrip_mean_ms": 89.31442903509985,
+      "roundtrip_p95_ms": 131.47724978625774,
+      "mean_jpeg_bytes": 37509.979166666664
+    },
+    "window8-long": {
+      "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+      "scene": "lego",
+      "motion": "dolly",
+      "target_fps": 60,
+      "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+      "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+      "max_in_flight": 8,
+      "jpeg_quality": 95,
+      "frames": 3600,
+      "width": 960,
+      "height": 640,
+      "duration_seconds": 82.21120170969516,
+      "mean_ms": 22.836444919359767,
+      "p95_ms": 46.28800041973591,
+      "mean_fps": 43.78965305375718,
+      "roundtrip_mean_ms": 152.73527366885295,
+      "roundtrip_p95_ms": 294.62437517941,
+      "mean_jpeg_bytes": 40761.75444444444
+    },
+    "optimized-long": {
+      "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+      "scene": "lego",
+      "motion": "dolly",
+      "target_fps": 60,
+      "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+      "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+      "max_in_flight": 8,
+      "jpeg_quality": 95,
+      "frames": 3600,
+      "width": 960,
+      "height": 640,
+      "duration_seconds": 76.05707941669971,
+      "mean_ms": 21.12696650463881,
+      "p95_ms": 43.331874534487724,
+      "mean_fps": 47.332871937882416,
+      "roundtrip_mean_ms": 126.9275136390287,
+      "roundtrip_p95_ms": 287.93974965810776,
+      "mean_jpeg_bytes": 31565.34972222222
+    },
+    "pipeline-90-long": {
+      "scope": "bounded WebSocket + network + JPEG decode; NOT browser display FPS",
+      "scene": "lego",
+      "motion": "dolly",
+      "target_fps": 90,
+      "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+      "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+      "max_in_flight": 8,
+      "jpeg_quality": 95,
+      "frames": 4800,
+      "width": 960,
+      "height": 640,
+      "duration_seconds": 87.91166624985635,
+      "mean_ms": 18.314930468720075,
+      "p95_ms": 44.14962511509657,
+      "mean_fps": 54.60026188512657,
+      "roundtrip_mean_ms": 137.5865024458229,
+      "roundtrip_p95_ms": 272.4203746765852,
+      "mean_jpeg_bytes": 31655.148541666666
+    }
+  },
+  "configuration": {
+    "target_fps": 90,
+    "max_target_fps": 120,
+    "max_in_flight": 8,
+    "pending_encode_frames": 2,
+    "pending_display_bitmaps": 2,
+    "jpeg_quality": 95,
+    "jpeg_subsampling": 0,
+    "jpeg_optimize": true,
+    "presentation": "requestAnimationFrame"
+  },
+  "regression_validation": {
+    "python_tests": 47,
+    "frontend_tests": 15,
+    "passed": true,
+    "live_service_ready": true,
+    "live_model_count": 1,
+    "active_sha_unchanged": true,
+    "live_active_delete_probe": "Not executed: automatic review rejected risk of deleting active weights; protection tested on isolated fixtures"
+  }
+}

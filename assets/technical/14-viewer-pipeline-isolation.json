@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-30",
+  "scope": "Independent original-viewer free camera and six-view observation processes; Hybrid FVV unchanged",
+  "unit_tests": {
+    "frontend_passed": 64,
+    "backend_passed": 53,
+    "backend_skipped": 1
+  },
+  "gpu_checks": {
+    "original_live_640": {
+      "passed": true,
+      "frames": 36,
+      "varied_time_and_camera": true
+    },
+    "original_clay_800": {
+      "passed": true,
+      "frames": 6,
+      "camera_presets": 6,
+      "zoom": 1.5
+    },
+    "original_pseudocolor_800": {
+      "passed": false,
+      "successful_frames": 1,
+      "failed_frame": 50,
+      "yaw": 35,
+      "pitch": 20,
+      "zoom": 1.5,
+      "error": "CUDA illegal memory access",
+      "synchronous_trace": "gaussian_renderer/__init__.py:163 visibility_filter: radii > 0"
+    },
+    "torch_only_health": {
+      "passed": false,
+      "completed_iterations": 416,
+      "requested_iterations": 10000,
+      "torch": "2.1.2+cu121",
+      "gpu": "RTX 2080 Ti",
+      "custom_extensions": false,
+      "error": "IndexKernel.cu:92 index out of bounds; device-side assert"
+    },
+    "hybrid_fvv": {
+      "passed": true,
+      "frames": 30,
+      "resolution": [
+        640,
+        640
+      ],
+      "model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+      "rechecked_after_original_live_failure": true
+    },
+    "observations": {
+      "passed": true,
+      "frames": 36,
+      "resolution": [
+        640,
+        640
+      ],
+      "camera_presets": 6,
+      "independence": "completed after original live worker fault and restart"
+    }
+  },
+  "limitations": [
+    "GPU runtime remains unstable; software isolation does not repair hardware/driver/runtime faults",
+    "One physical GPU; processes still contend for compute and memory",
+    "No browser visual acceptance in this session"
+  ],
+  "recovery": "Restarted only the failed original live Lego process with updated error handling; weights unchanged"
+}

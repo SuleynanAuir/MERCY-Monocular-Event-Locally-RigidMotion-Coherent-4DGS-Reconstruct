@@ -217,7 +217,10 @@ def read_scene_catalog(path):
     return scenes, default
 
 
-def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, default_scene=None, export_root=None):
+def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, default_scene=None, export_root=None,
+               lazy=False, pipeline='live'):
+    if pipeline not in {'live', 'observations'}:
+        raise ValueError('Unknown rendering pipeline')
     if scenes is None:
         default_scene = 'default'
         scenes = {'default': {'path': path, 'name': '当前物件', 'factory': renderer_factory or Renderer}}
@@ -253,6 +256,8 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
     references = {}
     clients = set()
     loading = {'id': None}
+    load_task = None
+    fatal_message = None
     app = web.Application(middlewares=[local_only], client_max_size=8*1024*1024)
 
     async def load_one(key, renderer):
@@ -279,28 +284,56 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             await load_one(key, renderer)
         loading['id'] = None
 
+    def ensure_loaded():
+        nonlocal load_task
+        if load_task is None:
+            loading['id'] = default_scene
+            load_task = asyncio.create_task(load())
+
+    def render_frame(renderer, data):
+        # A poisoned CUDA context cannot be repaired by lowering resolution.
+        # Stop further GPU work in this process; other mode workers stay alive.
+        nonlocal fatal_message
+        if fatal_message:
+            raise RuntimeError(fatal_message)
+        try:
+            return renderer.render(data)
+        except RuntimeError as error:
+            if any(term in str(error).lower() for term in
+                   ('illegal memory access', 'device-side assert', 'unspecified launch failure')):
+                fatal_message = '当前模式的 GPU 渲染进程发生 CUDA 故障，需要重启该进程；降低分辨率无法恢复。'
+                for item in renderers.values():
+                    item.status = dict(ready=False, error=True, progress=0, message=fatal_message,
+                                       detail='cuda_context_failed')
+            raise
+
     def selected(request):
+        if pipeline is not None and request.query.get('pipeline', pipeline) != pipeline:
+            raise web.HTTPConflict(text='This worker serves a different rendering pipeline')
         key = request.query.get('scene', default_scene)
         if key not in renderers:
             raise web.HTTPNotFound(text='Unknown scene')
         return key, renderers[key]
 
     async def lifecycle(app):
-        task = asyncio.create_task(load())
+        if not lazy:
+            ensure_loaded()
         yield
         for ws in list(clients):
             await ws.close(code=1001, message=b"Server shutting down")
-        await task
+        if load_task is not None:
+            await load_task
         executor.shutdown(wait=True)
 
     async def status(request):
         key, renderer = selected(request)
+        ensure_loaded()
         state = renderer.status
         if state.get('ready') and loading['id'] is not None:
             busy = loading['id']
             state = {**state, 'ready': False, 'progress': renderers[busy].status.get('progress', 0),
                      'message': f"正在初始化 {scenes[busy]['name']}，完成后即可切换物件"}
-        return web.json_response({**state, 'scene_id': key,
+        return web.json_response({**state, 'scene_id': key, 'render_pipeline':pipeline,
             'objects': [{'id': name, 'name': scenes[name]['name'],
                          'ready': value.status.get('ready', False)} for name, value in renderers.items()]})
 
@@ -324,6 +357,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
 
     async def websocket(request):
         _, renderer = selected(request)
+        ensure_loaded()
         if not renderer.status.get("ready") or loading['id'] is not None:
             raise web.HTTPServiceUnavailable(text="Model is still loading")
         if len(clients) >= 4:
@@ -360,7 +394,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
                         labels = renderer.info.get('mode_version_labels', {}).get(sample['render_mode'], [])
                         packet = cached_image_reference(sample, paired, len(labels) or (2 if paired else 1))
                     else:
-                        packet = await asyncio.get_running_loop().run_in_executor(executor, renderer.render, sample)
+                        packet = await asyncio.get_running_loop().run_in_executor(executor, render_frame, renderer, sample)
                     credit['offered_frames'].add(frame)
                     credit["sent"] = seq
                     await ws.send_bytes(packet)
@@ -373,7 +407,7 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
             except Exception:
                 LOG.exception("Streaming failed")
                 if not ws.closed:
-                    await ws.send_json({"type": "error", "message": "连续渲染失败，请降低清晰度后重试"})
+                    await ws.send_json({"type": "error", "message": fatal_message or "连续渲染失败，请查看当前模式服务器日志"})
 
         try:
             async for message in ws:
@@ -420,13 +454,13 @@ def create_app(path=None, cache="auto", renderer_factory=None, *, scenes=None, d
                     stream_task = asyncio.create_task(produce(data, flow))
                     continue
                 try:
-                    packet = await asyncio.get_running_loop().run_in_executor(executor, renderer.render, data)
+                    packet = await asyncio.get_running_loop().run_in_executor(executor, render_frame, renderer, data)
                     await ws.send_bytes(packet)
                 except (ConnectionResetError, asyncio.CancelledError):
                     break
                 except Exception:
                     LOG.exception("Render failed")
-                    await ws.send_json({"type": "error", "message": "渲染失败，请降低分辨率或查看服务器日志"})
+                    await ws.send_json({"type": "error", "message": fatal_message or "渲染失败，请查看当前模式服务器日志"})
         finally:
             await stop_stream()
             clients.discard(ws)
@@ -458,6 +492,8 @@ def main():
     parser.add_argument("--host", choices=["127.0.0.1", "localhost"], default="127.0.0.1")
     parser.add_argument("--cache", choices=["auto", "gpu", "cpu"], default="auto")
     parser.add_argument("--export-root", type=Path, help="Directory for experiment export packages")
+    parser.add_argument("--lazy", action="store_true", help="Load models only after the first status/render request")
+    parser.add_argument("--pipeline", choices=['live', 'observations'], default='live', help="Reject requests for the other rendering pipeline")
     args = parser.parse_args()
     path = args.sequence_path or args.comparison_path or args.scenes_path
     if not path.is_file():
@@ -468,7 +504,8 @@ def main():
         factory = ComparisonRenderer
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     scenes, default = read_scene_catalog(path) if args.scenes_path else (None, None)
-    web.run_app(create_app(path, args.cache, factory, scenes=scenes, default_scene=default, export_root=args.export_root), host=args.host, port=args.port,
+    web.run_app(create_app(path, args.cache, factory, scenes=scenes, default_scene=default, export_root=args.export_root,
+                          lazy=args.lazy, pipeline=args.pipeline), host=args.host, port=args.port,
                 access_log=None)
 
 

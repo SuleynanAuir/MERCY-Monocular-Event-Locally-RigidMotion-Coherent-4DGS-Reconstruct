@@ -4,6 +4,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import io
 import json
+import logging
 import math
 import os
 import re
@@ -15,7 +16,7 @@ import sys
 import time
 from types import SimpleNamespace
 
-from common import LimitedWriter, digest, usage, validate_pose
+from common import LimitedWriter, digest, usage, validate_pose, model_timestamp
 
 
 def revision(repo):
@@ -96,7 +97,7 @@ def manifest(args, settings, root):
     if not all(math.isfinite(v) for v in duration) or duration[1] <= duration[0]:
         raise ValueError('Invalid model time duration')
     validate_pose(dict(position=args.position, yaw=args.yaw, pitch=args.pitch, time=duration[0], width=640, height=480), duration)
-    data = dict(schema=1, backend='ohsngjun/3D-4DGS', revision=revision(args.repo),
+    data = dict(schema=1, trained_at=model_timestamp(), backend='ohsngjun/3D-4DGS', revision=revision(args.repo),
                 scene=args.scene, checkpoint='model.pth', sha256=digest(root/'model.pth'),
                 config='effective.yaml', config_sha256=digest(root/'effective.yaml'),
                 time_duration=duration, position=args.position, yaw=args.yaw, pitch=args.pitch,
@@ -230,9 +231,8 @@ class Renderer:
             self.pipe.opa_threshold = self.temporal_sigma
         self.bg = torch.tensor([1.,1.,1.] if settings.white_background else [0.,0.,0.], device='cuda')
 
-    def frame(self, pose, raw=False):
+    def frame(self, pose, raw=False, pixels=False):
         import numpy as np
-        from PIL import Image
         from utils.graphics_utils import getProjectionMatrix
         t = self.torch
         yaw, pitch = map(math.radians, (pose['yaw'], pose['pitch']))
@@ -251,18 +251,90 @@ class Renderer:
             camera = SimpleNamespace(FoVx=fx, FoVy=fy, image_width=pose['width'], image_height=pose['height'],
                 timestamp=pose['time'], world_view_transform=world, full_proj_transform=world @ proj,
                 camera_center=t.tensor(pose['position'], device='cuda', dtype=t.float32))
-            rgb = self.render_fn(camera, self.model, self.pipe, self.bg)['render']
+            if pose.get('temporal_samples', 1) == 3:
+                # Same camera, short symmetric shutter; no historical image
+                # reuse, screen-space trails or extra CPU copies per sample.
+                lo, hi = self.meta['time_duration']
+                rgb = None
+                for offset, weight in [(-1/240, .25), (0, .5), (1/240, .25)]:
+                    camera.timestamp = max(lo, min(hi, pose['time'] + offset))
+                    sample = self.render_fn(camera, self.model, self.pipe, self.bg)['render']
+                    rgb = sample * weight if rgb is None else rgb + sample * weight
+            else:
+                rgb = self.render_fn(camera, self.model, self.pipe, self.bg)['render']
             if raw:
                 return rgb.detach().cpu()
             array = (rgb.clamp(0,1)*255).byte().permute(1,2,0).contiguous().cpu().numpy()
+        if pixels:
+            return array
+        return self.encode(array,int(pose.get('jpeg_quality',95)))
+
+    @staticmethod
+    def encode(array, quality):
+        from PIL import Image
         stream = io.BytesIO()
-        Image.fromarray(array).save(stream, format='JPEG', quality=92, subsampling=0)
+        # Optimized Huffman tables reduce bandwidth without changing the
+        # decoded pixels at the selected quality and chroma sampling.
+        Image.fromarray(array).save(stream, format='JPEG', quality=quality, subsampling=0,optimize=True)
         return stream.getvalue()
 
 
+async def stream_frames(ws, renderer, duration, render_pool, encode_pool):
+    """Overlap GPU rendering with CPU encoding; queue at most two pixel buffers."""
+    from aiohttp import WSMsgType
+    loop=asyncio.get_running_loop()
+    frames=asyncio.Queue(maxsize=2)
+    poses=asyncio.Queue(maxsize=8)
+    latest_camera=None
+    async def receive():
+        nonlocal latest_camera
+        previous_id=-1
+        async for msg in ws:
+            if msg.type!=WSMsgType.TEXT:break
+            try:
+                pose=validate_pose(json.loads(msg.data),duration)
+                request_id=pose['request_id']
+                if request_id is not None:
+                    if request_id<=previous_id:raise ValueError('Frame identifiers must increase')
+                    previous_id=request_id
+            except (ValueError,KeyError,TypeError) as exc:
+                await ws.send_json({'error':str(exc)});break
+            # Refresh queued camera positions without discarding frame credits.
+            # Dropping a whole TCP burst starves playback for another RTT.
+            latest_camera=pose if request_id is not None and pose['coalesce'] else None
+            await poses.put(pose)
+        await poses.put(None)
+    async def render():
+        while True:
+            pose=await poses.get()
+            if pose is None:
+                await frames.put(None);return
+            if pose['coalesce'] and latest_camera is not None:
+                pose={**pose,**{key:latest_camera[key] for key in ('position','yaw','pitch','fov')}}
+            started=time.monotonic()
+            pixels=await loop.run_in_executor(render_pool,lambda:renderer.frame(pose,pixels=True))
+            await frames.put((pixels,pose['jpeg_quality'],pose['request_id']))
+            await asyncio.sleep(max(0,1/120-(time.monotonic()-started)))
+    async def encode():
+        while True:
+            item=await frames.get()
+            if item is None:return
+            pixels,quality,request_id=item
+            jpeg=await loop.run_in_executor(encode_pool,renderer.encode,pixels,quality)
+            if request_id is not None:jpeg=b'FVV1'+request_id.to_bytes(4,'big')+jpeg
+            await ws.send_bytes(jpeg)
+    tasks=[asyncio.create_task(receive()),asyncio.create_task(render()),asyncio.create_task(encode())]
+    try:
+        await asyncio.gather(*tasks)
+    finally:
+        for task in tasks:task.cancel()
+        await asyncio.gather(*tasks,return_exceptions=True)
+
+
 def serve(args):
-    from aiohttp import web, WSMsgType
+    from aiohttp import web
     pool = ThreadPoolExecutor(max_workers=1)
+    encode_pool = ThreadPoolExecutor(max_workers=1)
     state = {'ready': False, 'message': '正在加载 Hybrid 检查点…'}
     renderer = None
     busy = False
@@ -311,13 +383,14 @@ def serve(args):
         task.cancel()
         await asyncio.gather(task, return_exceptions=True)
         pool.shutdown(wait=True, cancel_futures=True)
+        encode_pool.shutdown(wait=True, cancel_futures=True)
     app.cleanup_ctx.append(lifecycle)
     def matches(request):
         return request.query.get('scene', state.get('scene')) == state.get('scene')
     async def status(request):
         if state['ready'] and not matches(request):
             return web.json_response({'ready': False, 'message': '该场景尚未加载 Hybrid 模型，当前服务场景为 '+state['scene']})
-        return web.json_response({**state, 'busy': busy, 'max_in_flight': 3})
+        return web.json_response({**state, 'busy': busy, 'frame_protocol':'fvv-jpeg-v1', 'max_in_flight': 8, 'max_fps': 120})
     async def socket(request):
         nonlocal busy, active_ws
         if not state['ready'] or busy or not matches(request):
@@ -327,26 +400,17 @@ def serve(args):
         try:
             await ws.prepare(request)
             active_ws = ws
-            async for msg in ws:
-                if msg.type != WSMsgType.TEXT:
-                    break
-                try:
-                    pose = validate_pose(json.loads(msg.data), state['time_duration'])
-                    start = time.monotonic()
-                    frame = await asyncio.get_running_loop().run_in_executor(pool, renderer.frame, pose)
-                    await ws.send_bytes(frame)
-                    # Up to three bounded requests overlap network round trips.
-                    # Frames remain ordered; no disk cache or quality reduction.
-                    await asyncio.sleep(max(0, 1/60 - (time.monotonic()-start)))
-                except (ValueError, KeyError, TypeError) as exc:
-                    await ws.send_json({'error': str(exc)})
-                except Exception:
-                    await ws.close(code=1011, message=b'Render failed; inspect GPU service')
-                    break
+            try:
+                await stream_frames(ws,renderer,state['time_duration'],pool,encode_pool)
+            except Exception:
+                logging.exception('FVV frame failed')
+                await ws.close(code=1011,message=b'Render failed; inspect GPU service')
         finally:
             busy = False
             if active_ws is ws:
                 active_ws = None
+            if renderer is not None:
+                await asyncio.get_running_loop().run_in_executor(pool,renderer.torch.cuda.empty_cache)
         return ws
     from management import ModelManager
     manager = ModelManager(args, revision(args.repo), lambda: args.model.resolve(), load_model)
@@ -403,12 +467,32 @@ def supervise(args):
     lock = store / '.fvv-writer.lock'
     fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     process = None
+    paused_viewers = []
     try:
         if root.exists():
             raise FileExistsError('Use a new output directory; existing assets are never overwritten')
         if usage(store) + job_limit > limit or shutil.disk_usage(store).free < job_limit + 1024**3:
             raise OSError('Artifact store budget or free-space reservation exhausted')
         env = dict(os.environ, MERCY_FVV_WORKER='1', PYTHONDONTWRITEBYTECODE='1')
+        if args.command == 'train':
+            registries = json.loads(os.environ.get('MERCY_FVV_RENDER_REGISTRIES', '[]'))
+            if registries:
+                from training_resources import pause
+                print('Training priority: pausing original viewer services...', flush=True)
+                pause(registries, paused_viewers)
+            print('Checking CUDA math/indexing before training...', flush=True)
+            try:
+                health = subprocess.run([sys.executable, str(Path(__file__).with_name('cuda_health.py'))],
+                    env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=90)
+            except subprocess.TimeoutExpired as exc:
+                root.mkdir(exist_ok=False)
+                (root/'cuda-health.log').write_bytes((exc.output or b'')[-65536:])
+                raise RuntimeError('GPU health check timed out; training was not started') from exc
+            if health.returncode:
+                root.mkdir(exist_ok=False)
+                (root/'cuda-health.log').write_bytes(health.stdout[-65536:])
+                print(health.stdout[-4096:].decode(errors='replace'), flush=True)
+                raise RuntimeError('GPU health check failed; training was not started')
         process = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]],
                                    env=env, start_new_session=True)
         start = time.monotonic()
@@ -420,6 +504,8 @@ def supervise(args):
             time.sleep(.25)
         if process.returncode:
             raise RuntimeError('Offline worker failed; inspect its console output')
+        if args.command == 'train':
+            (root/'cuda-health.log').write_bytes(health.stdout[-65536:])
         if usage(store) > limit or usage(root) > job_limit:
             raise OSError('Final artifact exceeds storage budget')
     except BaseException:
@@ -434,8 +520,14 @@ def supervise(args):
             (root/'manifest.json').unlink(missing_ok=True)
         raise
     finally:
-        os.close(fd)
-        lock.unlink(missing_ok=True)
+        try:
+            if paused_viewers:
+                from training_resources import resume
+                print('Restoring original viewer services...', flush=True)
+                resume(paused_viewers)
+        finally:
+            os.close(fd)
+            lock.unlink(missing_ok=True)
 
 
 def main():

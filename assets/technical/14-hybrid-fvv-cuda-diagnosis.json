@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-30",
+  "resolved": false,
+  "active_model_sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+  "model_weights_changed": false,
+  "training_published": false,
+  "diagnostic_models_removed_bytes": 59455129,
+  "regression_tests_passed": 50,
+  "isolated_tests": [
+    {
+      "torch": "2.1.2+cu121",
+      "cuda": "12.1",
+      "gpu": "RTX 2080 Ti",
+      "custom_extensions": false,
+      "iterations": 10000,
+      "completed": 4833,
+      "passed": false,
+      "elapsed_seconds": 10.640302926301956,
+      "error": "CUDA device-side assert in IndexKernel"
+    },
+    {
+      "torch": "2.4.1+cu121",
+      "custom_extensions": false,
+      "passed": false,
+      "repeated": true,
+      "error": "CUDA device-side assert in boolean indexing"
+    },
+    {
+      "torch": "2.1.2+cu121",
+      "cache_disabled": true,
+      "iterations": 1000,
+      "passed": true,
+      "limitation": "The subsequent uncached 6000-step training still failed with illegal memory access."
+    }
+  ],
+  "candidate_patch": {
+    "change": "Initialize per-tile max_contrib; correct upstream debug output unpacking",
+    "isolated_tree": "/root/autodl-tmp/hybrid-fvv-validation/3D-4DGS-training-fix",
+    "short_training_steps_passed": 30,
+    "full_training_passed": false,
+    "deployed": false
+  },
+  "live_ui_validation": {
+    "job": "lego-20261030T085603714579Z",
+    "state": "failed",
+    "training_started": false,
+    "error": "GPU 基础运算自检未通过，尚未开始训练；原模型未变。请先修复 GPU/CUDA 运行环境。",
+    "active_models": 1,
+    "original_model_render_frames_passed": 12
+  },
+  "limitations": [
+    "This evidence does not distinguish a hardware fault from a CUDA/driver/runtime defect.",
+    "A passing short health check cannot certify GPU correctness.",
+    "No new model or visual quality improvement is claimed."
+  ]
+}

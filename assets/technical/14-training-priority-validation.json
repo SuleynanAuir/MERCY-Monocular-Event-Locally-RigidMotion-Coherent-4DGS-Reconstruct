@@ -1,0 +1,59 @@
+{
+  "job": {
+    "id": "lego-20261030T151111741796Z",
+    "scene": "lego",
+    "state": "complete",
+    "progress": 100,
+    "iteration": 6000,
+    "iterations": 6000,
+    "stage": "训练完成，可加载浏览",
+    "error": ""
+  },
+  "gpu": "RTX 3080",
+  "health": {
+    "iterations": 10000,
+    "completed": 10000,
+    "passed": true
+  },
+  "training_elapsed_seconds": 167.86145993508399,
+  "validation_psnr": 32.263473224639895,
+  "new_model": {
+    "id": "lego-20261030T151111741796Z",
+    "scene": "lego",
+    "bytes": 80929556,
+    "trained_at": "2026-10-30T15:14:11.255666+00:00",
+    "sha256": "157711f5cffb94d520b4f7cf6738e2f602996d88953deb282832084b8f1f7603",
+    "active": false
+  },
+  "preserved_active_model": {
+    "id": "lego-20261029T192250510289Z",
+    "scene": "lego",
+    "bytes": 118464020,
+    "trained_at": "2026-10-29T19:22:50.510289+00:00",
+    "sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a",
+    "active": true
+  },
+  "restored_viewer_ports": [
+    8893,
+    8895,
+    8898,
+    8899,
+    8903,
+    8905,
+    8908,
+    8909
+  ],
+  "restoration_check": "All eight processes restarted and returned HTTP 200; assets load on demand",
+  "active_model_render_check": {
+    "frames": 30,
+    "sha256": "ccb09bb51b42717d212f55a6425c3f6ab9c540d0f23859ff393e7f9ea7c2840a"
+  },
+  "ui": {
+    "dynamic_free_view_button_removed": true,
+    "six_view_and_hybrid_entry_preserved": true
+  },
+  "tests": {
+    "backend": 41,
+    "frontend": 54
+  }
+}

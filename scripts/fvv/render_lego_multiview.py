@@ -3,7 +3,8 @@
 Run with --disable-autoexec. Never saves or changes the source .blend file.
 Generated source-scene supervision is explicitly separate from observed video.
 """
-import argparse,json,sys,time,shutil
+import argparse,json,sys,time,shutil,math
+from mathutils import Matrix
 from pathlib import Path
 import bpy
 import numpy as np
@@ -17,10 +18,12 @@ def main():
     p.add_argument('--cpu',action='store_true')
     p.add_argument('--validation-only',action='store_true')
     p.add_argument('--distances',type=float,nargs='+',default=[.5,1.5])
+    p.add_argument('--angles',type=float,nargs='+',default=[0.],help='Horizontal orbit degrees around the source object')
     p.add_argument('--frames',type=int,nargs='+')
     a=p.parse_args(sys.argv[sys.argv.index('--')+1:])
     if not 2<=a.times<=100 or not 16<=a.samples<=128:raise ValueError('Export exceeds budget')
     if not all(np.isfinite(d) and 0<=d<=3 for d in a.distances):raise ValueError('Distances must be finite and within 0..3')
+    if not all(np.isfinite(x) and abs(x)<=60 for x in a.angles):raise ValueError('Orbit angles must be within 60 degrees')
     reuse_views={}
     if a.reuse:
         reuse_manifest=json.loads((a.reuse/'views.json').read_text())
@@ -46,16 +49,25 @@ def main():
     scene.render.resolution_percentage=100;scene.render.resolution_x=640;scene.render.resolution_y=640
     records=[];start=time.monotonic()
     indices=a.frames if a.frames else np.linspace(0,398,a.times).round().astype(int)
-    if not all(0<=i<=398 for i in indices) or len(indices)*len(a.distances)>200:raise ValueError('View budget exceeded')
+    if not all(0<=i<=398 for i in indices) or len(indices)*len(a.distances)*len(a.angles)>200:raise ValueError('View budget exceeded')
     for k,index in enumerate(indices):
         scene.frame_set(1+int(index)*10)
-        for j,distance in enumerate(a.distances):
+        for j,(distance,angle) in enumerate((d,angle) for d in a.distances for angle in a.angles):
             scene.camera.matrix_world=original.copy()
             scene.camera.location+=original.col[2].xyz*(distance/unit_scale)
+            if angle:
+                base=transform@np.asarray(original)@np.diag([1,-1,-1,1]);base[:3,:3]/=unit_scale
+                theta=math.radians(-angle)
+                rotate=np.array([[math.cos(theta),0,math.sin(theta)],[0,1,0],[-math.sin(theta),0,math.cos(theta)]])
+                target=base[:3,3]+base[:3,:3]@np.array([0,0,1.5])
+                orbit=np.eye(4);orbit[:3,:3]=base[:3,:3]@rotate
+                orbit[:3,3]=target-orbit[:3,:3]@np.array([0,0,1.5+distance])
+                orbit[:3,:3]*=unit_scale
+                scene.camera.matrix_world=Matrix((np.linalg.inv(transform)@orbit@np.diag([1,-1,-1,1])).tolist())
             name=f'{index:03d}-{j}.png';scene.render.filepath=str(a.output/name)
             reused=a.reuse/name if a.reuse else None
             previous=reuse_views.get(name,{})
-            if reused and reused.is_file() and previous.get('distance')==distance and previous.get('time')==float(index/60):
+            if reused and reused.is_file() and previous.get('distance')==distance and previous.get('angle',0)==angle and previous.get('time')==float(index/60):
                 shutil.copyfile(reused,a.output/name)
             else:
                 bpy.ops.render.render(write_still=True)
@@ -63,9 +75,9 @@ def main():
             c2w=transform@np.asarray(scene.camera.matrix_world)@np.diag([1,-1,-1,1])
             c2w[:3,:3]/=unit_scale
             records.append(dict(file=name,time=float(index/60),position=c2w[:3,3].tolist(),
-                c2w=c2w.tolist(),fov=provenance['fov_degrees'],split='validation' if a.validation_only or k%8==4 else 'train',distance=distance))
+                c2w=c2w.tolist(),fov=provenance['fov_degrees'],split='validation' if a.validation_only or k%8==4 else 'train',distance=distance,angle=angle))
             (a.output/'views.json').write_text(json.dumps(dict(source=bpy.data.filepath,
-                scope='rendered supplied source scene, NOT newly captured real camera images',samples=a.samples,expected_views=len(indices)*len(a.distances),
+                scope='rendered supplied source scene, NOT newly captured real camera images',samples=a.samples,expected_views=len(indices)*len(a.distances)*len(a.angles),
                 elapsed_seconds=time.monotonic()-start,views=records),indent=2))
             print('VIEW_DONE',len(records),flush=True)
             if sum(f.stat().st_size for f in a.output.iterdir())>256*1024**2:raise OSError('View export exceeds 256 MiB')

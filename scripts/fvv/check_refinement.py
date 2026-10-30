@@ -18,7 +18,8 @@ def run(a):
     for name,model,row in [('previous',a.previous,1),('refined',a.model,2)]:
         r=hybrid.Renderer(SimpleNamespace(repo=a.repo.resolve(),model=model.resolve(),temporal_sigma=1/60))
         from utils.loss_utils import ssim
-        p=dict(position=[0,0,0],yaw=0,pitch=0,fov=r.meta['fov'],width=640,height=640)
+        p=dict(position=[0,0,0],yaw=0,pitch=0,fov=r.meta['fov'],width=640,height=640,
+               temporal_samples=a.temporal_samples if name=='refined' else 1)
         accum={k:dict(temporal_residual=[],interior_temporal_residual=[],second_difference_residual=[],legacy_evaluation_mse=[],odd_frame_mse=[]) for k in rois}
         quality=[];prev=None;prev2=None;previous_target=None
         for i in range(399):
@@ -67,7 +68,7 @@ def run(a):
             dynamic_points=len(r.model.get_xyz),static_points=len(r.model.get_static_xyz))
         provenance=model/'refinement-provenance.json'
         scope=json.loads(provenance.read_text()).get('evaluation_scope') if provenance.exists() else 'previous development holdouts'
-        results[name]=dict(sha256=r.meta['sha256'],evaluation_scope=scope,checks=checks,
+        results[name]=dict(temporal_samples=p['temporal_samples'],sha256=r.meta['sha256'],evaluation_scope=scope,checks=checks,
             offgrid_second_difference={k:float(np.mean(v)) for k,v in offgrid.items()},rois={k:{metric:float(np.mean(v)) for metric,v in data.items()} for k,data in accum.items()},
             legacy_evaluation_frame_quality={k:float(np.mean([v[k] for v in quality])) for k in quality[0]})
         del r;torch.cuda.empty_cache()
@@ -78,4 +79,5 @@ def run(a):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     for n in ['repo','previous','model','video','output']:p.add_argument('--'+n,type=Path,required=True)
+    p.add_argument('--temporal-samples',type=int,choices=[1,3],default=1,help='Candidate rendering samples; previous stays at one')
     run(p.parse_args())

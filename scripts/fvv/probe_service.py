@@ -30,14 +30,14 @@ async def probe(args):
                 last = 0.
                 for i in range(count):
                     await credits.acquire()
-                    await asyncio.sleep(max(0, 1/60-(time.perf_counter()-last)))
+                    await asyncio.sleep(max(0, 1/args.fps-(time.perf_counter()-last)))
                     lo, hi = status['time_duration']
                     pose = dict(position=[status['position'][0]+.1*math.sin(i*.1),*status['position'][1:]],
                         yaw=status['yaw']+10*math.sin(i*.1),pitch=status['pitch'],time=lo+(hi-lo)*(i%61)/60,
-                        width=args.width,height=args.height,fov=status.get('fov',60))
+                        temporal_samples=args.temporal_samples,width=args.width,height=args.height,fov=status.get('fov',60),jpeg_quality=args.quality)
                     if args.motion == 'dolly':
                         pose.update(position=[*status['position'][:2],status['position'][2]-(1-math.cos(i*2*math.pi/360))],
-                                    yaw=status['yaw'],time=lo+(i/60)%(hi-lo))
+                                    yaw=status['yaw'],time=lo+(i/args.fps)%(hi-lo))
                     last = time.perf_counter()
                     sent.append(last)
                     await ws.send_json(pose)
@@ -67,8 +67,8 @@ async def probe(args):
         def p95(values):
             return sorted(values)[math.ceil(.95*len(values))-1]
         return dict(scope='bounded WebSocket + network + JPEG decode; NOT browser display FPS',
-            scene=args.scene,motion=args.motion,model_sha256=status['sha256'],revision=status['revision'],
-            max_in_flight=args.window,frames=len(intervals),width=args.width,height=args.height,
+            scene=args.scene,motion=args.motion,temporal_samples=args.temporal_samples,target_fps=args.fps,model_sha256=status['sha256'],revision=status['revision'],
+            max_in_flight=args.window,jpeg_quality=args.quality,frames=len(intervals),width=args.width,height=args.height,
             duration_seconds=sum(intervals)/1000,mean_ms=statistics.mean(intervals),p95_ms=p95(intervals),
             mean_fps=1000/statistics.mean(intervals),roundtrip_mean_ms=statistics.mean(roundtrips),
             roundtrip_p95_ms=p95(roundtrips),mean_jpeg_bytes=statistics.mean(sizes),
@@ -80,8 +80,11 @@ if __name__=='__main__':
     parser.add_argument('--url',required=True)
     parser.add_argument('--scene',required=True)
     parser.add_argument('--motion',choices=['orbit','dolly'],default='orbit')
+    parser.add_argument('--temporal-samples',type=int,choices=[1,3],default=1)
+    parser.add_argument('--fps',type=int,choices=[60,90,120],default=60)
+    parser.add_argument('--quality',type=int,choices=[92,95,98],default=95)
     parser.add_argument('--frames',type=int,default=120)
-    parser.add_argument('--window',type=int,choices=[1,2,3],default=1)
+    parser.add_argument('--window',type=int,choices=[1,2,3,4,6,8],default=1)
     parser.add_argument('--width',type=int,default=960)
     parser.add_argument('--height',type=int,default=640)
     args=parser.parse_args()
