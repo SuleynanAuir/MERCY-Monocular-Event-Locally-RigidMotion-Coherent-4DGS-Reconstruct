@@ -37,17 +37,18 @@ def training_error(output):
 
 
 def unpack_model(archive, target, revision, scene):
-    """Extract exactly three regular files with quotas and fixed paths."""
+    """Extract fixed regular files, optionally one declared bounded bucket sidecar."""
     with zipfile.ZipFile(archive) as bundle:
         entries = bundle.infolist()
-        if len(entries) != 3 or {x.filename for x in entries} != FILES:
-            raise ValueError('模型包根目录必须且只能包含 manifest.json、effective.yaml、model.pth')
+        names={x.filename for x in entries}
+        if len(entries)!=len(names) or names not in (FILES,FILES|{'rigid-bucket.npz'}):
+            raise ValueError('模型包必须包含 manifest.json、effective.yaml、model.pth，仅允许附加 rigid-bucket.npz')
         if sum(x.file_size for x in entries) > UNPACK_LIMIT:
             raise ValueError('模型解压后不能超过 1 GiB')
         for entry in entries:
             if entry.is_dir() or (entry.external_attr >> 16) & 0o170000 == 0o120000:
                 raise ValueError('不接受目录或符号链接')
-            limit = UNPACK_LIMIT if entry.filename == 'model.pth' else 128 * 1024
+            limit = UNPACK_LIMIT if entry.filename == 'model.pth' else 128*1024**2 if entry.filename=='rigid-bucket.npz' else 128 * 1024
             if entry.file_size > limit:
                 raise ValueError('模型元数据或检查点超过限额')
             count = 0
@@ -67,6 +68,11 @@ def unpack_model(archive, target, revision, scene):
     for name, key in [('model.pth','sha256'), ('effective.yaml','config_sha256')]:
         if digest(target/name) != meta[key]:
             raise ValueError('模型校验失败：'+name)
+    bucket=meta.get('rigid_bucket')
+    if bool(bucket)!=('rigid-bucket.npz' in names):raise ValueError('铲头模型附属文件与声明不匹配')
+    if bucket and (bucket.get('schema') not in (1,2,3) or not bucket.get('trained') or digest(target/'rigid-bucket.npz')!=bucket.get('sha256')):
+        raise ValueError('铲头模型未完成训练或校验失败')
+    if bucket and (target/'rigid-bucket.npz').stat().st_size>{1:32,2:64,3:128}[bucket['schema']]*1024**2:raise ValueError('部件模型超过版本限额')
     return meta
 
 
@@ -96,7 +102,8 @@ class ModelManager:
                 meta = json.loads((path/'manifest.json').read_text())
                 if meta.get('scene') != scene or not (path/'model.pth').is_file():
                     continue
-                result.append(dict(id=path.name,scene=scene,bytes=(path/'model.pth').stat().st_size,
+                sidecar=(path/'rigid-bucket.npz').stat().st_size if meta.get('rigid_bucket') else 0
+                result.append(dict(id=path.name,scene=scene,bytes=(path/'model.pth').stat().st_size+sidecar,
                                    trained_at=meta.get('trained_at') or (None if meta.get('imported_at') else datetime.fromtimestamp((path/'model.pth').stat().st_mtime,timezone.utc).isoformat()),
                                    sha256=meta['sha256'],active=self.current() is not None and path.resolve() == Path(self.current()).resolve()))
             except (OSError, ValueError, KeyError):
@@ -226,7 +233,7 @@ class ModelManager:
                 meta=unpack_model(archive,target,self.revision,scene)
                 for existing in self.models(scene):
                     existing_meta=json.loads((self.root/existing['id']/'manifest.json').read_text())
-                    if existing['sha256']==meta['sha256'] and existing_meta['config_sha256']==meta['config_sha256']:
+                    if existing['sha256']==meta['sha256'] and existing_meta['config_sha256']==meta['config_sha256'] and existing_meta.get('rigid_bucket',{}).get('sha256')==meta.get('rigid_bucket',{}).get('sha256'):
                         return web.json_response({'id':existing['id'],'deduplicated':True})
                 meta['imported_at']=model_timestamp()
                 (target/'manifest.json').write_text(json.dumps(meta,indent=2))

@@ -116,6 +116,18 @@ class OfflineSafety(unittest.TestCase):
             spec.loader.exec_module(module)
         return module
 
+    def test_manifest_uses_checkpoint_iteration(self):
+        module=self.adapter()
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            (root/'model.pth').write_bytes(b'checkpoint')
+            (root/'effective.yaml').write_text('config')
+            args=SimpleNamespace(repo=root,scene='lego',position=[0,0,0],yaw=0,pitch=0,budget_gib=1)
+            settings=SimpleNamespace(time_duration=[0,1],frame_ratio=1,iterations=18000)
+            with patch.object(module,'revision',return_value='a'*40),patch.object(module,'load_checkpoint',return_value=((),6000)):
+                module.manifest(args,settings,root)
+            self.assertEqual(json.loads((root/'manifest.json').read_text())['training_iteration'],6000)
+
     def test_compaction_preserves_inference_fields(self):
         module = self.adapter()
         sentinel = object()
@@ -265,6 +277,39 @@ class FramePipelineTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(yaws[-1],9)
             else:self.assertEqual(yaws,list(range(10)))
             for frame in ws.output:self.assertEqual(frame[:4],b'FVV1')
+
+
+class ModelStatusSwitch(unittest.IsolatedAsyncioTestCase):
+    async def test_switch_removes_previous_refinement_and_failure_restores_state(self):
+        module=OfflineSafety().adapter();captured={}
+        class Manager:
+            def __init__(self,args,revision,current,load):captured['load']=load
+            def install(self,app):pass
+        class Renderer:
+            def __init__(self,args):
+                if args.model.name=='broken':raise ValueError('bad model')
+                self.meta=dict(scene='lego',position=[0,0,0],yaw=0,pitch=0,time_duration=[0,1],sha256=args.model.name)
+                if args.model.name=='old':self.meta.update(training_iteration=68000,refinement={'steps':10000})
+                else:self.meta['training_iteration']=6000
+                self.temporal_sigma=0
+            def frame(self,pose):return b'jpeg'
+        args=SimpleNamespace(repo=Path('/unused'),model=Path('/old'),port=0)
+        with patch.object(module,'Renderer',Renderer),patch.object(module,'revision',return_value='test'),patch.dict(sys.modules,{'management':SimpleNamespace(ModelManager=Manager)}),patch.object(web,'run_app',side_effect=lambda app,**kw:captured.update(app=app)):
+            module.serve(args)
+            client=TestClient(TestServer(captured['app']));await client.start_server()
+            try:
+                for _ in range(50):
+                    status=await (await client.get('/status')).json()
+                    if status['ready']:break
+                    await asyncio.sleep(.01)
+                self.assertIn('refinement',status)
+                await captured['load'](Path('/new'))
+                status=await (await client.get('/status')).json()
+                self.assertEqual(status['training_iteration'],6000)
+                self.assertNotIn('refinement',status)
+                with self.assertRaises(ValueError):await captured['load'](Path('/broken'))
+                self.assertEqual(await (await client.get('/status')).json(),status)
+            finally:await client.close()
 
 
 if __name__ == "__main__":

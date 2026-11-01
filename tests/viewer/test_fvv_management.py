@@ -1,6 +1,7 @@
 import asyncio
 import importlib.util
 import io
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -70,10 +71,34 @@ class ManagementTests(unittest.IsolatedAsyncioTestCase):
     async def test_import_deduplicates_and_cleans_temporary_files(self):
         r=await self.client.post('/models/import?scene=lego',data=self.bundle());self.assertEqual(r.status,200)
         self.assertEqual((await r.json())['id'],'existing');self.assertEqual(list(self.root.iterdir()),[self.old])
+
+    async def test_bucket_sidecar_is_required_hashed_and_not_deduplicated_as_plain_parent(self):
+        sidecar=b'bounded-sidecar-fixture'
+        meta=dict(self.meta,rigid_bucket=dict(schema=1,trained=True,sha256=hashlib.sha256(sidecar).hexdigest()))
+        missing=self.bundle({'manifest.json':json.dumps(meta).encode()})
+        r=await self.client.post('/models/import?scene=lego',data=missing);self.assertEqual(r.status,400)
+        for payload in [self.bundle({'rigid-bucket.npz':sidecar}),self.bundle({'manifest.json':json.dumps(meta).encode(),'rigid-bucket.npz':b'corrupt'})]:
+            r=await self.client.post('/models/import?scene=lego',data=payload);self.assertEqual(r.status,400)
+        valid=self.bundle({'manifest.json':json.dumps(meta).encode(),'rigid-bucket.npz':sidecar})
+        r=await self.client.post('/models/import?scene=lego',data=valid);self.assertEqual(r.status,201)
+        result=await r.json();self.assertFalse(result['deduplicated']);self.assertNotEqual(result['id'],'existing')
+        listed=next(x for x in self.manager.models('lego') if x['id']==result['id'])
+        self.assertEqual(listed['bytes'],(self.old/'model.pth').stat().st_size+len(sidecar))
+        r=await self.client.post('/models/import?scene=lego',data=valid);self.assertEqual(r.status,200)
+        self.assertTrue((await r.json())['deduplicated'])
     async def test_import_rejects_traversal_bad_hash_and_wrong_scene(self):
         for content,scene in [(self.bundle({'../escape':b'x'}),'lego'),(self.bundle({'model.pth':b'changed'}),'lego'),(self.bundle(),'fan')]:
             r=await self.client.post('/models/import?scene='+scene,data=content);self.assertEqual(r.status,400)
             self.assertEqual(list(self.root.iterdir()),[self.old]);self.assertEqual(common.digest(self.old/'model.pth'),self.meta['sha256'])
+
+    async def test_articulated_sidecar_import_and_unknown_schema(self):
+        sidecar=b'articulated-fixture'
+        for schema,status in [(4,400),(2,201),(3,201)]:
+            sidecar=('articulated-fixture-'+str(schema)).encode()
+            meta=dict(self.meta,rigid_bucket=dict(schema=schema,trained=True,sha256=hashlib.sha256(sidecar).hexdigest()))
+            payload=self.bundle({'manifest.json':json.dumps(meta).encode(),'rigid-bucket.npz':sidecar})
+            reply=await self.client.post('/models/import?scene=lego',data=payload)
+            self.assertEqual(reply.status,status)
     async def test_import_rejects_symlink(self):
         stream=io.BytesIO()
         with zipfile.ZipFile(stream,'w') as z:

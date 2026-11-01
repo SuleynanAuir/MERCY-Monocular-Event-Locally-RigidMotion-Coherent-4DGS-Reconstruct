@@ -66,8 +66,15 @@ def run(a):
             changed_time_mean_difference=float((still-moving).abs().mean()),
             model_bytes=(model/'model.pth').stat().st_size,
             dynamic_points=len(r.model.get_xyz),static_points=len(r.model.get_static_xyz))
+        if r.bucket is not None:
+            checks['rigid_surface_points']=len(r.bucket.values['points'])
+            checks['rigid_bucket_points']=r.meta['rigid_bucket'].get('original_bucket_points',len(r.bucket.values['points']))
+            checks['rigid_arm_points']=r.meta['rigid_bucket'].get('arm_points',0)
+            checks['rigid_body_points']=r.meta['rigid_bucket'].get('body_points',0)
+            checks['model_bytes']+=(model/'rigid-bucket.npz').stat().st_size
         provenance=model/'refinement-provenance.json'
         scope=json.loads(provenance.read_text()).get('evaluation_scope') if provenance.exists() else 'previous development holdouts'
+        if r.meta.get('rigid_bucket'):scope='Production fit to all original frames and supplied source motion; no held-out reconstruction claim'
         results[name]=dict(temporal_samples=p['temporal_samples'],sha256=r.meta['sha256'],evaluation_scope=scope,checks=checks,
             offgrid_second_difference={k:float(np.mean(v)) for k,v in offgrid.items()},rois={k:{metric:float(np.mean(v)) for metric,v in data.items()} for k,data in accum.items()},
             legacy_evaluation_frame_quality={k:float(np.mean([v[k] for v in quality])) for k in quality[0]})

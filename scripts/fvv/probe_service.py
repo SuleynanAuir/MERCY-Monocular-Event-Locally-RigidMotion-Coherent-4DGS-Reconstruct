@@ -67,7 +67,7 @@ async def probe(args):
         def p95(values):
             return sorted(values)[math.ceil(.95*len(values))-1]
         return dict(scope='bounded WebSocket + network + JPEG decode; NOT browser display FPS',
-            scene=args.scene,motion=args.motion,temporal_samples=args.temporal_samples,target_fps=args.fps,model_sha256=status['sha256'],revision=status['revision'],
+            scene=args.scene,motion=args.motion,temporal_samples=args.temporal_samples,target_fps=args.fps,model_sha256=status['sha256'],model_sidecar_sha256=status.get('rigid_bucket',{}).get('sha256'),revision=status['revision'],
             max_in_flight=args.window,jpeg_quality=args.quality,frames=len(intervals),width=args.width,height=args.height,
             duration_seconds=sum(intervals)/1000,mean_ms=statistics.mean(intervals),p95_ms=p95(intervals),
             mean_fps=1000/statistics.mean(intervals),roundtrip_mean_ms=statistics.mean(roundtrips),

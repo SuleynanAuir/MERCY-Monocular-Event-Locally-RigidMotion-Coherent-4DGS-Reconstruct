@@ -1,6 +1,7 @@
 """Optional FVV routes. Never import Hybrid/CUDA into the original renderer."""
 import asyncio
 import os
+import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -19,7 +20,7 @@ def install_fvv(app, upstream=None):
 
     async def asset(request):
         name = request.match_info.get('asset', 'fvv.html')
-        if name not in {'fvv.html', 'fvv.js', 'fvv-loop-cache.js', 'fvv.css', 'fvv-manager.js', 'fvv-entry.js'}:
+        if name not in {'fvv.html', 'fvv.js', 'fvv-loop-cache.js', 'fvv.css', 'fvv-manager.js', 'fvv-entry.js', 'fvv-export.js'}:
             raise web.HTTPNotFound()
         return web.FileResponse(static / name, headers={'Cache-Control': 'no-store'})
 
@@ -40,7 +41,10 @@ def install_fvv(app, upstream=None):
             raise web.HTTPForbidden()
         endpoint = request.match_info['endpoint']
         allowed = {('GET','models'),('POST','models/load'),('POST','models/import'),('POST','models/delete'),('POST','training')}
-        if (request.method,endpoint) not in allowed:
+        export_route = ((request.method,endpoint) in {('GET','orbit-export'),('POST','orbit-export'),('POST','orbit-export/cancel')} or
+                        request.method=='GET' and re.fullmatch(r'orbit-export/[a-f0-9]{32}/(video|parameters)',endpoint) or
+                        request.method=='POST' and re.fullmatch(r'orbit-export/[a-f0-9]{32}/delete',endpoint))
+        if (request.method,endpoint) not in allowed and not export_route:
             raise web.HTTPNotFound()
         limit = 512*1024**2 if endpoint == 'models/import' else 4096
         if request.content_length and request.content_length > limit:
@@ -57,6 +61,13 @@ def install_fvv(app, upstream=None):
                 async with session.request(request.method,base+'/'+endpoint,params=request.query,
                     data=body() if request.method=='POST' else None,
                     headers={'Content-Type':request.headers.get('Content-Type','application/json')}) as remote:
+                    if request.method=='GET' and re.fullmatch(r'orbit-export/[a-f0-9]{32}/(video|parameters)',endpoint):
+                        headers={k:remote.headers[k] for k in ('Content-Type','Content-Disposition','Content-Length') if k in remote.headers}
+                        response=web.StreamResponse(status=remote.status,headers=headers)
+                        await response.prepare(request)
+                        async for chunk in remote.content.iter_chunked(256*1024):await response.write(chunk)
+                        await response.write_eof()
+                        return response
                     return web.Response(body=await remote.read(),status=remote.status,
                         headers={'Content-Type':remote.headers.get('Content-Type','text/plain'),'Cache-Control':'no-store'})
         except (aiohttp.ClientError, asyncio.TimeoutError):

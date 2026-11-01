@@ -19,11 +19,14 @@ def main():
     p.add_argument('--validation-only',action='store_true')
     p.add_argument('--distances',type=float,nargs='+',default=[.5,1.5])
     p.add_argument('--angles',type=float,nargs='+',default=[0.],help='Horizontal orbit degrees around the source object')
+    p.add_argument('--elevations',type=float,nargs='+',default=[0.],help='Camera elevation degrees above/below the original orbit')
+    p.add_argument('--cycle-elevations',action='store_true',help='Rotate elevations across time and angle, increasing motion coverage at fixed image count')
     p.add_argument('--frames',type=int,nargs='+')
     a=p.parse_args(sys.argv[sys.argv.index('--')+1:])
     if not 2<=a.times<=100 or not 16<=a.samples<=128:raise ValueError('Export exceeds budget')
     if not all(np.isfinite(d) and 0<=d<=3 for d in a.distances):raise ValueError('Distances must be finite and within 0..3')
-    if not all(np.isfinite(x) and abs(x)<=60 for x in a.angles):raise ValueError('Orbit angles must be within 60 degrees')
+    if not all(np.isfinite(x) and abs(x)<=180 for x in a.angles):raise ValueError('Orbit angles must be within 180 degrees')
+    if not all(np.isfinite(x) and abs(x)<=45 for x in a.elevations):raise ValueError('Elevations must be within 45 degrees')
     reuse_views={}
     if a.reuse:
         reuse_manifest=json.loads((a.reuse/'views.json').read_text())
@@ -49,16 +52,21 @@ def main():
     scene.render.resolution_percentage=100;scene.render.resolution_x=640;scene.render.resolution_y=640
     records=[];start=time.monotonic()
     indices=a.frames if a.frames else np.linspace(0,398,a.times).round().astype(int)
-    if not all(0<=i<=398 for i in indices) or len(indices)*len(a.distances)*len(a.angles)>200:raise ValueError('View budget exceeded')
+    expected=len(indices)*len(a.distances)*len(a.angles)*(1 if a.cycle_elevations else len(a.elevations))
+    if not all(0<=i<=398 for i in indices) or expected>512:raise ValueError('View budget exceeded')
     for k,index in enumerate(indices):
         scene.frame_set(1+int(index)*10)
-        for j,(distance,angle) in enumerate((d,angle) for d in a.distances for angle in a.angles):
+        poses=[(d,angle,e) for d in a.distances for ai,angle in enumerate(a.angles)
+               for e in ([a.elevations[(k+ai)%len(a.elevations)]] if a.cycle_elevations else a.elevations)]
+        for j,(distance,angle,elevation) in enumerate(poses):
             scene.camera.matrix_world=original.copy()
             scene.camera.location+=original.col[2].xyz*(distance/unit_scale)
-            if angle:
+            if angle or elevation:
                 base=transform@np.asarray(original)@np.diag([1,-1,-1,1]);base[:3,:3]/=unit_scale
                 theta=math.radians(-angle)
                 rotate=np.array([[math.cos(theta),0,math.sin(theta)],[0,1,0],[-math.sin(theta),0,math.cos(theta)]])
+                tilt=math.radians(-elevation)
+                rotate=rotate@np.array([[1,0,0],[0,math.cos(tilt),-math.sin(tilt)],[0,math.sin(tilt),math.cos(tilt)]])
                 target=base[:3,3]+base[:3,:3]@np.array([0,0,1.5])
                 orbit=np.eye(4);orbit[:3,:3]=base[:3,:3]@rotate
                 orbit[:3,3]=target-orbit[:3,:3]@np.array([0,0,1.5+distance])
@@ -67,7 +75,7 @@ def main():
             name=f'{index:03d}-{j}.png';scene.render.filepath=str(a.output/name)
             reused=a.reuse/name if a.reuse else None
             previous=reuse_views.get(name,{})
-            if reused and reused.is_file() and previous.get('distance')==distance and previous.get('angle',0)==angle and previous.get('time')==float(index/60):
+            if reused and reused.is_file() and previous.get('distance')==distance and previous.get('angle',0)==angle and previous.get('elevation',0)==elevation and previous.get('time')==float(index/60):
                 shutil.copyfile(reused,a.output/name)
             else:
                 bpy.ops.render.render(write_still=True)
@@ -75,12 +83,12 @@ def main():
             c2w=transform@np.asarray(scene.camera.matrix_world)@np.diag([1,-1,-1,1])
             c2w[:3,:3]/=unit_scale
             records.append(dict(file=name,time=float(index/60),position=c2w[:3,3].tolist(),
-                c2w=c2w.tolist(),fov=provenance['fov_degrees'],split='validation' if a.validation_only or k%8==4 else 'train',distance=distance,angle=angle))
+                c2w=c2w.tolist(),fov=provenance['fov_degrees'],split='validation' if a.validation_only or k%8==4 else 'train',distance=distance,angle=angle,elevation=elevation))
             (a.output/'views.json').write_text(json.dumps(dict(source=bpy.data.filepath,
-                scope='rendered supplied source scene, NOT newly captured real camera images',samples=a.samples,expected_views=len(indices)*len(a.distances)*len(a.angles),
+                scope='rendered supplied source scene, NOT newly captured real camera images',samples=a.samples,expected_views=expected,
                 elapsed_seconds=time.monotonic()-start,views=records),indent=2))
             print('VIEW_DONE',len(records),flush=True)
             if sum(f.stat().st_size for f in a.output.iterdir())>256*1024**2:raise OSError('View export exceeds 256 MiB')
-            if time.monotonic()-start>30*60:raise TimeoutError('View export exceeded 30 minutes')
+            if time.monotonic()-start>120*60:raise TimeoutError('View export exceeded 120 minutes')
 
 if __name__=='__main__':main()

@@ -102,6 +102,7 @@ def manifest(args, settings, root):
                 config='effective.yaml', config_sha256=digest(root/'effective.yaml'),
                 time_duration=duration, position=args.position, yaw=args.yaw, pitch=args.pitch,
                 fov=float(getattr(settings, 'viewer_fov', 60)),
+                training_iteration=int(load_checkpoint(root/'model.pth','cpu')[1]),
                 bytes=usage(root), budget_bytes=int(args.budget_gib * 1024**3))
     (root/'manifest.json').write_text(json.dumps(data, indent=2))
 
@@ -216,7 +217,8 @@ class Renderer:
         self.model = GaussianModel(settings.sh_degree, gaussian_dim=4,
             time_duration=self.meta['time_duration'], rot_4d=settings.rot_4d,
             force_sh_3d=settings.force_sh_3d, sh_degree_t=2 if self.pipe.eval_shfs_4d else 0)
-        state, _ = load_checkpoint(self.root/'model.pth', 'cuda')
+        state, iteration = load_checkpoint(self.root/'model.pth', 'cuda')
+        self.meta['training_iteration'] = int(iteration)
         self.model.restore(state, None)
         self.temporal_sigma = float(getattr(args, 'temporal_sigma', 0))
         if not math.isfinite(self.temporal_sigma) or not 0 <= self.temporal_sigma <= 1/30:
@@ -230,6 +232,12 @@ class Renderer:
             select(args.repo, True)
             self.pipe.opa_threshold = self.temporal_sigma
         self.bg = torch.tensor([1.,1.,1.] if settings.white_background else [0.,0.,0.], device='cuda')
+        self.base_render_fn = self.render_fn
+        self.bucket = None
+        if self.meta.get('rigid_bucket'):
+            from rigid_bucket import Bucket
+            self.bucket = Bucket.load(self.root, self.meta['rigid_bucket'])
+            self.render_fn = self.bucket.wrap(self.base_render_fn)
 
     def frame(self, pose, raw=False, pixels=False):
         import numpy as np
@@ -350,8 +358,11 @@ def serve(args):
             response.headers['Cache-Control'] = 'no-store'
         return response
     app = web.Application(middlewares=[local], client_max_size=4096)
+    exporter = None
     async def load_model(model):
         nonlocal renderer
+        if exporter is not None and exporter.running:
+            raise RuntimeError('正在导出环绕视频，请等待完成或取消')
         previous, previous_state = renderer, dict(state)
         if active_ws is not None:
             await active_ws.close(code=1012, message=b'Model switching')
@@ -366,6 +377,7 @@ def serve(args):
                 await asyncio.get_running_loop().run_in_executor(pool, candidate.frame, pose)
             renderer = candidate
             args.model = model
+            state.clear()
             state.update(ready=True, message='Hybrid 模型已就绪', **renderer.meta)
             state['temporal_sigma_seconds'] = renderer.temporal_sigma
         except Exception:
@@ -415,6 +427,13 @@ def serve(args):
     from management import ModelManager
     manager = ModelManager(args, revision(args.repo), lambda: args.model.resolve(), load_model)
     manager.install(app)
+    try:
+        from orbit_export import OrbitExporter
+    except ModuleNotFoundError:
+        from scripts.fvv.orbit_export import OrbitExporter
+    exporter = OrbitExporter(args.model.resolve().parent, lambda: renderer, pool,
+        lambda: not state['ready'] or getattr(manager,'loading',False) or bool(getattr(manager,'job',None) and manager.job['state']=='running'))
+    exporter.install(app)
     app.router.add_get('/status', status)
     app.router.add_get('/ws', socket)
     web.run_app(app, host='127.0.0.1', port=args.port)

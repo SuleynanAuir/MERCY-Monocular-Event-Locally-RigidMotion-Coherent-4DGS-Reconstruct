@@ -11,6 +11,22 @@
   const loopCache = new FVVLoopCache(blob => createImageBitmap(blob));
   let loopState=null, idleSince=performance.now(), lastLoopIndex=-1, reconnectTimer, reconnectAttempts=0, resumeState=null;
   let displayIntervals=[], lastTick=0, receiveTimes=[], nextPresentation=0, presentationStarted=false, liveWidth=960, lastQualityChange=0;
+  let lastModelCheck=0, modelCheckPending=false;
+  const modelIdentity = info => JSON.stringify([info?.scene,info?.sha256,info?.config_sha256,info?.rigid_bucket?.sha256]);
+  async function refreshCachedModel(now) {
+    if(modelCheckPending || connecting || now-lastModelCheck<10000 || loopState?.phase!=='playing')return;
+    lastModelCheck=now;modelCheckPending=true;
+    const token=generation, identity=modelIdentity(metadata);
+    try {
+      const response=await fetch('/fvv/status'+query,{cache:'no-store',...(typeof AbortSignal!=='undefined' ? {signal:AbortSignal.timeout(8000)} : {})});
+      if(!response.ok)return;
+      const info=await response.json();
+      // A sidecar-only update keeps the core checkpoint hash unchanged.
+      // Preserve cached playback during outages, but retire it for a new model.
+      if(token===generation && info.ready && modelIdentity(info)!==identity)await connect();
+    } catch (_) { /* Keep the current loop during temporary transport failure. */ }
+    finally {modelCheckPending=false;}
+  }
   function clearFrames() {for(const frame of frames)frame.bitmap.close();frames=[];}
   function invalidateView() {
     idleSince=performance.now();
@@ -195,6 +211,7 @@
         try{beginLoop();}catch(error){$('smoothLoop').checked=false;$('message').textContent=error.message;}
       }
       if(loopState?.phase==='playing') {
+        refreshCachedModel(now);
         advanceClock(now);
         const [lo,hi]=metadata.time_duration;
         const index=Math.min(loopState.count-1,Math.floor((current-lo)/(hi-lo)*loopState.count));
@@ -263,6 +280,6 @@
   };
   document.addEventListener('visibilitychange', () => { if (document.hidden) {savePose();disconnect();} else { lastDisplay=0; connect(); } });
   window.addEventListener('pagehide', disconnect);
-  window.FVV = {connect, disconnect};
+  window.FVV = {connect, disconnect, exportPose:()=>metadata ? {position:[...position],yaw,pitch,time:current,fov:Number($('fov').value),temporal_samples:Number($('temporalSamples').value)||3} : null};
   connect(); requestAnimationFrame(tick);
 })();

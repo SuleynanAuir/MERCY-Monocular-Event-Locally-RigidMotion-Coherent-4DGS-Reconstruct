@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实时动态浏览高斯 · MERCY</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/fvv/fvv.css"><script src="/fvv/fvv-loop-cache.js" defer></script><script src="/fvv/fvv.js" defer></script><script src="/fvv/fvv-manager.js" defer></script></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实时动态浏览高斯 · MERCY</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/fvv/fvv.css"><script src="/fvv/fvv-loop-cache.js" defer></script><script src="/fvv/fvv.js" defer></script><script src="/fvv/fvv-manager.js" defer></script><script src="/fvv/fvv-export.js" defer></script></head>
 <body><header><a id="back" href="/">← 返回原视图</a><strong>实时动态浏览高斯</strong><span>Hybrid 3D-4DGS · FVV</span></header>
 <main><section class="view"><canvas id="fvvCanvas" tabindex="0" aria-label="自由视角动态高斯；拖动旋转，WASD 移动，QE 升降"></canvas><div id="message" role="status">正在检查离线模型…</div></section>
 <aside><section class="model-panel"><h1>模型与训练</h1>
@@ -19,6 +19,18 @@
 <label>垂直视野<input id="fov" type="range" min="20" max="100" value="60"></label>
 <label><input id="adaptivePreview" type="checkbox" checked>移动时自适应预览（最低 640 px）</label><p class="note">移动中用单次采样提高响应速度；停稳后恢复抗闪烁。关闭自适应可固定所选分辨率，模型精度不变。</p>
 <label><input id="smoothLoop" type="checkbox">视角停稳后预载，流畅循环播放</label><p id="cacheStatus" class="note">当前视角预载完成后不依赖网络逐帧传输；移动视角立即重新渲染。仅内存缓存，最多 96 MiB 图像数据。</p>
+<h2>环绕视频</h2>
+<label>镜头路线<select id="orbitPath"><option id="legoOverviewPath" value="overview" selected>Lego 四周全貌 · 平稳小幅起伏</option><option id="legoOrbitPath" value="showcase">Lego 精选小弧线 · 正面轻移</option><option value="full">完整 360° 环绕 · 从当前视角开始</option></select></label>
+<label>视频时长<select id="orbitSeconds"><option value="6">6 秒</option><option value="12">12 秒</option><option value="24" selected>24 秒</option></select></label>
+<label>视频帧率<select id="orbitFps"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option></select></label>
+<label>视频分辨率<select id="orbitWidth"><option value="640">640 × 360</option><option value="960">960 × 540</option><option value="1280" selected>1280 × 720</option></select></label>
+<label>目标距离<input id="orbitRadius" type="number" value="1.5" min="0.2" max="20" step="0.1"></label>
+<label>上下摆动角度<input id="orbitElevation" type="number" value="15" min="0" max="35" step="1"> °</label>
+<p class="note">四周全貌路线围绕物体完整一圈，保持固定距离，俯角仅在 1°–3°间轻微变化，缓起缓停并保持物件完整入镜。小弧线路线从 Lego 原始正面开始，缓慢侧转 3°、抬高 0.5°后返回，保持固定距离与构图；不经过背面。完整环绕使用当前镜头与目标距离、摆动角度，可能显示尚未重建完整的区域。动态时间正常播放，视频不含界面文字。</p>
+<button id="saveOrbit">保存动态高斯环绕视频</button><button id="cancelOrbit" hidden>取消导出</button>
+<progress id="orbitProgress" max="100" value="0" hidden></progress><p id="orbitStatus" role="status"></p>
+<p class="note">导出占用 GPU，可能暂时降低浏览帧率。MP4 内含参数摘要，JSON 另存每帧完整轨迹。每次最多 256 MiB，总导出预算 1 GiB；下载后可删除服务器副本。</p>
+<div id="orbitDownloads"></div>
 <h2>动态时间</h2><button id="play" disabled>暂停</button><input id="time" aria-label="模型时间" type="range" min="0" max="1" step="0.001" value="0" disabled><output id="timestamp">—</output>
 <p id="metrics">等待渲染</p><button id="reconnect">重新连接</button><button id="report">下载性能记录</button>
 <p class="note">图像由 GPU 按当前相机实时渲染。默认提高图像传输质量；模型参数保持原精度。低帧率会如实显示，不自动降低模型质量。</p><p class="note">尚未训练的场景不会替换成视频或其他模型。部署与验收见 assets/technical/14-hybrid-fvv.md。</p></aside></main></body></html>
