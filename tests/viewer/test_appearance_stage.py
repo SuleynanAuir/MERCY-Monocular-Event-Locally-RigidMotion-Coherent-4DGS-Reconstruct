@@ -70,3 +70,46 @@ class AppearanceStageTests(unittest.TestCase):
 
     def test_wrong_shape_rejected(self):
         with self.assertRaises(ValueError):validate_attribute('opacity',np.zeros((1,2),np.float32),np.zeros((2,1),np.float32))
+
+    def test_optional_sh_stage_preserves_legacy_and_rejects_wrong_shape(self):
+        import torch, tempfile, json
+        from pathlib import Path
+        from types import SimpleNamespace
+        from utils.appearance_stage import apply_stage
+        from utils.experiment_format import sha256
+        if not torch.cuda.is_available():self.skipTest('GPU stage loader')
+        model=SimpleNamespace(_features_dc=torch.zeros(2,1,3,device='cuda'),
+            _features_rest=torch.zeros(2,15,3,device='cuda'),_opacity=torch.zeros(2,1,device='cuda'),
+            _scaling=torch.zeros(2,3,device='cuda'))
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'stage.npz'
+            fields=dict(features_dc=np.ones((2,1,3),np.float32),opacity=np.zeros((2,1),np.float32),
+                scaling=np.zeros((2,3),np.float32),metadata_json=np.asarray(json.dumps(dict(
+                    format='scgs_appearance_stage_v1',parent_sha256='parent'))))
+            for rest in (None,np.full((2,15,3),.2,np.float32)):
+                np.savez_compressed(path,**fields,**({} if rest is None else dict(features_rest=rest)))
+                apply_stage(model,Path(folder)/'manifest.json',dict(path=path.name,sha256=sha256(path)),'parent')
+                torch.testing.assert_close(model._features_rest,torch.full((2,15,3),0. if rest is None else .2,device='cuda'))
+            np.savez_compressed(path,**fields,features_rest=np.zeros((2,3,3),np.float32))
+            with self.assertRaises(ValueError):apply_stage(model,Path(folder)/'manifest.json',dict(path=path.name,sha256=sha256(path)),'parent')
+
+    def test_explicit_sh_degree_expands_dc_only_parent(self):
+        import torch, tempfile, json
+        from pathlib import Path
+        from types import SimpleNamespace
+        from utils.appearance_stage import apply_stage
+        from utils.experiment_format import sha256
+        if not torch.cuda.is_available():self.skipTest('GPU stage loader')
+        model=SimpleNamespace(_features_dc=torch.zeros(2,1,3,device='cuda'),
+            _features_rest=torch.empty(2,0,3,device='cuda'),_opacity=torch.zeros(2,1,device='cuda'),
+            _scaling=torch.zeros(2,3,device='cuda'),active_sh_degree=0,max_sh_degree=0)
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'stage.npz'
+            np.savez_compressed(path,features_dc=np.zeros((2,1,3),np.float32),
+                opacity=np.zeros((2,1),np.float32),scaling=np.zeros((2,3),np.float32),
+                features_rest=np.full((2,15,3),.1,np.float32),
+                metadata_json=np.asarray(json.dumps(dict(format='scgs_appearance_stage_v1',parent_sha256='p',sh_degree=3))))
+            apply_stage(model,Path(folder)/'manifest.json',dict(path=path.name,sha256=sha256(path)),'p')
+            self.assertEqual(model.active_sh_degree,3)
+            self.assertEqual(tuple(model._features_rest.shape),(2,15,3))
+            torch.testing.assert_close(model._features_rest,torch.full((2,15,3),.1,device='cuda'))

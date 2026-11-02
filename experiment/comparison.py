@@ -80,6 +80,15 @@ def run(source,output,progress_path):
         progress('import',1,detail='读取实验数据；ZIP 使用临时解压，结束后清理')
         root=extract(source,Path(temporary)/'source',lambda d,t,s:progress('import',1+4*d/t,d,t,s)) if source.is_file() else locate_manifest(source)
         manifest=json.loads((root/'manifest.json').read_text());validate(manifest)
+        appearance=manifest.get('scene_info',{}).get('appearance_refinement') or {}
+        if appearance.get('train_frames'):
+            sampled={row['frame'] for row in manifest['samples']}
+            overlap=sampled.intersection(appearance['train_frames'])
+            validation=sampled.intersection(appearance.get('validation_frames',[]))
+            if len(appearance.get('train_views',[]))>1:
+                warnings.append('V3 使用源三维资产合成多视角与原始 RGB 联合监督。本报告仍为原视频视角，部分时刻参与训练及选点；合成多视角验收另见独立报告。并非新增真实多视角采集或独立新物件测试。')
+            else:
+                warnings.append(f'V3 使用同一源视角的 RGB 监督优化；本报告 {len(sampled)} 个时刻中 {len(overlap)} 个参与训练、{len(validation)} 个用于留出验证及检查点选择。不是独立测试集或新视角泛化证明。')
         if any(s['render_mode']!='gaussian' for s in manifest['samples']):warnings.append('包含非 Gaussian 显示模式：图像分数仅为显示外观差异，不是原生 RGB 重建质量')
         verify(root,manifest,lambda d,t,s:progress('verify',5+5*d/max(t,1),d,t,s))
         data=output/'data';data.mkdir(exist_ok=True);fingerprint=sha(root/'manifest.json')

@@ -80,6 +80,21 @@ def apply_stage(model, manifest_path, entry, parent_sha, frame_count=None):
                 values=data[field]
                 validate_attribute(field, values, getattr(model, attr).detach().cpu().numpy())
                 setattr(model, attr, torch.tensor(values, device='cuda'))
+            if 'features_rest' in data:
+                values=data['features_rest']
+                parent_rest=model._features_rest.detach().cpu().numpy()
+                degree=meta.get('sh_degree')
+                if values.shape!=parent_rest.shape and parent_rest.shape[1]==0:
+                    if (type(degree) is not int or not 1<=degree<=3
+                            or values.shape!=(len(parent_rest),(degree+1)**2-1,3)):
+                        raise ValueError('Invalid expanded SH stage')
+                    parent_rest=np.zeros_like(values)
+                validate_attribute('features_rest',values,parent_rest)
+                model._features_rest=torch.tensor(values,device='cuda')
+                if degree is not None:
+                    if type(degree) is not int or not 0<=degree<=3 or values.shape[1]!=(degree+1)**2-1:
+                        raise ValueError('SH degree does not match coefficients')
+                    model.active_sh_degree=model.max_sh_degree=degree
             if meta.get('temporal'):
                 if frame_count is None or meta['temporal']['frame_count'] != frame_count:
                     raise ValueError('Temporal appearance timeline does not match parent')

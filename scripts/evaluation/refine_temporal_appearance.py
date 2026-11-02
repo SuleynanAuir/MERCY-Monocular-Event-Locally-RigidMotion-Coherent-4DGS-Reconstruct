@@ -15,7 +15,19 @@ import numpy as np
 from utils.experiment_format import sha256, save_json
 
 
-def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, initialize=None, degree=5, spatial_weight=.01, ssim_weight=0., neighbor_count=4, freeze_surface=False, color_bound=None, smooth_field=False, geometry_bound=0., freeze_appearance=False, freeze_geometry=False, geometry_groups=None, rotation_trajectory=None):
+def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, initialize=None, degree=5, spatial_weight=.01, ssim_weight=0., neighbor_count=4, freeze_surface=False, color_bound=None, smooth_field=False, geometry_bound=0., freeze_appearance=False, freeze_geometry=False, geometry_groups=None, rotation_trajectory=None, geometry_dice_weight=.5, final_lr_ratio=1., supersample=1, foreground_coverage_weight=0., preserve_unobserved=False, train_sh=False):
+    if not np.isfinite(geometry_dice_weight) or geometry_dice_weight < 0:
+        raise ValueError('Geometry dice weight must be finite and nonnegative')
+    if not np.isfinite(final_lr_ratio) or not 0 < final_lr_ratio <= 1:
+        raise ValueError('Final learning rate ratio must be in (0, 1]')
+    if type(iterations) is not int or iterations < 1:
+        raise ValueError('Iterations must be positive')
+    from utils.render_sampling import validate_supersample
+    validate_supersample(supersample)
+    if not np.isfinite(foreground_coverage_weight) or foreground_coverage_weight < 0:
+        raise ValueError('Foreground coverage weight must be finite and nonnegative')
+    if preserve_unobserved and (smooth_field or geometry_groups or rotation_trajectory):
+        raise ValueError('Visibility protection requires per-Gaussian parameters')
     import torch
     from PIL import Image
     from viewer import Renderer
@@ -31,13 +43,20 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
         raise ValueError('Smooth field needs a fresh fixed surface and an explicit RGB bound')
     if output.exists(): raise FileExistsError(output)
     output.mkdir(parents=True)
-    source=json.loads(reference.read_text());rows=source['samples'];camera=source['camera']
+    source=json.loads(reference.read_text());rows=source['samples'];camera=source.get('camera',rows[0].get('camera'))
     if not all(r.get('rgb') and r.get('foreground_mask') for r in rows):
         raise ValueError('Aligned RGB and shared mask required')
     r=Renderer(sequence,'cpu');r.load();model=r.model
     pose=np.asarray(camera['pose_opengl_c2w']);h,w=camera['height'],camera['width']
-    fovy=2*np.arctan(h/(2*camera['K'][1][1]));cam=make_camera(pose,w,h,fovy)
-    bg=torch.tensor(source.get('background_rgb',[0.,0.,0.]),device='cuda')
+    fovy=2*np.arctan(h/(2*camera['K'][1][1]));cam=make_camera(pose,w*supersample,h*supersample,fovy)
+    row_cameras=[];camera_cache={}
+    for row in rows:
+        spec=row.get('camera',camera);key=json.dumps(spec,sort_keys=True)
+        if key not in camera_cache:
+            ch,cw=spec['height'],spec['width'];fy=2*np.arctan(ch/(2*spec['K'][1][1]))
+            camera_cache[key]=make_camera(np.asarray(spec['pose_opengl_c2w']),cw*supersample,ch*supersample,fy)
+        row_cameras.append(camera_cache[key])
+    bg=torch.tensor(source.get('background_rgb',[0.,0.,0.]),device='cuda',dtype=torch.float32)
     rgb=[torch.tensor(np.asarray(Image.open(reference.parent/x['rgb']).convert('RGB')).copy(),device='cuda').permute(2,0,1).float()/255 for x in rows]
     masks=[torch.tensor(np.asarray(Image.open(reference.parent/x['foreground_mask'])).copy()!=0,device='cuda')[None] for x in rows]
     part_weights=[];part_labels=[];part_counts=[]
@@ -53,7 +72,12 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
             labels=torch.tensor(labels.astype(np.int64),device='cuda').flatten()
             part_labels.append(labels);part_counts.append(torch.bincount(labels))
     achromatic = all(float((x.max(0).values-x.min(0).values).max()) < 1e-6 for x in rgb)
-    validation=[i for i in range(len(rows)) if i%5==4];training=[i for i in range(len(rows)) if i not in validation]
+    if any('split' in row for row in rows):
+        if any(row.get('split') not in ('train','validation') for row in rows):raise ValueError('Explicit split required for every sample')
+        training=[i for i,row in enumerate(rows) if row['split']=='train'];validation=[i for i,row in enumerate(rows) if row['split']=='validation']
+    else:
+        validation=[i for i in range(len(rows)) if i%5==4];training=[i for i in range(len(rows)) if i not in validation]
+    if not training:raise ValueError('No training samples')
     if len(validation)<3:raise ValueError('Too few held-out samples')
     original={attr:getattr(model,attr).detach().clone() for attr in FIELDS.values()}
     for attr in FIELDS.values():setattr(model,attr,torch.nn.Parameter(original[attr].clone()))
@@ -110,6 +134,12 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
         _, nearest = cKDTree(xyz).query(xyz,k=neighbor_count,workers=4)
         neighbors = torch.tensor(nearest[:,1:].copy(),dtype=torch.long,device='cuda')
     for attr in ('_features_rest','_xyz','_rotation'):getattr(model,attr).requires_grad_(False)
+    if train_sh:
+        if model._features_rest.shape[1]==0:
+            # Viewer losslessly folds all-zero SH to DC-only; expand explicitly for training.
+            model._features_rest=torch.zeros((len(model._xyz),15,3),device='cuda')
+            model.active_sh_degree=model.max_sh_degree=3
+        model._features_rest=torch.nn.Parameter(model._features_rest.detach().clone())
     parameters=([{'params':[field],'lr':.004}] if smooth_field else [{'params':[dc],'lr':.008}, {'params':[coefficients],'lr':.008}])
     if rotation_trajectory:parameters=[{'params':[coefficients],'lr':.008}]
     if freeze_appearance:
@@ -121,7 +151,9 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
     for attr, rate in (('_opacity', .015), ('_scaling', .0015)):
         getattr(model, attr).requires_grad_(not freeze_surface)
         if not freeze_surface: parameters.append({'params':[getattr(model,attr)],'lr':rate})
+    if train_sh:parameters.append({'params':[model._features_rest],'lr':.002})
     optimizer=torch.optim.Adam(parameters)
+    initial_rates=[group['lr'] for group in optimizer.param_groups]
     perceptual=None
     if perceptual_weight:
         from unittest.mock import patch
@@ -148,7 +180,13 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
             model._xyz[r.dynamic_indices]=state[:,:3];model._rotation[r.dynamic_indices]=state[:,3:7]
         if displacement is not None:
             model._xyz=model._xyz+qrotate(model.get_rotation,qrotate(rest_inverse,displacement))
-        return render(cam,model,r.pipe,bg,0.,0.,0.)
+        result=render(row_cameras[i],model,r.pipe,bg,0.,0.,0.)
+        if supersample != 1:
+            # Match the viewer: clamp RGB before area reduction; average alpha.
+            from utils.render_sampling import resolve_rgb
+            result['render']=resolve_rgb(result['render'],supersample)
+            result['alpha']=torch.nn.functional.avg_pool2d(result['alpha'],supersample)
+        return result
     def score(indices):
         errors=[];ious=[];distances=[];missing=[];parts=[]
         with torch.no_grad():
@@ -175,6 +213,9 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
             for field,attr in FIELDS.items():
                 validate_attribute(field,data[field],original[attr].cpu().numpy())
                 getattr(model,attr).copy_(torch.tensor(data[field],device='cuda'))
+            if 'features_rest' in data:
+                validate_attribute('features_rest',data['features_rest'],model._features_rest.detach().cpu().numpy())
+                model._features_rest.copy_(torch.tensor(data['features_rest'],device='cuda'))
             if 'temporal_dc' in data:
                 from utils.appearance_stage import validate_temporal
                 metadata=json.loads(str(data['metadata_json']))
@@ -193,8 +234,25 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
                 if geometry_groups:
                     for g,(ids,b) in enumerate(zip(geometry_indices,geometry_bases)):
                         geometry_field[g].copy_(torch.linalg.solve(b.T@b+len(ids)*1e-5*torch.eye(64,device='cuda'),b.T@displacement[ids]))
+    sh_anchor=model._features_rest.detach().clone() if train_sh else None
     previous = score(validation)
     temporal_active = True
+    visibility = None
+    protected = []
+    if preserve_unobserved:
+        # Use actual image contribution, not frustum membership (radii > 0).
+        # Only training timestamps determine which parameters can change.
+        contribution=torch.zeros(len(dc),device='cuda')
+        for i in training:
+            result=frame(i)
+            if not dc.requires_grad:raise ValueError('Visibility protection requires trainable DC')
+            derivative=torch.autograd.grad(result['render'].sum(),dc)[0]
+            contribution=torch.maximum(contribution,derivative.abs().sum((1,2)))
+        visibility=contribution>1e-4
+        if not visibility.any():raise ValueError('No visible training Gaussians')
+        for parameter in (dc,coefficients,model._opacity,model._scaling,displacement,model._features_rest if train_sh else None):
+            if parameter is not None:protected.append((parameter,parameter.detach().clone()))
+        print('VISIBLE',int(visibility.sum()),'OF',len(visibility),flush=True)
     # Finite equivalents of parent opacity sentinels allow coverage refinement.
     opacity_center = torch.nan_to_num(original['_opacity'],posinf=8.,neginf=-8.)
     if not freeze_surface:
@@ -202,15 +260,22 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
     print('BASELINE',baseline,flush=True)
     print('PREVIOUS_V3',previous,flush=True)
     for step in range(iterations):
+        # Decay optional; default 1 preserves previous training behavior.
+        ratio=final_lr_ratio**(step/max(iterations-1,1))
+        for group,rate in zip(optimizer.param_groups,initial_rates):group['lr']=rate*ratio
         i=training[step%len(training)];optimizer.zero_grad(set_to_none=True)
         result=frame(i);image=result['render'];mask=masks[i];error=(image-rgb[i]).square()
         photometric=(error*mask).sum()/(mask.sum()*3)+.2*(error*~mask).sum()/((~mask).sum()*3)
         coverage=(result['alpha']-mask.float()).square().mean()
         loss=photometric+.15*coverage+.0002*coefficients.square().mean()
+        if train_sh:loss=loss+.001*(model._features_rest-sh_anchor).square().mean()
+        if foreground_coverage_weight:
+            deficit=torch.relu(.7-result['alpha']).square()
+            loss=loss+foreground_coverage_weight*(deficit*mask).sum()/mask.sum().clamp_min(1)
         if displacement is not None:
             alpha=result['alpha']
             dice=1-(2*(alpha*mask).sum()+1)/(alpha.sum()+mask.sum()+1)
-            loss=loss+.5*dice+.01*(displacement/geometry_bound).square().mean()
+            loss=loss+geometry_dice_weight*dice+.01*(displacement/geometry_bound).square().mean()
             if geometry_groups:
                 loss=loss+.4*((1-alpha)*part_weights[i]).sum()
         if ssim_weight:loss=loss+ssim_weight*(1-ssim(image.clamp(0,1)[None],rgb[i][None]))
@@ -223,7 +288,11 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
             if displacement is not None:
                 loss=loss+.1*((displacement[sites][:,None]-displacement[adjacent])/geometry_bound).square().mean()
         if perceptual is not None:loss=loss+perceptual_weight*perceptual(image.clamp(0,1)[None]*2-1,rgb[i][None]*2-1).mean()
-        loss.backward();optimizer.step()
+        loss.backward()
+        if visibility is not None:
+            for parameter,_ in protected:
+                if parameter.grad is not None:parameter.grad[~visibility]=0
+        optimizer.step()
         with torch.no_grad():
             if displacement is not None:
                 displacement.mul_((geometry_bound/displacement.norm(dim=1,keepdim=True).clamp_min(1e-8)).clamp(max=1))
@@ -254,6 +323,11 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
             if not freeze_surface:
                 model._opacity.copy_(torch.maximum(torch.minimum(model._opacity,opacity_center+2),opacity_center-2))
                 model._scaling.copy_(torch.maximum(torch.minimum(model._scaling,original['_scaling']+.2),original['_scaling']-.2))
+        if train_sh:
+            with torch.no_grad():model._features_rest.copy_(torch.maximum(torch.minimum(model._features_rest,sh_anchor+.5),sh_anchor-.5))
+        if visibility is not None:
+            with torch.no_grad():
+                for parameter,initial in protected:parameter[~visibility]=initial[~visibility]
         if (step+1)%100==0 or step+1==iterations:
             measured=score(validation);history.append(dict(iteration=step+1,**measured));print('VALIDATION',history[-1],flush=True)
             def objective(value):
@@ -268,28 +342,37 @@ def refine(sequence, reference, output, iterations=1600, perceptual_weight=.03, 
                 metadata=dict(format='scgs_appearance_stage_v1',parent_sha256=sha256(sequence),
                     reference_sha256=sha256(reference),train_frames=[rows[i]['frame'] for i in training],
                     initialization_sha256=sha256(initialize) if initialize else None,perceptual_weight=perceptual_weight,
-                    temporal=temporal_metadata,
+                    temporal=temporal_metadata,train_sh=train_sh,sh_degree=model.active_sh_degree,
+                    train_views=sorted({rows[i].get('view','source') for i in training}),
+                    validation_views=sorted({rows[i].get('view','source') for i in validation}),
                     dc_anchor='original parent; static rows unchanged' if rotation_trajectory else None,
                     achromatic_reference=achromatic,spatial_weight=spatial_weight,
                     freeze_surface=freeze_surface,color_bound_rgb=color_bound,smooth_field=smooth_field,
                     spatial_field_basis='normalized Gaussian RBF 4x4x4, sigma 0.65' if smooth_field else None,
                     ssim_weight=ssim_weight,neighbor_count=neighbor_count,
+                    geometry_dice_weight=geometry_dice_weight,final_lr_ratio=final_lr_ratio,
+                    render_supersample=supersample,foreground_coverage_weight=foreground_coverage_weight,
+                    preserve_unobserved=preserve_unobserved,visible_gaussians=int(visibility.sum()) if visibility is not None else None,
                     selection='Joint MSE/LPIPS/IoU/coverage objective; both missing rates must improve; MSE/LPIPS bounded to previous +10 percent' if geometry_groups else 'Minimum validation LPIPS, MSE within 5 percent of previous stage' if ssim_weight else 'Minimum validation foreground MSE',
                     validation_frames=[rows[i]['frame'] for i in validation],baseline=baseline,validation=best,
                     changes=('Bounded temporal DC color only; opacity, scales, centers, rotations and motion frozen' if freeze_surface else 'Smooth temporal DC color, opacity and bounded log-scale; centers, rotations, identities and motion frozen'),
-                    scope='Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training')
+                    scope=('Source-asset synthetic multiview supervision; held-out camera directions; not captured multiview RGB or event-only training' if len(camera_cache)>1 else 'Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training'))
                 if displacement is not None:
                     metadata['geometry_refinement']=dict(max_offset_scene_units=geometry_bound,representation='time-independent local Gaussian-frame offset; follows parent rigid motion',regularization='part-local continuous RBF' if geometry_groups else 'canonical neighbor displacement smoothness',freeze_appearance=freeze_appearance,freeze_geometry=freeze_geometry,groups_sha256=sha256(geometry_groups) if geometry_groups else None)
                     metadata['changes']=('Temporal appearance over fixed refined geometry' if freeze_geometry else 'Bounded canonical geometry offsets; parent motion, scales and opacity frozen' if freeze_surface else 'Bounded canonical geometry offsets and appearance parameters')
                 np.savez_compressed(output/'appearance.npz',metadata_json=np.asarray(json.dumps(metadata)),
                     **({'geometry_offset_local':qrotate(rest_inverse,displacement).detach().cpu().numpy()} if displacement is not None else {}),
+                    **({'training_visibility':visibility.detach().cpu().numpy()} if visibility is not None else {}),
+                    **({'features_rest':model._features_rest.detach().cpu().numpy()} if train_sh else {}),
                     temporal_dc=coefficients.detach().cpu().numpy(),
                     **{field:(dc if field=='features_dc' else getattr(model,attr)).detach().cpu().numpy() for field,attr in FIELDS.items()})
     save_json(output/'training.json',dict(baseline=baseline,selected=best,history=history,iterations=iterations,
-        previous_v3=previous, temporal_degree=degree, temporal=temporal_metadata,
+        previous_v3=previous, temporal_degree=degree, temporal=temporal_metadata,train_sh=train_sh,sh_degree=model.active_sh_degree,
+        final_lr_ratio=final_lr_ratio,render_supersample=supersample,foreground_coverage_weight=foreground_coverage_weight,
+        preserve_unobserved=preserve_unobserved,visible_gaussians=int(visibility.sum()) if visibility is not None else None,
         geometry_bound=geometry_bound,freeze_appearance=freeze_appearance,freeze_geometry=freeze_geometry,
         geometry_groups=str(geometry_groups) if geometry_groups else None,geometry_groups_sha256=sha256(geometry_groups) if geometry_groups else None,
-        geometry_loss_weights=dict(dice=.5,displacement=.01,neighbor=.1,balanced_parts=.4 if geometry_groups else 0.) if geometry_bound else None,
+        geometry_loss_weights=dict(dice=geometry_dice_weight,displacement=.01,neighbor=.1,balanced_parts=.4 if geometry_groups else 0.) if geometry_bound else None,
         achromatic_reference=achromatic,spatial_weight=spatial_weight,
         freeze_surface=freeze_surface,color_bound_rgb=color_bound,smooth_field=smooth_field,
         ssim_weight=ssim_weight,neighbor_count=neighbor_count,
@@ -309,6 +392,12 @@ if __name__=='__main__':
     p.add_argument('--color-bound',type=float)
     p.add_argument('--smooth-field',action='store_true')
     p.add_argument('--geometry-bound',type=float,default=0.)
+    p.add_argument('--geometry-dice-weight',type=float,default=.5,help='Reduce for photometric masks that are not geometry ground truth')
+    p.add_argument('--final-lr-ratio',type=float,default=1.,help='Exponential learning-rate decay endpoint ratio')
+    p.add_argument('--supersample',type=int,choices=(1,2),default=1,help='Match the viewer render sampling factor')
+    p.add_argument('--foreground-coverage-weight',type=float,default=0.)
+    p.add_argument('--train-sh',action='store_true',help='Fit bounded view-dependent SH residuals with multiview supervision')
+    p.add_argument('--preserve-unobserved',action='store_true',help='Freeze parameters without measured training-view contribution')
     p.add_argument('--freeze-appearance',action='store_true')
     p.add_argument('--freeze-geometry',action='store_true')
     p.add_argument('--geometry-groups',type=Path)
@@ -317,4 +406,4 @@ if __name__=='__main__':
     p.add_argument('--spatial-weight',type=float,default=.01)
     p.add_argument('--ssim-weight',type=float,default=0.)
     p.add_argument('--neighbor-count',type=int,default=4)
-    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize,a.degree,a.spatial_weight,a.ssim_weight,a.neighbor_count,a.freeze_surface,a.color_bound,a.smooth_field,a.geometry_bound,a.freeze_appearance,a.freeze_geometry,a.geometry_groups,a.rotation_trajectory)
+    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize,a.degree,a.spatial_weight,a.ssim_weight,a.neighbor_count,a.freeze_surface,a.color_bound,a.smooth_field,a.geometry_bound,a.freeze_appearance,a.freeze_geometry,a.geometry_groups,a.rotation_trajectory,a.geometry_dice_weight,a.final_lr_ratio,a.supersample,a.foreground_coverage_weight,a.preserve_unobserved,a.train_sh)

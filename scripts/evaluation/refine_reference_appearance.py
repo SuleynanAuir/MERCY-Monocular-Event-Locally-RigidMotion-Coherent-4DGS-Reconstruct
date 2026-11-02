@@ -14,7 +14,11 @@ import numpy as np
 from utils.experiment_format import sha256, save_json
 
 
-def refine(sequence, reference, output, iterations=400, perceptual_weight=0., initialize=None):
+def refine(sequence, reference, output, iterations=400, perceptual_weight=0., initialize=None, structure_weight=0., anchor_weight=0., smoothness_weight=0.):
+    if type(iterations) is not int or iterations < 1:
+        raise ValueError('Iterations must be positive')
+    if any(not np.isfinite(v) or v < 0 for v in (perceptual_weight, structure_weight, anchor_weight, smoothness_weight)):
+        raise ValueError('Loss weights must be finite and nonnegative')
     import torch
     from PIL import Image
     from viewer import Renderer
@@ -67,6 +71,7 @@ def refine(sequence, reference, output, iterations=400, perceptual_weight=0., in
                 if perceptual is not None:distances.append(float(perceptual(image[None]*2-1,rgb[i][None]*2-1)))
         return dict(foreground_mse=float(np.mean(errors)),iou=float(np.mean(ious)),lpips=float(np.mean(distances)) if distances else None,
                     foreground_psnr=float(np.mean(-10*np.log10(np.maximum(errors,1e-12)))))
+    canonical_xyz=model._xyz.detach().cpu().numpy().copy()
     baseline=score(validation);best=None;history=[]
     if initialize:
         from utils.appearance_stage import validate_attribute
@@ -75,6 +80,29 @@ def refine(sequence, reference, output, iterations=400, perceptual_weight=0., in
             for field,attr in FIELDS.items():
                 validate_attribute(field,data[field],original[attr].cpu().numpy())
                 getattr(model,attr).copy_(torch.tensor(data[field],device='cuda'))
+    # Gate against the actual initialized candidate, not its older parent colors.
+    parent_baseline=baseline
+    baseline=score(validation) if initialize else baseline
+    anchor=model._features_dc.detach().clone()
+    neighbors=None
+    if smoothness_weight:
+        from scipy.spatial import cKDTree
+        from scipy.spatial.transform import Rotation
+        # Local surface neighbors only; reject sharp material/normal boundaries.
+        distance, indices=cKDTree(canonical_xyz).query(canonical_xyz,k=5,workers=4)
+        indices=indices[:,1:];distance=distance[:,1:]
+        colors=anchor.detach().cpu().numpy()[:,0]
+        with np.load(sequence,allow_pickle=False) as data:
+            vertices=data['base_vertices']
+            quats=np.column_stack([vertices[f'rot_{k}'] for k in (1,2,3,0)])
+            rotations=Rotation.from_quat(quats).as_matrix()
+            axis=np.argmin(np.column_stack([vertices[f'scale_{k}'] for k in range(3)]),axis=1)
+            normals=rotations[np.arange(len(vertices)),:,axis]
+        agreement=np.abs(np.einsum('nki,ni->nk',normals[indices],normals))
+        support=(distance<.015)&(agreement>.85)&(np.linalg.norm(colors[indices]-colors[:,None],axis=2)<.30)
+        neighbors=torch.tensor(indices,device='cuda')
+        neighbor_support=torch.tensor(support,device='cuda')
+    from utils.loss_utils import ssim
     print('BASELINE',baseline,flush=True)
     for step in range(iterations):
         i=training[step%len(training)];optimizer.zero_grad(set_to_none=True)
@@ -82,6 +110,14 @@ def refine(sequence, reference, output, iterations=400, perceptual_weight=0., in
         photometric=(error*mask).sum()/(mask.sum()*3)+.2*(error*~mask).sum()/((~mask).sum()*3)
         coverage=(result['alpha']-mask.float()).square().mean()
         loss=photometric+.15*coverage
+        if structure_weight:loss=loss+structure_weight*(1-ssim(image[None],rgb[i][None]))
+        if anchor_weight:loss=loss+anchor_weight*(model._features_dc-anchor).square().mean()
+        if neighbors is not None:
+            ids=torch.randint(len(anchor),(8192,),device='cuda')
+            delta=model._features_dc-anchor
+            residual=(delta[ids,None]-delta[neighbors[ids]]).square().mean((2,3))
+            support=neighbor_support[ids]
+            loss=loss+smoothness_weight*(residual*support).sum()/support.sum().clamp_min(1)
         if perceptual is not None:loss=loss+perceptual_weight*perceptual(image.clamp(0,1)[None]*2-1,rgb[i][None]*2-1).mean()
         loss.backward();optimizer.step()
         with torch.no_grad():
@@ -95,14 +131,14 @@ def refine(sequence, reference, output, iterations=400, perceptual_weight=0., in
                     and (best is None or measured['foreground_mse']<best['foreground_mse'])):
                 best=dict(iteration=step+1,**measured)
                 metadata=dict(format='scgs_appearance_stage_v1',parent_sha256=sha256(sequence),
-                    reference_sha256=sha256(reference),train_frames=[rows[i]['frame'] for i in training],
+                    reference_sha256=sha256(reference),structure_weight=structure_weight,anchor_weight=anchor_weight,smoothness_weight=smoothness_weight,train_frames=[rows[i]['frame'] for i in training],
                     initialization_sha256=sha256(initialize) if initialize else None,perceptual_weight=perceptual_weight,
                     validation_frames=[rows[i]['frame'] for i in validation],baseline=baseline,validation=best,
                     changes='DC color, opacity and bounded log-scale; centers, rotations, point identities and all motion frozen',
                     scope='Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training')
                 np.savez_compressed(output/'appearance.npz',metadata_json=np.asarray(json.dumps(metadata)),
                     **{field:getattr(model,attr).detach().cpu().numpy() for field,attr in FIELDS.items()})
-    save_json(output/'training.json',dict(baseline=baseline,selected=best,history=history,iterations=iterations,
+    save_json(output/'training.json',dict(baseline=baseline,parent_baseline=parent_baseline,structure_weight=structure_weight,anchor_weight=anchor_weight,smoothness_weight=smoothness_weight,selected=best,history=history,iterations=iterations,
         seed=20261027,learning_rates=dict(dc=.015,opacity=.025,log_scale=.003),coverage_weight=.15,
         perceptual_weight=perceptual_weight,initialization_sha256=sha256(initialize) if initialize else None,
         parent=str(sequence),parent_sha256=sha256(sequence),reference=str(reference),reference_sha256=sha256(reference)))
@@ -115,4 +151,6 @@ if __name__=='__main__':
     p.add_argument('--sequence',type=Path,required=True);p.add_argument('--reference',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--iterations',type=int,default=400)
     p.add_argument('--perceptual-weight',type=float,default=0.);p.add_argument('--initialize',type=Path)
-    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize)
+    p.add_argument('--structure-weight',type=float,default=0.);p.add_argument('--anchor-weight',type=float,default=0.)
+    p.add_argument('--smoothness-weight',type=float,default=0.)
+    a=p.parse_args();refine(a.sequence,a.reference,a.output,a.iterations,a.perceptual_weight,a.initialize,a.structure_weight,a.anchor_weight,a.smoothness_weight)
