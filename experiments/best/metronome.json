@@ -1,0 +1,851 @@
+{
+  "object": "metronome",
+  "recommended_version": "V3",
+  "sample_count": 25,
+  "source_original": "experiment/output/metronome_20261027_210532_030915/data/analysis.json",
+  "source_snapshot": "sources/5df55a784066977aa26d1f65e78ecba0c9d6839a062d017f35da8b4c4f4ad79d.json",
+  "source_sha256": "5df55a784066977aa26d1f65e78ecba0c9d6839a062d017f35da8b4c4f4ad79d",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "34.705598197476924",
+    "psnr": "43.245488620437115",
+    "ssim": "0.9950098880132784",
+    "foreground_ssim": "0.9720274995733557",
+    "lpips": "0.013377347327768803",
+    "iou": "0.9619114684053561",
+    "missing": "1.4871858633599546",
+    "part_missing": "31.764644197027",
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "68.70008605718613",
+    "point_count": "1143789",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少原始事件；彩色预览视频不能还原事件计数"
+    }
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "34.705598197476924",
+    "psnr": "43.245488620437115",
+    "ssim": "0.9950098880132784",
+    "foreground_ssim": "0.9720274995733557",
+    "lpips": "0.013377347327768803",
+    "iou": "0.9619114684053561",
+    "missing": "1.4871858633599546",
+    "part_missing": "31.764644197027",
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "68.70008605718613",
+    "point_count": "1143789",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少原始事件；彩色预览视频不能还原事件计数"
+    }
+  },
+  "selection_reason": "本地完整三版本实验中推荐V3；保留原始速度和运动指标，不要求这些指标同步最优。",
+  "attachments": [
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/protocol.json",
+      "snapshot": "sources/884bc3410e7301b38bab569f8bcc5520c3e4844f632a1947c1183faa0af35449.json",
+      "sha256": "884bc3410e7301b38bab569f8bcc5520c3e4844f632a1947c1183faa0af35449",
+      "bytes": 1158
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/availability.json",
+      "snapshot": "sources/36f146ceb9202651e55a8513433bdd654257681f4d4209d9a13a0fadba5325ae.json",
+      "sha256": "36f146ceb9202651e55a8513433bdd654257681f4d4209d9a13a0fadba5325ae",
+      "bytes": 3230
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/version_mapping.json",
+      "snapshot": "sources/a181c59ff018d3b4b520531c02188828f1758ed7bbca4bab56d34c4fbd43117b.json",
+      "sha256": "a181c59ff018d3b4b520531c02188828f1758ed7bbca4bab56d34c4fbd43117b",
+      "bytes": 427
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/input_manifest.json.gz",
+      "snapshot": "sources/5f817cff57b1aba091445539fc545b6ed9f62b68c56e25b85fa1be8e3d70eb7f.json.gz",
+      "sha256": "5f817cff57b1aba091445539fc545b6ed9f62b68c56e25b85fa1be8e3d70eb7f",
+      "bytes": 24471
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/base_metrics.json.gz",
+      "snapshot": "sources/6f376790c73ee6dfba3d185c94082514f3af1bbbd3ba5e81c5f684309c783e67.json.gz",
+      "sha256": "6f376790c73ee6dfba3d185c94082514f3af1bbbd3ba5e81c5f684309c783e67",
+      "bytes": 25561
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/series.npz",
+      "snapshot": "sources/5a0e5d6c411e186795279d3677b9813b17f7b93613f8a59148d6c25933eb2144.npz",
+      "sha256": "5a0e5d6c411e186795279d3677b9813b17f7b93613f8a59148d6c25933eb2144",
+      "bytes": 12734
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/lpips.json",
+      "snapshot": "sources/cf5d4fbfd89da945360e4cbfe35c4f3ea1a1d76f7ab974a93b0fd248810d2ef7.json",
+      "sha256": "cf5d4fbfd89da945360e4cbfe35c4f3ea1a1d76f7ab974a93b0fd248810d2ef7",
+      "bytes": 2588
+    },
+    {
+      "original": "experiment/output/metronome_20261027_210532_030915/data/visualization_protocol.json",
+      "snapshot": "sources/68dbf4906334af9ace72cd29663a802ca34da93b3808773b2525f9f5bea9083d.json",
+      "sha256": "68dbf4906334af9ace72cd29663a802ca34da93b3808773b2525f9f5bea9083d",
+      "bytes": 13617
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/5f817cff57b1aba091445539fc545b6ed9f62b68c56e25b85fa1be8e3d70eb7f.json.gz",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/validated/metronome-pair.json",
+          "sha256": "c689e227b20ab6e4396f6dfcf90d37eb655e87c6b95acb237adcdfafd1f9652c",
+          "bytes": 1055,
+          "available": true,
+          "included": true,
+          "file": "configs/c689e227b20ab6e4396f6dfcf90d37eb655e87c6b95acb237adcdfafd1f9652c.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-results/objects-20261025/metronome/left.npz",
+          "sha256": "80924e13295aaacd8785530e40c54aae3aee02d21e9259350f843cc4acbe3a87",
+          "bytes": 43486327,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-results/objects-20261025/metronome/right.npz",
+          "sha256": "b17320651c4279a6964e9812d23823bfcbd4d4546f8a5d76a651a1b9e7d3765b",
+          "bytes": 310705788,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/metronome-appearance/appearance.npz",
+          "sha256": "b643f94f316c4aeec35015bc70faa044de7c70510adedac8ce7652cc306026d9",
+          "bytes": 10793618,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/metronome-appearance/training.json",
+          "sha256": "4d51992c17c89ba5456b72cbf05db8f5a2699973e0d684d1ccbd20f95660faa4",
+          "bytes": 2122,
+          "available": true,
+          "included": true,
+          "file": "configs/4d51992c17c89ba5456b72cbf05db8f5a2699973e0d684d1ccbd20f95660faa4.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/reference.json",
+          "sha256": "5e578a19b110126ab8b380d342f7ac620c906e7250faa372ce41121244783906",
+          "bytes": 7004,
+          "available": true,
+          "included": true,
+          "file": "configs/5e578a19b110126ab8b380d342f7ac620c906e7250faa372ce41121244783906.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000000.png",
+          "sha256": "16d4dc5145f04fc2f00a33933f1a6daa5a4431e906ed0c5a08ae834ddc0401ed",
+          "bytes": 22454,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000000.png",
+          "sha256": "bfafe003f62c0e3c0fdf27098b6ccbe8a61f5e1cc2c862be53fe142505a3fff8",
+          "bytes": 1290,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000000.png",
+          "sha256": "58da9681d07ce79c2b36d5a9af0807e2e43cdd3b0bd1f4b9fc013d040bc82376",
+          "bytes": 3568,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000002.png",
+          "sha256": "be728d96c9bda6287e1af3ad4abefe69678385103223174338952c3ceaaea27d",
+          "bytes": 24302,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000002.png",
+          "sha256": "bfafe003f62c0e3c0fdf27098b6ccbe8a61f5e1cc2c862be53fe142505a3fff8",
+          "bytes": 1290,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000002.png",
+          "sha256": "d218254bf4bb73206ed42147544907e68a87d755d2f3d2bccc6e372509d55bf9",
+          "bytes": 3639,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000004.png",
+          "sha256": "f0bc5d3b2918076342806f8ca26fa982a4b10894b7585784cedbd30751144500",
+          "bytes": 25239,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000004.png",
+          "sha256": "6c6a5405ccd5e06a3049473171bd1f4241dfda1b67b8b2c074ddcce34987cd17",
+          "bytes": 1337,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000004.png",
+          "sha256": "7e1730ab02faef248f23ef9d7263e305641bb3ba7588032b1c5e215c0cb14e1e",
+          "bytes": 3786,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000006.png",
+          "sha256": "724ae0fe7d6a7db63ce4547f41ffcf88459d059be1d67e78e50fd46b12ce043f",
+          "bytes": 26147,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000006.png",
+          "sha256": "150e80ab78b544cff508e90359b5d744c908d903146f3a2db1d6555ebe6a52f7",
+          "bytes": 1526,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000006.png",
+          "sha256": "58fad161ac5875b8f9b9aee5462c9ab71aa42d5d46a62604f958abbe71567c50",
+          "bytes": 3998,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000008.png",
+          "sha256": "3244c9c66c3ee5b96d23357d20868a8b203705d48e0767bce211f13a9b23ea14",
+          "bytes": 26953,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000008.png",
+          "sha256": "bf6e8a57cd29df8f3f8ad3761dfd34b211c0f707687617d354a7204dfe6c07f0",
+          "bytes": 1663,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000008.png",
+          "sha256": "5dd965b2d1543bed9639a5acac0dbb33a075fde1e000d4ab0a0c9aa1c2442966",
+          "bytes": 4072,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000010.png",
+          "sha256": "d3b6a4f033574ab972336a2dc5961e53f2cda5f1700ea873a64b3c5bea8874b5",
+          "bytes": 27344,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000010.png",
+          "sha256": "a9a1e31b020af1374562f209ca455f70cf43ab55ebf315e0ed6c4351f10cdbd8",
+          "bytes": 1746,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000010.png",
+          "sha256": "242c1c6dbe0d09227793fb19509373d56bb3fdbf6c7c2c630e68ad8abe41140c",
+          "bytes": 4130,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000012.png",
+          "sha256": "22f2b6e1aa1768d5d3a30c4bc10468d2bd86ad564e031f315649cd925d008426",
+          "bytes": 27387,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000012.png",
+          "sha256": "8c94ad4c3939f3bd9bbf6d10a9dd210e84c3f10bb6608f37f7b2e91282ba122c",
+          "bytes": 1730,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000012.png",
+          "sha256": "06e9bac26a7ef178271708d6ee1925190437da2509b801ce729733a97891bbda",
+          "bytes": 4102,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000014.png",
+          "sha256": "dfc7171fccd5f475e96a691d118f41f8c0c60fb087020db0ec00b97043a1c756",
+          "bytes": 27277,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000014.png",
+          "sha256": "2d706430ead880be480b3ebdf7ae24b7266a01a39e394cba66db99f6bfd0f2c3",
+          "bytes": 1725,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000014.png",
+          "sha256": "5d6229aa926d0665f9c1581955d805f0409e7a8d28bbe5c9d50c9818e4fff2f6",
+          "bytes": 4116,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000016.png",
+          "sha256": "75f55018735db02b5865b7a84547743345ff94367e36185ddd3fbcc8300c7398",
+          "bytes": 27122,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000016.png",
+          "sha256": "7ad79c884cc2726c2f2977e6b8275edab9e67298c195196bf75ce058aa5b2509",
+          "bytes": 1740,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000016.png",
+          "sha256": "d5b17d95400136482c73983d70d5fdcac11cffdb32daa605915186a380da1251",
+          "bytes": 4201,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000018.png",
+          "sha256": "d5d4a21c4a4d06afb596b99becdac4195dc4e853ffe5b860262591db25cab9b6",
+          "bytes": 26839,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000018.png",
+          "sha256": "28c6eb1ae3041948a56a94dbb017562edf0255189875ad363cee6ac4fcf7798d",
+          "bytes": 1679,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000018.png",
+          "sha256": "67ceaf78a578ae6168a98cf45cf5f4e36a98deff3cdfca1962196824cefb9820",
+          "bytes": 4122,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000020.png",
+          "sha256": "c3c069d2730022f4a91cd3b4d7c7439efe0f3f1e60722629684a4b48cc9ce7c6",
+          "bytes": 26482,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000020.png",
+          "sha256": "817f995d6647d0792437898b5adbf646241ba51ea84d4275025ae1b1e4d34731",
+          "bytes": 1594,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000020.png",
+          "sha256": "a885c26c926d8f88f63a33cd39f8a42f353351a69b39ffe05ecdab2718db994d",
+          "bytes": 4140,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000022.png",
+          "sha256": "0c47c97d1dc8da57b4e505b252a3089caeb094941addcc1306841d0766aca7f7",
+          "bytes": 26334,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000022.png",
+          "sha256": "edca989859e48803ddb64694db354a9dd4944046675d5e98dae7879c2e7ee8e3",
+          "bytes": 1437,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000022.png",
+          "sha256": "779b5109513af9d8703602ab47fb4b5209f763ddf4de367201d3ed521fde1636",
+          "bytes": 3872,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000024.png",
+          "sha256": "c21761669728b609a574ae0aee16718dd1f317e8734db99d6a13e6e093553af1",
+          "bytes": 26009,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000024.png",
+          "sha256": "bfafe003f62c0e3c0fdf27098b6ccbe8a61f5e1cc2c862be53fe142505a3fff8",
+          "bytes": 1290,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000024.png",
+          "sha256": "68d572c92d1446457c4a539335ee204aab6f833743008d601b309c2b3f7fff21",
+          "bytes": 3744,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000026.png",
+          "sha256": "4ac87aea8f2cd62f519185ad2a7e0514552ee58d88cc89b56bbc243ba7a2277c",
+          "bytes": 26214,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000026.png",
+          "sha256": "bfafe003f62c0e3c0fdf27098b6ccbe8a61f5e1cc2c862be53fe142505a3fff8",
+          "bytes": 1290,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000026.png",
+          "sha256": "6883bc91f0ffec3102d9e45feb706cd72d63482e742ac07fdfb10dfdf4866959",
+          "bytes": 3804,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000028.png",
+          "sha256": "137ec7f6ed766ead7ab3cdf4a8a7e647e9d7d1b3597266256881be98bd87bc67",
+          "bytes": 26940,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000028.png",
+          "sha256": "263714639c11ba6bd885d70f8f5d983de09a52ea9912a65cfe7464e6b333f928",
+          "bytes": 1465,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000028.png",
+          "sha256": "a39b95fa9da2b445d834ccc9b3e208c16032383a708d1dd7bbbfcb20fd29e20e",
+          "bytes": 3946,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000030.png",
+          "sha256": "cf55010bf9fe71aaa7adcd1508009c37f53f6f3c2a47d907f98886ce77b74082",
+          "bytes": 27780,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000030.png",
+          "sha256": "4d8e9c3b8eb779bd9eb9702ffcbacac68b63f696f191d66ea41ddd11d962efc6",
+          "bytes": 1556,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000030.png",
+          "sha256": "ae100b4b7f24fd77654ce80294ea6a5e07a40488b20bd35d41bc3025d1ddcca9",
+          "bytes": 4125,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000032.png",
+          "sha256": "c16259d609bcdbf3093dc742b85f9082013a65e9142dd0cd1c6f258c9a192481",
+          "bytes": 28363,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000032.png",
+          "sha256": "9c7e5a167b52134f527f894d60b8640c41ced412246b656b50ad72a94cd0e456",
+          "bytes": 1661,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000032.png",
+          "sha256": "c76b78bec24ee12a917aa7f30b3ef9b83e05f69f3eecd117b2ea93c9714625c2",
+          "bytes": 4070,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000034.png",
+          "sha256": "95f35bf64f63835cd70e81d349a4d5771ee7782f2cc5b14f6eb5316af64b6b5c",
+          "bytes": 28555,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000034.png",
+          "sha256": "305dc67612ad2dcd8cf0dfcf32930c31dd42ece43e1c998bca8754b0c995cb57",
+          "bytes": 1655,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000034.png",
+          "sha256": "ec9bd62b6aac60f0188e8f52696b9e5fc50a7ec42f00ed5a4450253b7639f3c3",
+          "bytes": 4099,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000036.png",
+          "sha256": "c9790c2f45453be649c60b1af603635be4e2fac89fde27ff1a952baad782fee2",
+          "bytes": 26383,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000036.png",
+          "sha256": "a3d9894b84d418baef89a2b9bcd43d9e010e4860829350a6d7dc8e959936eb17",
+          "bytes": 1714,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000036.png",
+          "sha256": "d14d50dfa486ae437a356f2b44d3c575bfc0d790cf420d419560ddf6d5a53924",
+          "bytes": 4097,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000038.png",
+          "sha256": "b49c3a0c46199dfc562fec314e706063004d975a7a40f38936792d24e785f726",
+          "bytes": 26860,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000038.png",
+          "sha256": "7962d9068f6c762611b8e2abadee4ccae7a05ef8e32f9ff87ee4b94a70890d37",
+          "bytes": 1710,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000038.png",
+          "sha256": "4254823527a4f49e602411f367f04f001bde76be09a0c934008823179ac732c4",
+          "bytes": 4076,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000040.png",
+          "sha256": "63eef4bec9c5e66f23d46a31cc83d1d34073da7fc75eda00e0b7df235364ab28",
+          "bytes": 26890,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000040.png",
+          "sha256": "5c70b69e71f5cbbd72aa2323fb8849a3519e4726fdebf6572d24c2db7d121ef7",
+          "bytes": 1662,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000040.png",
+          "sha256": "756f144ec91736182c71be660da18e224392571e9c196b6da1b8abc0d82490dc",
+          "bytes": 4089,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000042.png",
+          "sha256": "7e7e5eef9259068cba02200d4b1172ed3fa16e32da875fb724e999ce261dd7c1",
+          "bytes": 27146,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000042.png",
+          "sha256": "4ef70cff7024749af7140ffd79a03f37c29ca49f76e1455b67af684e7d72a205",
+          "bytes": 1612,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000042.png",
+          "sha256": "40e45822794ec70c069cff8165a4e70858d0ae83fe12e39e8fe04902a220e8fa",
+          "bytes": 4005,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000044.png",
+          "sha256": "c0ef2c45d6fcee99b14806b00eaec70642724535dfccec6249a0b1ad71e81f9c",
+          "bytes": 26792,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000044.png",
+          "sha256": "e8e0b7d8f76784905123c9c6f2163e5f99f0273fa36adb343f7d0f5ce2bda192",
+          "bytes": 1532,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000044.png",
+          "sha256": "3a7c9ae3bce19b8280193e14613b6a355824a1b5a1fa459050deed4391e84af1",
+          "bytes": 4015,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000046.png",
+          "sha256": "9631f2ac4088e494ba34becf2d6374c73f9ca95effb5e2525dce2db43439ad05",
+          "bytes": 26536,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000046.png",
+          "sha256": "8068c867e6cd6361637f3a8d4c94e4dc23a1a1448c53763e5b6b89703b885ce8",
+          "bytes": 1327,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000046.png",
+          "sha256": "a24dd5d0c32ed405b0e4a2bbed126539e9f7cf021638f87caff612a01ecf9117",
+          "bytes": 3825,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/rgb/000048.png",
+          "sha256": "8b7f2c6ba519e288c480c73e89145cf6c8bc0b9fa9dbe2a27d34480026f0c02c",
+          "bytes": 25780,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/masks/000048.png",
+          "sha256": "bfafe003f62c0e3c0fdf27098b6ccbe8a61f5e1cc2c862be53fe142505a3fff8",
+          "bytes": 1290,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/parts/000048.png",
+          "sha256": "4600cc1550dadafdf8e976919cd190375aa37d382a252c872a8bbb3b5d041df3",
+          "bytes": 3645,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/metronome/source-motion.npz",
+          "sha256": "f5c03e6c4d28a72e4d039008be8cc7dee1ca4b5cfd4f09c0d0c91548da1a0a5a",
+          "bytes": 2347,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/validated/metronome-middle.json",
+          "sha256": "48dad01165668d38d9c36b892905ae2aa632cbe4fcf203da36db964474ae1a6b",
+          "bytes": 779,
+          "available": true,
+          "included": true,
+          "file": "configs/48dad01165668d38d9c36b892905ae2aa632cbe4fcf203da36db964474ae1a6b.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "b17320651c4279a6964e9812d23823bfcbd4d4546f8a5d76a651a1b9e7d3765b",
+        "reference_sha256": "5e578a19b110126ab8b380d342f7ac620c906e7250faa372ce41121244783906",
+        "train_frames": [
+          0,
+          2,
+          4,
+          6,
+          10,
+          12,
+          14,
+          16,
+          20,
+          22,
+          24,
+          26,
+          30,
+          32,
+          34,
+          36,
+          40,
+          42,
+          44,
+          46
+        ],
+        "validation_frames": [
+          8,
+          18,
+          28,
+          38,
+          48
+        ],
+        "baseline": {
+          "foreground_mse": 0.0015719774644821882,
+          "iou": 0.9586706757545471,
+          "foreground_psnr": 28.036519242812563
+        },
+        "validation": {
+          "iteration": 400,
+          "foreground_mse": 0.00034658931544981895,
+          "iou": 0.9618345618247985,
+          "foreground_psnr": 34.60826093075772
+        },
+        "changes": "DC color, opacity and bounded log-scale; centers, rotations, point identities and all motion frozen",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training"
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 原始高斯",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 原始高斯",
+            "display_version": "V1",
+            "display_label": "V1 · 原始高斯"
+          },
+          "point_count": 645262,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 已提供修正版",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 已提供修正版",
+            "display_version": "V2",
+            "display_label": "V2 · 已提供修正版"
+          },
+          "point_count": 1143789,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 光度与覆盖校正",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 光度与覆盖校正",
+            "display_version": "V3",
+            "display_label": "V3 · 光度与覆盖校正"
+          },
+          "point_count": 1143789,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ],
+      "renderer_config": {
+        "renderer_class": "VersionPresentationRenderer",
+        "components": [
+          {
+            "versions": [
+              0,
+              2
+            ],
+            "renderer_class": "GaussianPairRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1,
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          },
+          {
+            "versions": [
+              1
+            ],
+            "renderer_class": "SingleStageRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

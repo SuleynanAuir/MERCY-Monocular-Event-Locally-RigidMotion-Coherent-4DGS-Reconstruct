@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "archived_files": 158,
+  "original_files_unchanged": 156,
+  "selected_objects": 9,
+  "verification": "SHA256/byte count plus exact numeric token comparison at each source JSON pointer; no remeasurement"
+}

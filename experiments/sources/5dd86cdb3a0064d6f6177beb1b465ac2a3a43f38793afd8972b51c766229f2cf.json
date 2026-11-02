@@ -1,0 +1,70 @@
+[
+  {
+    "version": "V1",
+    "total_frames": 200,
+    "aligned_rgb": 200,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 200,
+      "psnr": 200,
+      "ssim": 200,
+      "foreground_ssim": 200,
+      "lpips": 200,
+      "iou": 200,
+      "missing": 200,
+      "part_missing": 200,
+      "event_l1": 180,
+      "event_cosine": 180,
+      "polarity": 180,
+      "silent": 180
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps"
+    },
+    "unavailable_reasons": {}
+  },
+  {
+    "version": "V2",
+    "total_frames": 200,
+    "aligned_rgb": 200,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 200,
+      "psnr": 200,
+      "ssim": 200,
+      "foreground_ssim": 200,
+      "lpips": 200,
+      "iou": 200,
+      "missing": 200,
+      "part_missing": 200,
+      "event_l1": 180,
+      "event_cosine": 180,
+      "polarity": 180,
+      "silent": 180
+    },
+    "motion_unavailable": {},
+    "unavailable_reasons": {}
+  },
+  {
+    "version": "V3",
+    "total_frames": 200,
+    "aligned_rgb": 200,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 200,
+      "psnr": 200,
+      "ssim": 200,
+      "foreground_ssim": 200,
+      "lpips": 200,
+      "iou": 200,
+      "missing": 200,
+      "part_missing": 200,
+      "event_l1": 180,
+      "event_cosine": 180,
+      "polarity": 180,
+      "silent": 180
+    },
+    "motion_unavailable": {},
+    "unavailable_reasons": {}
+  }
+]

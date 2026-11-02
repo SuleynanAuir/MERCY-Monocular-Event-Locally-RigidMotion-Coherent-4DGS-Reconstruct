@@ -1,0 +1,20 @@
+{
+  "rows": [
+    {
+      "display_version": "V1",
+      "source_version_id": "0",
+      "source_label": "V1 · 原始高斯"
+    },
+    {
+      "display_version": "V2",
+      "source_version_id": "1",
+      "source_label": "V2 · 已提供修正版"
+    },
+    {
+      "display_version": "V3",
+      "source_version_id": "2",
+      "source_label": "V3 · 平滑几何与部件覆盖"
+    }
+  ],
+  "revision": "swap-v1-v2-20261027"
+}

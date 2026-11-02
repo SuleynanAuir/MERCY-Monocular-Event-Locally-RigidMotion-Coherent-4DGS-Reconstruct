@@ -1,0 +1,100 @@
+{
+  "object": "arm",
+  "recommended_version": "V3",
+  "sample_count": 13,
+  "source_original": "outputs/six-object-preview/arm-rgb-optimized-result.json",
+  "source_snapshot": "sources/1c78d1d7a7ef2ffa50efcf960aafd58ec4096d7b99d17486c3c8a994f549a496.json",
+  "source_sha256": "1c78d1d7a7ef2ffa50efcf960aafd58ec4096d7b99d17486c3c8a994f549a496",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "24.79716915354198",
+    "psnr": "33.14267325096382",
+    "ssim": "0.9785752880255936",
+    "foreground_ssim": "0.8660097830341229",
+    "lpips": "0.015282241054452382",
+    "iou": "0.9219734350362097",
+    "missing": "1.8327004199329981",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "36.58462086549172",
+    "point_count": "538488",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "24.79716915354198",
+    "psnr": "33.14267325096382",
+    "ssim": "0.9785752880255936",
+    "foreground_ssim": "0.8660097830341229",
+    "lpips": "0.015282241054452382",
+    "iou": "0.9219734350362097",
+    "missing": "1.8327004199329981",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "36.58462086549172",
+    "point_count": "538488",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "selection_reason": "推荐RGB结构优化V3；5时刻留出结果另存，正式13帧含训练/选点重叠，不是独立测试。",
+  "attachments": [
+    {
+      "original": "outputs/six-object-preview/arm-rgb-validation-result.json",
+      "snapshot": "sources/a34a38cced1c638f362b08618c66c8426a8cde1cb39512fe51a403a6f21b990c.json",
+      "sha256": "a34a38cced1c638f362b08618c66c8426a8cde1cb39512fe51a403a6f21b990c",
+      "bytes": 3284
+    },
+    {
+      "original": "outputs/six-object-preview/arm-rgb-spatial-audit.json",
+      "snapshot": "sources/61f4611d6838200b23de8c13632744fdf149c077efb3e2375049fdfa8c78dc94.json",
+      "sha256": "61f4611d6838200b23de8c13632744fdf149c077efb3e2375049fdfa8c78dc94",
+      "bytes": 12846
+    },
+    {
+      "original": "outputs/six-object-preview/arm-rgb-optimized-export.json",
+      "snapshot": "sources/f661a4b8c2c0c3fd5b811718aeb799b5207faec4d5599804a2cdd9cba953d1e6.json",
+      "sha256": "f661a4b8c2c0c3fd5b811718aeb799b5207faec4d5599804a2cdd9cba953d1e6",
+      "bytes": 2091
+    },
+    {
+      "original": "assets/technical/16-four-object-animated-observations.md",
+      "snapshot": "sources/984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c.md",
+      "sha256": "984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c",
+      "bytes": 31226
+    }
+  ],
+  "model_identity_records": [
+    {
+      "path_reported": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Arm/rgb-structure-refinement/appearance.npz",
+      "context_source": "sources/984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c.md",
+      "status": "Reported deployment path, remote existence and checkpoint bytes not reverified"
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

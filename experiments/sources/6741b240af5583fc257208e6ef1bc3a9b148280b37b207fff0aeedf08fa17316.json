@@ -1,0 +1,20 @@
+{
+  "rows": [
+    {
+      "display_version": "V1",
+      "source_version_id": "0",
+      "source_label": "V1 · 观测校正（存档分支）"
+    },
+    {
+      "display_version": "V2",
+      "source_version_id": "1",
+      "source_label": "V2 · 最原始结果 · 未校正初始动画"
+    },
+    {
+      "display_version": "V3",
+      "source_version_id": "2",
+      "source_label": "V3 · 表面修复＋多视角补全"
+    }
+  ],
+  "revision": "swap-v1-v2-20261027"
+}

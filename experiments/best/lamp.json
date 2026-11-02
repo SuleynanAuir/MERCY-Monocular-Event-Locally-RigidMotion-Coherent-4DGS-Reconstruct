@@ -1,0 +1,1056 @@
+{
+  "object": "lamp",
+  "recommended_version": "V3",
+  "sample_count": 25,
+  "source_original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/analysis.json",
+  "source_snapshot": "sources/26cd58320a1a888528594f091898944368a97a808937e6e2f261a2ccb765e41b.json",
+  "source_sha256": "26cd58320a1a888528594f091898944368a97a808937e6e2f261a2ccb765e41b",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "21.48543740153816",
+    "psnr": "30.63749934961496",
+    "ssim": "0.9716795152804569",
+    "foreground_ssim": "0.789668105664862",
+    "lpips": "0.029175426587462427",
+    "iou": "0.966323135146142",
+    "missing": "1.7307794718454923",
+    "part_missing": "2.0648082845175075",
+    "event_l1": "0.5257844665609134",
+    "event_cosine": "0.8511300690594001",
+    "polarity": "84.01138174540318",
+    "silent": "0.0024825600862946008",
+    "latency_ms": "31.67855717241764",
+    "point_count": "426697",
+    "metric_unavailable_reasons": {}
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "21.48543740153816",
+    "psnr": "30.63749934961496",
+    "ssim": "0.9716795152804569",
+    "foreground_ssim": "0.789668105664862",
+    "lpips": "0.029175426587462427",
+    "iou": "0.966323135146142",
+    "missing": "1.7307794718454923",
+    "part_missing": "2.0648082845175075",
+    "event_l1": "0.5257844665609134",
+    "event_cosine": "0.8511300690594001",
+    "polarity": "84.01138174540318",
+    "silent": "0.0024825600862946008",
+    "latency_ms": "31.67855717241764",
+    "point_count": "426697",
+    "metric_unavailable_reasons": {}
+  },
+  "selection_reason": "推荐连续表面/覆盖修复V3，优先整体几何覆盖；早期外观版PSNR更高但IoU较低，不将两版数值拼接。",
+  "attachments": [
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/protocol.json",
+      "snapshot": "sources/9aed9e77088e801cf32065ff7af6e9e5ead21c8509a04859d86bee80c77789e1.json",
+      "sha256": "9aed9e77088e801cf32065ff7af6e9e5ead21c8509a04859d86bee80c77789e1",
+      "bytes": 1158
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/availability.json",
+      "snapshot": "sources/d9b9b1ec63bb7cf25db2b2855bb2c674dbfd26b476ac86e04f925313c7e1bb4a.json",
+      "sha256": "d9b9b1ec63bb7cf25db2b2855bb2c674dbfd26b476ac86e04f925313c7e1bb4a",
+      "bytes": 2144
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/version_mapping.json",
+      "snapshot": "sources/87d8822f09f90fb26798f3d091bd87c6bf2e77fd7ca14b75bd906df36dc77ad7.json",
+      "sha256": "87d8822f09f90fb26798f3d091bd87c6bf2e77fd7ca14b75bd906df36dc77ad7",
+      "bytes": 433
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/input_manifest.json.gz",
+      "snapshot": "sources/37a42d80a2a7d728ac33206da84a0d3b79af6cbbb3ce79af4ece8ef9491e6d6b.json.gz",
+      "sha256": "37a42d80a2a7d728ac33206da84a0d3b79af6cbbb3ce79af4ece8ef9491e6d6b",
+      "bytes": 27635
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/base_metrics.json.gz",
+      "snapshot": "sources/a9438fc1f03986ca9560c3341fed50eded312c91f18e80e08467d66f46037fe7.json.gz",
+      "sha256": "a9438fc1f03986ca9560c3341fed50eded312c91f18e80e08467d66f46037fe7",
+      "bytes": 46411
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/series.npz",
+      "snapshot": "sources/f9268b6e512c9edf400033843e3a842314f25fb01b42ddbc1eca5779853d8980.npz",
+      "sha256": "f9268b6e512c9edf400033843e3a842314f25fb01b42ddbc1eca5779853d8980",
+      "bytes": 15576
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/lpips.json",
+      "snapshot": "sources/e18472084c685816e55c73c9ca9e7a85a156a37dd08b2029c704335fdcfd4a7a.json",
+      "sha256": "e18472084c685816e55c73c9ca9e7a85a156a37dd08b2029c704335fdcfd4a7a",
+      "bytes": 2569
+    },
+    {
+      "original": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/visualization_protocol.json",
+      "snapshot": "sources/acf4d1931ded5018d54da47a9ca3ed432175c535e0ff14f1a279c8eddf072c8c.json",
+      "sha256": "acf4d1931ded5018d54da47a9ca3ed432175c535e0ff14f1a279c8eddf072c8c",
+      "bytes": 14917
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/37a42d80a2a7d728ac33206da84a0d3b79af6cbbb3ce79af4ece8ef9491e6d6b.json.gz",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/scgs-lamp-compact-20261029/overlap-pair.json",
+          "sha256": "e4772acbb4e53996d5dbd97008a5081b5ef52870781a1c31130428e049b2ef89",
+          "bytes": 1536,
+          "available": true,
+          "included": true,
+          "file": "configs/e4772acbb4e53996d5dbd97008a5081b5ef52870781a1c31130428e049b2ef89.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/lamp-base/left.npz",
+          "sha256": "d8cf77f65b9f39364dd343407b90e51659ff403fddd91009dad3292662c0cd9d",
+          "bytes": 207415937,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/lamp-base/right.npz",
+          "sha256": "895f6c142bed88734164206c8d79a39b3d287b87df90064b5a66882cf2208782",
+          "bytes": 485084621,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-lamp-compact-20261029/coverage-overlap.npz",
+          "sha256": "bd47cfd5560afc8a44353820f7a54b5eeaeb7c0bf27f7e1ea2b6a8f7cc0cbfa3",
+          "bytes": 22065910,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-lamp-compact-20261029/coverage/training.json",
+          "sha256": "599c5d757965c270149c76a01c5188fdbd5406ed9944627c1dc103f376d1b4e8",
+          "bytes": 5258,
+          "available": true,
+          "included": true,
+          "file": "configs/599c5d757965c270149c76a01c5188fdbd5406ed9944627c1dc103f376d1b4e8.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-lamp-compact-20261029/parent-groups.npz",
+          "sha256": "a6d7e29467a16d5f15f825eac82ded9a7f2383524f3418d5c57574ef321a689b",
+          "bytes": 16051,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/reference.json",
+          "sha256": "75deba9615657e32bce90e0c2c775575709e18f9234f5324bbdbd77248d32125",
+          "bytes": 9926,
+          "available": true,
+          "included": true,
+          "file": "configs/75deba9615657e32bce90e0c2c775575709e18f9234f5324bbdbd77248d32125.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000000.png",
+          "sha256": "b25c0c54be57e427eec197659df28c62f0f40a0b65466afc976116e1df69679a",
+          "bytes": 47030,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000000.png",
+          "sha256": "e079a8fdfd050f977c7f1bb768d66809da87cf75d7a9a698bb066e428409b305",
+          "bytes": 3088,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000000.png",
+          "sha256": "3e76c1e1aff5ad56d33f77d720951761c8972073ffb6db42e7b7829a734d4487",
+          "bytes": 5918,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000002.png",
+          "sha256": "8642cd41aa963662b0f8bc9e4bdbb23f15ca8dd09cf5ba581c486697ec926a42",
+          "bytes": 48031,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000002.png",
+          "sha256": "53142843956d275b1f3bb157be1b026dbab419c4659108a1c6b4c2c1c41745bd",
+          "bytes": 3085,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000002.png",
+          "sha256": "b35e57f8a44b8a1ea41ec578db4cbe840b62b35adc9d9f108e0ea04812b86b7f",
+          "bytes": 5895,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000002.npz",
+          "sha256": "72829421061b585f3ca57bcfa6549b56e85eed87e6772146572ce45b0016f3db",
+          "bytes": 7306,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000004.png",
+          "sha256": "bc569bd0384a66843aa10c5cf24910d4a8d604b57506de7944a8a4665abd0bae",
+          "bytes": 47923,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000004.png",
+          "sha256": "91408c1084c284f832c98d2655163a64c91a0b33cda73a6b8a22adc6aaf86d5d",
+          "bytes": 3048,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000004.png",
+          "sha256": "065a15d81e3e4e3887e99077ab50f312f880b5f34a4fc0a6177ae34738e11190",
+          "bytes": 5946,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000004.npz",
+          "sha256": "13251713577c9bcef66f568408242f2a94b3ee1b5f9dee0db2e92c46e9ed2b56",
+          "bytes": 9981,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000006.png",
+          "sha256": "1d999aa44c8562cccd7b8cf3872942a85c6f03cdc98348235d5b56fdac5aa274",
+          "bytes": 47591,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000006.png",
+          "sha256": "6a9114beed71b72d54c5699707adeeafc6e9bab9f2492b9c1fb2d27bf3216e9f",
+          "bytes": 2980,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000006.png",
+          "sha256": "ac5ec34abf16c238baea674bc77ee0f0b01a13a372fb1409eaf5d2cbbb8a4f2a",
+          "bytes": 5785,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000006.npz",
+          "sha256": "9009badf4391567274f2e93044a264d68af746a713cc3cfaef8b4211c521d5fe",
+          "bytes": 10789,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000008.png",
+          "sha256": "8472ed773568702502ac6fd22df5cfc324592211385ce30aa4d53ff32ca7ca67",
+          "bytes": 46891,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000008.png",
+          "sha256": "e2acc4d0a33338a2d4982021789c6e75bda0c08cdbd77bbc6c3b068a57276f47",
+          "bytes": 2949,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000008.png",
+          "sha256": "f925b7a06c8862c8be488fc8c43a53a7d7063b5a80cec9eb59a005178bc4b5b4",
+          "bytes": 5698,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000008.npz",
+          "sha256": "7d9c4c6732645e795e46f3b582bf662d65bb4260b55098dafac5afe6432e21ee",
+          "bytes": 11032,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000010.png",
+          "sha256": "2c45cabd6db7468580241a2e6ba65774546dac89a4f222a750b7d43f4988dc56",
+          "bytes": 46166,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000010.png",
+          "sha256": "67e53a5f7add8ea89ffd88fdeb9c2b501430417980ae75e5ee287e1ca8407314",
+          "bytes": 2818,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000010.png",
+          "sha256": "d553ce13b30e27b3950e523c10178400b67bcf86fc1b84f4466dcba61a230f2d",
+          "bytes": 5581,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000010.npz",
+          "sha256": "aab0c0229ccfe38c78992043299ffa59da1be8ef0ec78f7188f0eb2893c44fd8",
+          "bytes": 11222,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000012.png",
+          "sha256": "75544fd033c31054283afef0f2756c51b64994c247523ecd549a231a690514f9",
+          "bytes": 45780,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000012.png",
+          "sha256": "1c3e87e35706d0c8bd4261d3c156f46d0adb62477391cb2239cb8a9704a5afe6",
+          "bytes": 2766,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000012.png",
+          "sha256": "b8ddd399c32857ff877ef379dc60559d240e5f860aff5f76cbc0495c23e64d2a",
+          "bytes": 5448,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000012.npz",
+          "sha256": "af9b66c8f27f8529e5b5aa99d5efca5f6ff4ef8e38564ff1e439ce525e12f6d8",
+          "bytes": 11049,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000014.png",
+          "sha256": "ab191bdf1d05622fec6301710e7a82cc47b08c96084adebaa344a83e64a02083",
+          "bytes": 45106,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000014.png",
+          "sha256": "1f9a6d57ea96e87f23ee3d44940772610ff8a1cde1adab7a44c5f17216ecca5b",
+          "bytes": 2709,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000014.png",
+          "sha256": "19d627108b6470563cae5cce71878972d0ad164f6a0c059818450ded192d33d0",
+          "bytes": 5399,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000014.npz",
+          "sha256": "8011189d840e3fc7fe66e11c8ed37635ebb3826aee171486c62ba40fba857335",
+          "bytes": 11253,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000016.png",
+          "sha256": "5fa61161b0fc9bb576f38f0c8f25afc508ff1ec6b5efef2564be215e70329188",
+          "bytes": 44807,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000016.png",
+          "sha256": "0006a001a313b00c4cda30f56b2ffdfacd3e85c07afd4f0b8953dfb73e78f31d",
+          "bytes": 2717,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000016.png",
+          "sha256": "d48d9a832292b761eaf23a7fcfea56f1a3c2e78f88b4c32d48d1daf7a469ec22",
+          "bytes": 5250,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000016.npz",
+          "sha256": "812a17687c8ee9493edfb19d361c04d6d73b79f8e204813a7e6d61c3f6b1fe2c",
+          "bytes": 10825,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000018.png",
+          "sha256": "d5c9ba3d01dba38b49e7faaa827c2c50215ab1695ec20e861f89e724455116b3",
+          "bytes": 42868,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000018.png",
+          "sha256": "905125c2b1bb54b102e0d2b315260bd280bf113e25d414d291e457e9e3fdf7de",
+          "bytes": 2638,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000018.png",
+          "sha256": "7472ba34c75f9dba05d6c1328bcd9b77d2431edf29edba69c336da8a53dc56e7",
+          "bytes": 5174,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000018.npz",
+          "sha256": "27345c8e4efa64be3b7bff21cf6a3b49325bdbba8db47709e471eb6c6eca776c",
+          "bytes": 11363,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000020.png",
+          "sha256": "da22a6ec6b8544b4d205e967c7812a91b559928af6bdde010b955991ef2da3ae",
+          "bytes": 44036,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000020.png",
+          "sha256": "3d3243b0a44626ca58985b0164d4bcd016385ea67dea84287b1d8bf575370f81",
+          "bytes": 2699,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000020.png",
+          "sha256": "05bd3e1e0a4832a7127826cfd94efcd310c44e7d99d028326715ba68615ea590",
+          "bytes": 5082,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000020.npz",
+          "sha256": "96d8a5ec05a1bf5b49ef22c1721a77ef5ebc30a0a4e78184f81da19ec0bb12b9",
+          "bytes": 9707,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000022.png",
+          "sha256": "6f2ab1888d09428c4e309ddbdffce9f2db73d68d929a3ea051756b97f40581bc",
+          "bytes": 44544,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000022.png",
+          "sha256": "d9c8ad0b990cfca5f9f844d2dd8908dba6da8baf852b702c25b045ce890a9471",
+          "bytes": 2691,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000022.png",
+          "sha256": "38341809374c5f2fec6cb652c8ee9bee8a937ea0ee71185b1ca93a3d83b9295d",
+          "bytes": 5097,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000022.npz",
+          "sha256": "3b450f7cdfe49845cb2afc56a1d01e0dca1e839587aa4d5baff1244832d86ac2",
+          "bytes": 8874,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000024.png",
+          "sha256": "8d966d6ddd56de93300e1062afedf8050bf1da172917bc9ab0ef74d7dd098494",
+          "bytes": 44642,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000024.png",
+          "sha256": "656ba9da88499d1cb89f70a084389776d10fb5b6b24653ee20159b49652e6356",
+          "bytes": 2700,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000024.png",
+          "sha256": "1e3d8db3acd308e4a90eef269e75615b61384c80faa1bac10b21ef06b2ea4835",
+          "bytes": 5143,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000024.npz",
+          "sha256": "ca3b99d3865e5d29183272bbca68967e89059b1423c951fff2b89bc07511dc1c",
+          "bytes": 6048,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000026.png",
+          "sha256": "1c9c9ae784519e0e224667bc78e4a419fd121c1ad9d09ffa4a204a9f36a3ebb3",
+          "bytes": 44247,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000026.png",
+          "sha256": "a4a8499f2b3c266e4c72ecc727d22866287faea27abaee8b0c7f5d86e1ea2bfe",
+          "bytes": 2693,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000026.png",
+          "sha256": "0eb60ba29625f5fd0dcc5292c0ff115baeb3c2e42d8f4c790d153ed1cd3825ff",
+          "bytes": 5072,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000026.npz",
+          "sha256": "b55f26e6c6488d6e05d71be5a2fff3612d79cd95b97f675e846133a43f2c0028",
+          "bytes": 5045,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000028.png",
+          "sha256": "4e077ade6ce06e121a1ae212a23da3d0822c8b86b5ae6467ee5c18e28c860dda",
+          "bytes": 44001,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000028.png",
+          "sha256": "40049f3280942c36ba0d8d2af60693c8ec52d5969bbaf053e68cba22c2fd2c02",
+          "bytes": 2634,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000028.png",
+          "sha256": "2f9c0c0d89e006d1cf1268274db53d363ec8b340015c613307312fc62c2255d4",
+          "bytes": 5061,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000028.npz",
+          "sha256": "4a76314f4a536ffa538e3854ad1eadf2b7d0a5c572b3e72fab659b9b1168f655",
+          "bytes": 6277,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000030.png",
+          "sha256": "0d9c9b179ff49845d73262cfa249c79ccc600a74dbd34122d861c91055fa24c6",
+          "bytes": 43728,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000030.png",
+          "sha256": "3362aa3846a8a80bc937e05051f5ac155bd48f46c5b1f2595d1312d2bb47d686",
+          "bytes": 2618,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000030.png",
+          "sha256": "088324d6dc22057e90c51dfacc148bf5d6fbc566d47347442bcba3fbcf60a06d",
+          "bytes": 5115,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000030.npz",
+          "sha256": "ef5aa2424e8bf541b42bc06467bf69c1963641b33f0eee7113617be7105f5fdc",
+          "bytes": 6623,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000032.png",
+          "sha256": "afcb5f802cc6d503ab00d050f022e4d8ba93f2a010f6b0c9572ce65a7d9e3fbb",
+          "bytes": 43453,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000032.png",
+          "sha256": "cc951a59bf9e99a3c934abe520c12a386f116f05447bcfebd3f18b300e3162a1",
+          "bytes": 2553,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000032.png",
+          "sha256": "98fb4eb802a3a55f2ea6e050c42a2823e8881b3670b83f3f0eecd83126486f11",
+          "bytes": 5079,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000032.npz",
+          "sha256": "8dadc96624aa09f3a1022dc9031fe0d8f41f28af23fd1cae4958fbe7acafaf45",
+          "bytes": 6709,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000034.png",
+          "sha256": "23c7577e083ebb260eae5eda907ce11418cde91e9a0cf914366eccbe47a7ad3d",
+          "bytes": 43812,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000034.png",
+          "sha256": "26bd52e374823d397ed16b541c47ee7cf8de03376186bb05eba66c9f233c76c8",
+          "bytes": 2594,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000034.png",
+          "sha256": "94d6f07291d32d1873a78a11b0517a082b7e50c270000628de6bed34818c674d",
+          "bytes": 5209,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000034.npz",
+          "sha256": "7463700b59f7bc04886e658bff5dc13b5b96311e1774a48888092b3e1b5bb2ec",
+          "bytes": 6791,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000036.png",
+          "sha256": "597836f43cd4a74196a3972269f5940ef614074e12d883ddd9daba9133cc7cf4",
+          "bytes": 42110,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000036.png",
+          "sha256": "e46c670cecdf42711ab2f994c918ffeadf619029c37cf77c691e71dfc288499a",
+          "bytes": 2717,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000036.png",
+          "sha256": "121abe541aaadade10dfc38954208dab5bbd6dc27796e3b844bfe2713100babb",
+          "bytes": 5264,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000036.npz",
+          "sha256": "068264263607f884cdeaa05e90abcea58d9af6fb7aae54dc241fb961e9bc03fe",
+          "bytes": 8020,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000038.png",
+          "sha256": "59d3b4b60b3cc8eaee6e7ded058d04fcd84c830a8b69b8675c81f884a6fa942c",
+          "bytes": 43607,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000038.png",
+          "sha256": "06db41d97e67ea9ff9a8de7e4319a356a6088086f6fc8e2b4bf47b325e6ee649",
+          "bytes": 2757,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000038.png",
+          "sha256": "6bbebe84feba2cc4c9ee6030f0fcf272268eec980e86d8f592cd06ca6bcc4d1c",
+          "bytes": 5360,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000038.npz",
+          "sha256": "e5ecd0d315ef3df61cd98f79d00c674aa08425e351dff12f2a877749933f3fc0",
+          "bytes": 6135,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000040.png",
+          "sha256": "6161ee5fed2ea44f587362f0447c8269d086e96d005ee6685473e93e0afb3a05",
+          "bytes": 44094,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000040.png",
+          "sha256": "d42189a5fd8b95f402a4e329150abbe19dc1ab24fe567ff7004d865ceb8839db",
+          "bytes": 2788,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000040.png",
+          "sha256": "8121db08f5320e14ab1e3982d3e36b828b92605b2dd8e83f699d28c4047abd27",
+          "bytes": 5451,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000040.npz",
+          "sha256": "7c74c986e188232d3bd67093c3852c317056ba808f250b1168dc3961d7c48c13",
+          "bytes": 6366,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000042.png",
+          "sha256": "e5000be1421d19fdadcae586b91681b740ccfa6bc0468665c4a307d2a1bf5b21",
+          "bytes": 44415,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000042.png",
+          "sha256": "bae12b65784196d83aaefcecef088e7a3774a39bda68480eb3b7e3b804e5175c",
+          "bytes": 2734,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000042.png",
+          "sha256": "254f0f222ef3eda855433e11d58809d6f51235598b7e92d1ff1c9978c30da180",
+          "bytes": 5320,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000042.npz",
+          "sha256": "ce349c7d70aedfdab6aa604540635060d79b8160956ff99a9c8336b7e205c9bd",
+          "bytes": 6342,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000044.png",
+          "sha256": "62f84cd285386be34eb6fd866e713bcbf913429bcdcdec8eb144a732242e74e5",
+          "bytes": 44422,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000044.png",
+          "sha256": "f2c04c9fa863cbf93d5da565c7b206b4b282528112362887e4c5e8dec4780f15",
+          "bytes": 2699,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000044.png",
+          "sha256": "78dd7f0d3f8c69af752f75ca175df8f5494b0ccfa6db8322132608e85b2678ea",
+          "bytes": 5330,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000044.npz",
+          "sha256": "d6a74497228d23b873a7ac06e688e57ca09809dab2608e2443f2baf7aa1ad620",
+          "bytes": 6202,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000046.png",
+          "sha256": "b093a840bca92981de1e5e0f6b7018b7b6d519f7557b91707f6d0fff23db6a95",
+          "bytes": 44534,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000046.png",
+          "sha256": "1436f9b7e2bb418fb5b6671bc5d7203cb156b48fa9873dd6d49f0697ec628840",
+          "bytes": 2688,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000046.png",
+          "sha256": "943d919e8b07528e3010f95a81b0fa6a828e24135149afde60991eba712cc29b",
+          "bytes": 5291,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000046.npz",
+          "sha256": "2bb60306960d2267fa0a8ea4645ad564ae9270f4aba054ea2e28b96075b586db",
+          "bytes": 5775,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/rgb/000048.png",
+          "sha256": "941696400154da6627f1b380b0637a077eecd0363fd9d24b20e58df038429aea",
+          "bytes": 44351,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/masks/000048.png",
+          "sha256": "1d1342dd823059d46080f36cfc714f509497e22e7d5e5beca6589a63387251a6",
+          "bytes": 2673,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/parts/000048.png",
+          "sha256": "3cdc642d8bdd562b8e47805f22e4ca63e0703592ee5184e55dc5751cb7ec7dd6",
+          "bytes": 5300,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/events/000048.npz",
+          "sha256": "5cb42235910e52c6b5cf043dce6de094376f7a0bcef490ecdb14ccdbe469e18c",
+          "bytes": 5341,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/lamp-calibrated/source-motion.npz",
+          "sha256": "70e454d641e0194c142b591fda7322dbf7e196e268eb3c1504db3fc67ce93299",
+          "bytes": 5850,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-lamp-20261029-smooth/middle.json",
+          "sha256": "3b3334af323624d90f81974af1e71ac1b7ea1130c52c75dcf78b12fcd61ef55b",
+          "bytes": 803,
+          "available": true,
+          "included": true,
+          "file": "configs/3b3334af323624d90f81974af1e71ac1b7ea1130c52c75dcf78b12fcd61ef55b.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "d8cf77f65b9f39364dd343407b90e51659ff403fddd91009dad3292662c0cd9d",
+        "reference_sha256": "75deba9615657e32bce90e0c2c775575709e18f9234f5324bbdbd77248d32125",
+        "train_frames": [
+          0,
+          2,
+          4,
+          6,
+          10,
+          12,
+          14,
+          16,
+          20,
+          22,
+          24,
+          26,
+          30,
+          32,
+          34,
+          36,
+          40,
+          42,
+          44,
+          46
+        ],
+        "initialization_sha256": "7338e2a055065298a6658fc36ee2fd8766b906ba7d669ff286c3622d3466777e",
+        "perceptual_weight": 0.1,
+        "temporal": {
+          "kind": "legendre",
+          "degree": 3,
+          "frame_count": 50
+        },
+        "achromatic_reference": true,
+        "spatial_weight": 0.0,
+        "freeze_surface": true,
+        "color_bound_rgb": null,
+        "smooth_field": false,
+        "spatial_field_basis": null,
+        "ssim_weight": 0.05,
+        "neighbor_count": 16,
+        "selection": "Joint MSE/LPIPS/IoU/coverage objective; both missing rates must improve; MSE/LPIPS bounded to previous +10 percent",
+        "validation_frames": [
+          8,
+          18,
+          28,
+          38,
+          48
+        ],
+        "baseline": {
+          "foreground_mse": 0.023210218362510204,
+          "iou": 0.8199852585792542,
+          "lpips": 0.06513488739728927,
+          "foreground_missing": 0.03880256786942482,
+          "part_missing": 0.024726874008774758,
+          "per_frame_mse": [
+            0.011577854864299297,
+            0.022273683920502663,
+            0.022471332922577858,
+            0.021020598709583282,
+            0.03870762139558792
+          ],
+          "foreground_psnr": 16.653018892911902
+        },
+        "changes": "Bounded canonical geometry offsets; parent motion, scales and opacity frozen",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training",
+        "geometry_refinement": {
+          "max_offset_scene_units": 0.02,
+          "representation": "time-independent local Gaussian-frame offset; follows parent rigid motion",
+          "regularization": "part-local continuous RBF",
+          "freeze_appearance": true,
+          "freeze_geometry": false,
+          "groups_sha256": "a6d7e29467a16d5f15f825eac82ded9a7f2383524f3418d5c57574ef321a689b"
+        },
+        "coverage_finish": {
+          "method": "Uniform 12 percent tangent footprint expansion; centers, normals, opacity and parent motion unchanged",
+          "parent_sha256": "b940e34face1ef6bce08c7ab6192a7440d5e06600201ee94dc9c3616d2db2e13",
+          "factor": 1.12,
+          "selection_scope": "Development-sequence diagnostic refinement; requires full re-evaluation"
+        }
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 原始高斯",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 原始高斯",
+            "display_version": "V1",
+            "display_label": "V1 · 原始高斯"
+          },
+          "point_count": 426697,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 已提供修正版",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 已提供修正版",
+            "display_version": "V2",
+            "display_label": "V2 · 已提供修正版"
+          },
+          "point_count": 853403,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 平滑几何与部件覆盖",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 平滑几何与部件覆盖",
+            "display_version": "V3",
+            "display_label": "V3 · 平滑几何与部件覆盖"
+          },
+          "point_count": 426697,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ],
+      "renderer_config": {
+        "renderer_class": "VersionPresentationRenderer",
+        "components": [
+          {
+            "versions": [
+              0,
+              2
+            ],
+            "renderer_class": "GaussianPairRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1,
+              2
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          },
+          {
+            "versions": [
+              1
+            ],
+            "renderer_class": "SingleStageRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

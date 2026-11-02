@@ -1,0 +1,76 @@
+{
+  "object": "robot",
+  "recommended_version": "V3",
+  "sample_count": 24,
+  "source_original": "outputs/six-object-preview/robot-multiview-quality-20261102/audit.json",
+  "source_snapshot": "sources/f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9.json",
+  "source_sha256": "f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9",
+  "json_pointer": "/summary/original_all/candidate",
+  "source_record": {
+    "psnr": "23.12329563894843",
+    "ssim": "0.929330446383509",
+    "foreground_psnr": "15.86056995719124",
+    "lpips": "0.037774843939890466",
+    "iou": "0.6660229905465536",
+    "missing": "0.040660695661671374"
+  },
+  "metrics_exact_decimal_strings": {
+    "psnr": "23.12329563894843",
+    "ssim": "0.929330446383509",
+    "foreground_psnr": "15.86056995719124",
+    "lpips": "0.037774843939890466",
+    "iou": "0.6660229905465536",
+    "missing": "0.040660695661671374"
+  },
+  "selection_reason": "推荐多视角SH V3，以原视频24帧为主表，合成训练/验证/独立角度测试分开。旧V1/V2仅有12帧历史完整报告，不拼成24帧对照。",
+  "attachments": [
+    {
+      "original": "outputs/six-object-preview/robot-multiview-quality-20261102/quality-gate.json",
+      "snapshot": "sources/5fb6e4ecb1eb9fb134ce0a0c648f7350ca4606e0e69899598eb96cde5e46777f.json",
+      "sha256": "5fb6e4ecb1eb9fb134ce0a0c648f7350ca4606e0e69899598eb96cde5e46777f",
+      "bytes": 182
+    },
+    {
+      "original": "outputs/six-object-preview/robot-multiview-quality-20261102/validation.json",
+      "snapshot": "sources/5dee7e01ecb9052c6c5a2fc391fa5fb17c3428a1bbdb6be9ce3bf9f0d4a37050.json",
+      "sha256": "5dee7e01ecb9052c6c5a2fc391fa5fb17c3428a1bbdb6be9ce3bf9f0d4a37050",
+      "bytes": 6140
+    },
+    {
+      "original": "assets/technical/16-four-object-animated-observations.md",
+      "snapshot": "sources/984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c.md",
+      "sha256": "984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c",
+      "bytes": 31226
+    }
+  ],
+  "model_identity_records": [
+    {
+      "path_reported": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Robot/multiview-quality-20261102-122549-v2-sh3/appearance.npz",
+      "context_source": "sources/984eb47181cf6aacb82990c3fbaca48cb55c16dfb112f55755d08f8f9af63d3c.md",
+      "status": "Reported deployment path, remote existence and checkpoint bytes not reverified"
+    },
+    {
+      "candidate_sha256": "6657be532ad3aa178531dba319c8b8785a9f7e3d6c87c2130080054aa607fe29",
+      "reference_sha256": "5077540267370fe5035d395ee650f91309ee419917b6a66854660f0e87a2592a",
+      "note": "candidate is the selected V3; baseline is previous V3, not V1 or V2"
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

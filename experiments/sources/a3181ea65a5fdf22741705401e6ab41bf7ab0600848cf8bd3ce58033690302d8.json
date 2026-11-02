@@ -1,0 +1,86 @@
+{
+  "status": "complete",
+  "stage": "complete",
+  "percent": 100,
+  "completed": 1,
+  "total": 1,
+  "elapsed_seconds": 34.7,
+  "detail": "对照试验计算与可视化完成",
+  "warnings": [
+    "V3 使用同一源视角的 RGB 监督优化；本报告 12 个时刻中 10 个参与训练、2 个用于留出验证及检查点选择。不是独立测试集或新视角泛化证明。",
+    "前景 PSNR / IoU 使用原始 RGB 的固定背景分割参考，属于光度前景代理掩码，不是人工或几何真值；阈值与定义随实验包保存。"
+  ],
+  "summary": [
+    {
+      "version": "V1",
+      "foreground_psnr": 8.616778426800538,
+      "psnr": 17.012930647867588,
+      "ssim": 0.8502637233768772,
+      "foreground_ssim": 0.07635479814144182,
+      "lpips": 0.10237148093680541,
+      "iou": 0.6223467661845578,
+      "missing": 8.068481113224703,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 35.498346434906125,
+      "point_count": 645791,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V2",
+      "foreground_psnr": 8.946761327394432,
+      "psnr": 17.457393262545825,
+      "ssim": 0.8539570928349313,
+      "foreground_ssim": 0.09087880483752349,
+      "lpips": 0.1649977763493856,
+      "iou": 0.6306608337464185,
+      "missing": 5.838604709612036,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 27.919567888602614,
+      "point_count": 358899,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V3",
+      "foreground_psnr": 14.236133838193993,
+      "psnr": 22.00615237282233,
+      "ssim": 0.9103958985090334,
+      "foreground_ssim": 0.438993468280015,
+      "lpips": 0.06271220929920673,
+      "iou": 0.6631682657154879,
+      "missing": 0.06918854767297435,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 37.50526780883471,
+      "point_count": 737171,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    }
+  ],
+  "output_bytes": 6716503,
+  "id": "e399274879714195a78cee56cfed4847",
+  "object_name": "Robot_V3_表面一致性优化",
+  "timestamp": "20261101_224459_262105",
+  "created_at": "2026-11-01T22:44:59.262105+08:00",
+  "timezone": "Asia/Shanghai",
+  "output_stem": "Robot_V3_表面一致性优化_20261101_224459_262105",
+  "download_name": "Robot_V3_表面一致性优化_20261101_224459_262105.zip",
+  "output_directory": "/root/autodl-tmp/SC-GS/experiment/output/Robot_V3_表面一致性优化_20261101_224459_262105",
+  "report_url": "/api/comparisons/e399274879714195a78cee56cfed4847/files/report.html",
+  "download_url": "/api/comparisons/e399274879714195a78cee56cfed4847/files/Robot_V3_%E8%A1%A8%E9%9D%A2%E4%B8%80%E8%87%B4%E6%80%A7%E4%BC%98%E5%8C%96_20261101_224459_262105.zip"
+}

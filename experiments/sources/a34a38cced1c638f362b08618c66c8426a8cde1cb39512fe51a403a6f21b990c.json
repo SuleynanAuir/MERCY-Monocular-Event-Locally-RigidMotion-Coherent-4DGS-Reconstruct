@@ -1,0 +1,86 @@
+{
+  "status": "complete",
+  "stage": "complete",
+  "percent": 100,
+  "completed": 1,
+  "total": 1,
+  "elapsed_seconds": 30.1,
+  "detail": "对照试验计算与可视化完成",
+  "warnings": [
+    "V3 使用同一源视角的 RGB 监督优化；本报告 5 个时刻中 0 个参与训练、5 个用于留出验证及检查点选择。不是独立测试集或新视角泛化证明。",
+    "前景 PSNR / IoU 使用原始 RGB 的固定背景分割参考，属于光度前景代理掩码，不是人工或几何真值；阈值与定义随实验包保存。"
+  ],
+  "summary": [
+    {
+      "version": "V1",
+      "foreground_psnr": 17.569805829632152,
+      "psnr": 26.119882724065484,
+      "ssim": 0.9360558821156569,
+      "foreground_ssim": 0.5087827045606659,
+      "lpips": 0.049563823640346526,
+      "iou": 0.858340552777656,
+      "missing": 7.5372579454271476,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 67.17708185315132,
+      "point_count": 576117,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V2",
+      "foreground_psnr": 16.55227190030956,
+      "psnr": 25.27279637979999,
+      "ssim": 0.9358152523167929,
+      "foreground_ssim": 0.5172353486443748,
+      "lpips": 0.07062409073114395,
+      "iou": 0.8497837636560549,
+      "missing": 7.402155714348846,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 36.629483848810196,
+      "point_count": 288103,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V3",
+      "foreground_psnr": 24.08799913133571,
+      "psnr": 32.39232168643901,
+      "ssim": 0.9765203625795177,
+      "foreground_ssim": 0.8530604440055838,
+      "lpips": 0.01704017408192158,
+      "iou": 0.914156863606447,
+      "missing": 2.275753703631378,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 50.73455311357975,
+      "point_count": 538488,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    }
+  ],
+  "output_bytes": 4304172,
+  "id": "12734754046b44b0b681559def32e15d",
+  "object_name": "Arm_V3_留出时刻验证",
+  "timestamp": "20261101_223043_766299",
+  "created_at": "2026-11-01T22:30:43.766299+08:00",
+  "timezone": "Asia/Shanghai",
+  "output_stem": "Arm_V3_留出时刻验证_20261101_223043_766299",
+  "download_name": "Arm_V3_留出时刻验证_20261101_223043_766299.zip",
+  "output_directory": "/root/autodl-tmp/SC-GS/experiment/output/Arm_V3_留出时刻验证_20261101_223043_766299",
+  "report_url": "/api/comparisons/12734754046b44b0b681559def32e15d/files/report.html",
+  "download_url": "/api/comparisons/12734754046b44b0b681559def32e15d/files/Arm_V3_%E7%95%99%E5%87%BA%E6%97%B6%E5%88%BB%E9%AA%8C%E8%AF%81_20261101_223043_766299.zip"
+}

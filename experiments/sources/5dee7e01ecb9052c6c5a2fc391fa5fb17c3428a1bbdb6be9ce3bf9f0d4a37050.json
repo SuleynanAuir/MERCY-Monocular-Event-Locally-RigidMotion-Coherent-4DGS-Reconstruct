@@ -1,0 +1,366 @@
+{
+  "passed": true,
+  "unchanged_v1_v2": true,
+  "samples": [
+    {
+      "port": 20925,
+      "view": "front",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "front",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "front",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "left",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "left",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "left",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "back",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "back",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "back",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "right",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "right",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "right",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "top",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "top",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "top",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "bottom",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "bottom",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20925,
+      "view": "bottom",
+      "frame": 23,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20927,
+      "view": "front",
+      "frame": 0,
+      "render_ms": 63.81
+    },
+    {
+      "port": 20927,
+      "view": "front",
+      "frame": 12,
+      "render_ms": 39.89
+    },
+    {
+      "port": 20927,
+      "view": "front",
+      "frame": 23,
+      "render_ms": 41.45
+    },
+    {
+      "port": 20927,
+      "view": "left",
+      "frame": 0,
+      "render_ms": 88.45
+    },
+    {
+      "port": 20927,
+      "view": "left",
+      "frame": 12,
+      "render_ms": 113.47
+    },
+    {
+      "port": 20927,
+      "view": "left",
+      "frame": 23,
+      "render_ms": 42.65
+    },
+    {
+      "port": 20927,
+      "view": "back",
+      "frame": 0,
+      "render_ms": 39.02
+    },
+    {
+      "port": 20927,
+      "view": "back",
+      "frame": 12,
+      "render_ms": 37.49
+    },
+    {
+      "port": 20927,
+      "view": "back",
+      "frame": 23,
+      "render_ms": 39.55
+    },
+    {
+      "port": 20927,
+      "view": "right",
+      "frame": 0,
+      "render_ms": 42.47
+    },
+    {
+      "port": 20927,
+      "view": "right",
+      "frame": 12,
+      "render_ms": 41.11
+    },
+    {
+      "port": 20927,
+      "view": "right",
+      "frame": 23,
+      "render_ms": 43.55
+    },
+    {
+      "port": 20927,
+      "view": "top",
+      "frame": 0,
+      "render_ms": 38.94
+    },
+    {
+      "port": 20927,
+      "view": "top",
+      "frame": 12,
+      "render_ms": 40.29
+    },
+    {
+      "port": 20927,
+      "view": "top",
+      "frame": 23,
+      "render_ms": 39.23
+    },
+    {
+      "port": 20927,
+      "view": "bottom",
+      "frame": 0,
+      "render_ms": 40.63
+    },
+    {
+      "port": 20927,
+      "view": "bottom",
+      "frame": 12,
+      "render_ms": 39.47
+    },
+    {
+      "port": 20927,
+      "view": "bottom",
+      "frame": 23,
+      "render_ms": 40.47
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 0,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 1,
+      "render_ms": 41.06
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 2,
+      "render_ms": 40.96
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 3,
+      "render_ms": 40.45
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 4,
+      "render_ms": 40.5
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 5,
+      "render_ms": 42.22
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 6,
+      "render_ms": 41.02
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 7,
+      "render_ms": 40.81
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 8,
+      "render_ms": 40.43
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 9,
+      "render_ms": 40.39
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 10,
+      "render_ms": 40.01
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 11,
+      "render_ms": 38.95
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 12,
+      "render_ms": 0.0
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 13,
+      "render_ms": 44.12
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 14,
+      "render_ms": 41.51
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 15,
+      "render_ms": 41.42
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 16,
+      "render_ms": 49.37
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 17,
+      "render_ms": 40.48
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 18,
+      "render_ms": 40.54
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 19,
+      "render_ms": 39.63
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 20,
+      "render_ms": 41.69
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 21,
+      "render_ms": 42.64
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 22,
+      "render_ms": 41.06
+    },
+    {
+      "port": 20927,
+      "view": "animation",
+      "frame": 23,
+      "render_ms": 0.0
+    }
+  ]
+}

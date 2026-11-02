@@ -1,0 +1,95 @@
+[
+  {
+    "version": "V1",
+    "total_frames": 25,
+    "aligned_rgb": 25,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 25,
+      "psnr": 25,
+      "ssim": 25,
+      "foreground_ssim": 25,
+      "lpips": 25,
+      "iou": 25,
+      "missing": 25,
+      "part_missing": 25,
+      "event_l1": 0,
+      "event_cosine": 0,
+      "polarity": 0,
+      "silent": 0
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "event_l1": "No eligible response-validation event windows with calibrated counts",
+      "event_cosine": "No eligible response-validation event windows with calibrated counts",
+      "polarity": "No eligible response-validation event windows with calibrated counts",
+      "silent": "No eligible response-validation event windows with calibrated counts"
+    }
+  },
+  {
+    "version": "V2",
+    "total_frames": 25,
+    "aligned_rgb": 25,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 25,
+      "psnr": 25,
+      "ssim": 25,
+      "foreground_ssim": 25,
+      "lpips": 25,
+      "iou": 25,
+      "missing": 25,
+      "part_missing": 25,
+      "event_l1": 0,
+      "event_cosine": 0,
+      "polarity": 0,
+      "silent": 0
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "event_l1": "No eligible response-validation event windows with calibrated counts",
+      "event_cosine": "No eligible response-validation event windows with calibrated counts",
+      "polarity": "No eligible response-validation event windows with calibrated counts",
+      "silent": "No eligible response-validation event windows with calibrated counts"
+    }
+  },
+  {
+    "version": "V3",
+    "total_frames": 25,
+    "aligned_rgb": 25,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 25,
+      "psnr": 25,
+      "ssim": 25,
+      "foreground_ssim": 25,
+      "lpips": 25,
+      "iou": 25,
+      "missing": 25,
+      "part_missing": 25,
+      "event_l1": 0,
+      "event_cosine": 0,
+      "polarity": 0,
+      "silent": 0
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "event_l1": "No eligible response-validation event windows with calibrated counts",
+      "event_cosine": "No eligible response-validation event windows with calibrated counts",
+      "polarity": "No eligible response-validation event windows with calibrated counts",
+      "silent": "No eligible response-validation event windows with calibrated counts"
+    }
+  }
+]

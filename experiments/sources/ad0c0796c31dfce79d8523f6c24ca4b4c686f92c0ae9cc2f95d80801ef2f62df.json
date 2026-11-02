@@ -1,0 +1,60 @@
+{
+  "manifest_sha256": "ddbb58344c7a02516b77633626f2ab354b647acc0bbb67acd8de0124db422d80",
+  "source_version_ids": [
+    "0",
+    "1",
+    "2"
+  ],
+  "version_order": [
+    "V1",
+    "V2",
+    "V3"
+  ],
+  "sample_count": 25,
+  "resolutions": [
+    [
+      640,
+      640
+    ]
+  ],
+  "source_frames": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24,
+    26,
+    28,
+    30,
+    32,
+    34,
+    36,
+    38,
+    40,
+    42,
+    44,
+    46,
+    48
+  ],
+  "event_primary_rule": "response_validation only; calibration-overlap and unspecified windows retained in raw metrics but excluded",
+  "bootstrap": "5000 paired stationary resamples, blocks 5/10/20; descriptive within sequence",
+  "scope": "Comparison only; no ablations",
+  "version_presentation": {
+    "revision": "swap-v1-v2-20261027",
+    "source_to_display": {
+      "V1": "V1",
+      "V2": "V2",
+      "V3": "V3"
+    },
+    "disclosure": "版本按阶段清单排列；保留原始来源与哈希，指标以同相机同时间实测为准。",
+    "changes": "Labels and display/export ordering only; raw assets and measured values unchanged"
+  }
+}

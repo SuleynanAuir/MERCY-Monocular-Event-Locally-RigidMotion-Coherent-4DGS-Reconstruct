@@ -1,0 +1,851 @@
+{
+  "object": "microphone",
+  "recommended_version": "V3",
+  "sample_count": 25,
+  "source_original": "experiment/output/microphone_20261027_210649_602833/data/analysis.json",
+  "source_snapshot": "sources/a752bcb401f3de812ce47d698683c7440a813cfa75b3987cdb5f7b59278c7e59.json",
+  "source_sha256": "a752bcb401f3de812ce47d698683c7440a813cfa75b3987cdb5f7b59278c7e59",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "25.499077374221496",
+    "psnr": "34.37805633737692",
+    "ssim": "0.9836985003348273",
+    "foreground_ssim": "0.8387917297604893",
+    "lpips": "0.018658003583550454",
+    "iou": "0.9234937668365624",
+    "missing": "3.6046463973548466",
+    "part_missing": "5.913567327855031",
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "53.179174304008484",
+    "point_count": "454420",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少原始事件；彩色预览视频不能还原事件计数"
+    }
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "25.499077374221496",
+    "psnr": "34.37805633737692",
+    "ssim": "0.9836985003348273",
+    "foreground_ssim": "0.8387917297604893",
+    "lpips": "0.018658003583550454",
+    "iou": "0.9234937668365624",
+    "missing": "3.6046463973548466",
+    "part_missing": "5.913567327855031",
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "53.179174304008484",
+    "point_count": "454420",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少原始事件；彩色预览视频不能还原事件计数"
+    }
+  },
+  "selection_reason": "本地完整三版本实验中推荐V3；模型外观推荐不等于速度最优。",
+  "attachments": [
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/protocol.json",
+      "snapshot": "sources/6aa282e97fd58481ccec1ba30c58e742b12113c783f8d93f2538e4264f87a212.json",
+      "sha256": "6aa282e97fd58481ccec1ba30c58e742b12113c783f8d93f2538e4264f87a212",
+      "bytes": 1158
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/availability.json",
+      "snapshot": "sources/36f146ceb9202651e55a8513433bdd654257681f4d4209d9a13a0fadba5325ae.json",
+      "sha256": "36f146ceb9202651e55a8513433bdd654257681f4d4209d9a13a0fadba5325ae",
+      "bytes": 3230
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/version_mapping.json",
+      "snapshot": "sources/a181c59ff018d3b4b520531c02188828f1758ed7bbca4bab56d34c4fbd43117b.json",
+      "sha256": "a181c59ff018d3b4b520531c02188828f1758ed7bbca4bab56d34c4fbd43117b",
+      "bytes": 427
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/input_manifest.json.gz",
+      "snapshot": "sources/8195dacd1123a9fde53357beba1eb842dc580e90da249cf43acacc037eb422f9.json.gz",
+      "sha256": "8195dacd1123a9fde53357beba1eb842dc580e90da249cf43acacc037eb422f9",
+      "bytes": 24873
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/base_metrics.json.gz",
+      "snapshot": "sources/a7898d9c89ffd2f9f0ef46b908cefe24f99be1b8bddf4e14b4baae512f237eed.json.gz",
+      "sha256": "a7898d9c89ffd2f9f0ef46b908cefe24f99be1b8bddf4e14b4baae512f237eed",
+      "bytes": 73682
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/series.npz",
+      "snapshot": "sources/201334bb8c6d3db0665c0eeb8897f5ed505a1c3cb59a2bf77a51f4933f403ac8.npz",
+      "sha256": "201334bb8c6d3db0665c0eeb8897f5ed505a1c3cb59a2bf77a51f4933f403ac8",
+      "bytes": 15097
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/lpips.json",
+      "snapshot": "sources/69d82f5216f4e09b89f9925f3000f3dd95f610cc83a93ee15a48d057d57de8c3.json",
+      "sha256": "69d82f5216f4e09b89f9925f3000f3dd95f610cc83a93ee15a48d057d57de8c3",
+      "bytes": 2582
+    },
+    {
+      "original": "experiment/output/microphone_20261027_210649_602833/data/visualization_protocol.json",
+      "snapshot": "sources/d908d6a1c94ecbdf43942f8da9949175f81d0046d4f023cdd989c5446c94f959.json",
+      "sha256": "d908d6a1c94ecbdf43942f8da9949175f81d0046d4f023cdd989c5446c94f959",
+      "bytes": 14133
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/8195dacd1123a9fde53357beba1eb842dc580e90da249cf43acacc037eb422f9.json.gz",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/validated/microphone-pair.json",
+          "sha256": "2cbadab4e0eecf2527bc8637463433ee726a947c91a971e0f2767756af198bcc",
+          "bytes": 1065,
+          "available": true,
+          "included": true,
+          "file": "configs/2cbadab4e0eecf2527bc8637463433ee726a947c91a971e0f2767756af198bcc.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-ui-rebuild-20261026/microphone/supplied-pair/left.npz",
+          "sha256": "ab771c60333d6937453d04580a04be6372c5103cc18626ad318375e8d323e477",
+          "bytes": 199874235,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-ui-rebuild-20261026/microphone/supplied-pair/right.npz",
+          "sha256": "c83d9bbfd36bc784ab42a1f06a6802b9d77f89185a19d9c000bcce1bb82e5116",
+          "bytes": 471310118,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/microphone-appearance/appearance.npz",
+          "sha256": "af594d901915918580e0da0430aafbd33b5dde48e7154b09ce1d60720ec8ec64",
+          "bytes": 6980744,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/microphone-appearance/training.json",
+          "sha256": "a6dfac26555339f8c2db31ac2b9ce677e722d31da182094ddc3b3466983835ea",
+          "bytes": 2127,
+          "available": true,
+          "included": true,
+          "file": "configs/a6dfac26555339f8c2db31ac2b9ce677e722d31da182094ddc3b3466983835ea.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/reference.json",
+          "sha256": "af76abea8dc60cd0b5680a2fec3ad685de594c70ce83bd9cf82c1aa44c1c0942",
+          "bytes": 7575,
+          "available": true,
+          "included": true,
+          "file": "configs/af76abea8dc60cd0b5680a2fec3ad685de594c70ce83bd9cf82c1aa44c1c0942.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000000.png",
+          "sha256": "6b3a029e95c8e1fa52c2202c4da8e2441940a6f340734040865c9596f5c5a1c2",
+          "bytes": 45225,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000000.png",
+          "sha256": "70cda4bfa9a54b6097df7f05925e251c8c1cdb474e7fd7261b8c4374f973ac85",
+          "bytes": 2737,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000000.png",
+          "sha256": "a96a315a487fa7374c2b50f7233969cc54c7373effd68d576968ad4481ff70f9",
+          "bytes": 6835,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000002.png",
+          "sha256": "08b9c8b9470839ff00aa1d5fad0b25d3fcb5d22aa9607f82eac9d8945a0008a8",
+          "bytes": 45216,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000002.png",
+          "sha256": "4f0215f6709476b241a549a58abb0240e05a0a604f1148945ebe4cf323e10272",
+          "bytes": 2581,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000002.png",
+          "sha256": "1ca5e4b7252d19bcadb77c1a3e1c248aa727388149b02b80439d4f2f51352eb3",
+          "bytes": 6466,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000004.png",
+          "sha256": "ada485a3f0a7887e50e745c88989b5885a43dddd4bed47187ffaa704a9cd5a47",
+          "bytes": 44135,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000004.png",
+          "sha256": "0d2dffe0f4866d5aff5ab5b425516a276736940d05ac3ca93a5d0ad903f33730",
+          "bytes": 2352,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000004.png",
+          "sha256": "9c8caa60b9b09e90bffbade63c541b9bd895487eb228d0f9f3bb55be169ffd65",
+          "bytes": 6245,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000006.png",
+          "sha256": "260725b634f05aa0d0edcaca58eaeb74bf3fc4b6ddcf7d1c0b9b69148001544f",
+          "bytes": 42959,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000006.png",
+          "sha256": "8783505036fe256fa8db1e165e77f25330684ca9a01bc4c79a05d8d50d839658",
+          "bytes": 2052,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000006.png",
+          "sha256": "22f14fa5db77effd8b06419ff79baa16c0dbd6f1a2b367f22f8e8fd6a01c5cfc",
+          "bytes": 5573,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000008.png",
+          "sha256": "3daa3039be02a25f5053c5d77a27676b514bd96ef6d94e0eb690f45b03772b9d",
+          "bytes": 44057,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000008.png",
+          "sha256": "4f4592b958f2e19b014f16cfb0c32eb8a50cba0fd54620a71a940f4f9f1b1f2b",
+          "bytes": 2205,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000008.png",
+          "sha256": "c8b76e1a1425306b931294fb3011720b40e53e799420dacd9294e054f7a07d10",
+          "bytes": 5948,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000010.png",
+          "sha256": "8c2c84ee4a80de4ca094b8e3becd18d3f09444d89e10afe30e851932d3acf23b",
+          "bytes": 45321,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000010.png",
+          "sha256": "6eacb657dcbee7385e28fee098c0457c028f162d9c98ff326c4df4e15b1feba1",
+          "bytes": 2453,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000010.png",
+          "sha256": "c4c5d4910d31d7aff0bf6007e50d978c527397315efe529c6de249dbb8a8fb15",
+          "bytes": 6213,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000012.png",
+          "sha256": "cbff244feec15137cc6cfbb99a8e0b2d962574d4493e3eecfa4c8aba9590ece2",
+          "bytes": 46795,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000012.png",
+          "sha256": "8441351f0ef3e957e6a6a609f60685bbdb9940dc6c29878589e46922da22844e",
+          "bytes": 2696,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000012.png",
+          "sha256": "fee81f9ed48193443e730258952361c9555ba724bc0b924eeb7db08e589a905c",
+          "bytes": 6571,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000014.png",
+          "sha256": "91729d5b4307963833a8cb75114e2b656cab335d34a5e6eb781fe7bb7257484f",
+          "bytes": 46084,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000014.png",
+          "sha256": "776f13e0a1dc39ba228f97cfbcc57bd376c857746699c915b3a74c170ee0a72f",
+          "bytes": 2573,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000014.png",
+          "sha256": "193cde5ceae33469127f4bcd2b5a76f7e6a0ac154c28be7c2f3053b1c1cd7e2a",
+          "bytes": 6335,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000016.png",
+          "sha256": "d6dbf900c1a913959e6b03b1c9eea7dd34614601e3dc0628be918665814fbf1f",
+          "bytes": 45300,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000016.png",
+          "sha256": "5c30cc34030a99ee2f5997ab7aa7c82e22ce7e76b7d1f52ef526aa910da0d0f2",
+          "bytes": 2307,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000016.png",
+          "sha256": "d7c8521a12d378744424660d337b5843b297b27f4771c892aab725f96728856b",
+          "bytes": 6023,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000018.png",
+          "sha256": "9e7313a929858ba2370e6cff9ff224a96ba61ee352720f8330d38be7e20c7e18",
+          "bytes": 40975,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000018.png",
+          "sha256": "baa103ddee6668de3222fea74614abe7f0bd583005523dbc3b6e37a0f9daa31b",
+          "bytes": 2133,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000018.png",
+          "sha256": "92e736d43e074b30e4f5b789eac31e1cc861ba23a3d050a34fddb29515674310",
+          "bytes": 5732,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000020.png",
+          "sha256": "cf72351e250d4d2101acc408a808a7b19cc26eb53f0fd5edae75352f8bd7c01b",
+          "bytes": 44178,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000020.png",
+          "sha256": "e2afa781c9fa57df11017a21f2c241f511877c4375e77aa8e5152a4582efe8cc",
+          "bytes": 2186,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000020.png",
+          "sha256": "7e2202bd1cce84646f07b9eb53565f7e62a5ae925bd49d5f2cc97d4749421b29",
+          "bytes": 5849,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000022.png",
+          "sha256": "7c21d7bbdaa867c76df46e637fbc37b2282aca5f37cc46acaf7929baee2f9283",
+          "bytes": 46577,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000022.png",
+          "sha256": "73efc23adb3e05212e1a83b490dc977a8808a8eb6d7b76a6c2fbb57c4922cedf",
+          "bytes": 2442,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000022.png",
+          "sha256": "7a70f1f73b1c8229455f8a958c712742d42939240fea9bc2003bb157fc9dfd61",
+          "bytes": 6433,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000024.png",
+          "sha256": "fdeecc2c057b06cd8fe8055fa56fd772ed8eba3d03f5da29a2215f68853b0470",
+          "bytes": 47990,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000024.png",
+          "sha256": "8500299da256dd422110e40584591662519a530d4e75e7b8e0bea6c8026564de",
+          "bytes": 2688,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000024.png",
+          "sha256": "cd4f6d7611dbe89aac3cc9ff1bb406e1ae875d225daba7f79610a2f4507238a3",
+          "bytes": 6566,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000026.png",
+          "sha256": "5336c0546d9c07c1e72da8de235a8e48305866e3cd02e5f5b11951ea06b83dfc",
+          "bytes": 47915,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000026.png",
+          "sha256": "7f494a72e8a27d3675df55fd7d187d2b9fd947d0c5fff1243f3ebd2052a0229d",
+          "bytes": 2608,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000026.png",
+          "sha256": "e8ac78f4d6657ca36018f16306bdf01c5188df89fcc75107be3552014071bbe1",
+          "bytes": 6513,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000028.png",
+          "sha256": "ddc781dfa6490d62ec34f07b5937cac51fd83c3f7e8a1a03a24b8e30208d4c75",
+          "bytes": 46547,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000028.png",
+          "sha256": "1647b4e7ef84a62fecbfdcb40e8c4fd08df518319a9e1a8c3fa811fc6680d6ca",
+          "bytes": 2406,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000028.png",
+          "sha256": "f4da00d96a677e6b8c995c59a2258e2e78f6de4f1631a3cbb5f84bbe451c6b95",
+          "bytes": 6252,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000030.png",
+          "sha256": "af9cfc661d91a81c3905f2d44bccfd5f1a7c63027978327679b0a5a54fcaf208",
+          "bytes": 45647,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000030.png",
+          "sha256": "82ba6870c804453b21e07b6510555be45fa6a15fd4ebaa3e3cfc4a7ce2ed8f29",
+          "bytes": 2132,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000030.png",
+          "sha256": "5ac8bc24b0869adab5417fecd16ebe855a66d552b102a12c143ed63711ea09ff",
+          "bytes": 5933,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000032.png",
+          "sha256": "83706605b3255a5aa5cfd51b17fde317e6c9370a594d3a9360ea9f7c2974945e",
+          "bytes": 45052,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000032.png",
+          "sha256": "3610ab5f9acdc2527918adbc9460c59c186cea52ef7660aff20a6ef5d42f8d03",
+          "bytes": 2160,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000032.png",
+          "sha256": "03776aaa4ee6ce30e0d3c5d6a558d89ef5131983df0c831330dc53f813e1d118",
+          "bytes": 5795,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000034.png",
+          "sha256": "0e72d73f8d5e45adb1f7aa700667797ce4f34b9b875a8d59e9bf762906f77662",
+          "bytes": 46583,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000034.png",
+          "sha256": "b7b1e23e2f4591d2847baaac8450839e67b453d04f1f64fc6cf82d068c7363da",
+          "bytes": 2376,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000034.png",
+          "sha256": "164510fdda32b04d4d1e4e7388e64481e3b5d26abd388be6a97fb32c772a31fc",
+          "bytes": 6146,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000036.png",
+          "sha256": "540c1827ff3e1891bdc25d8d165f8222aa82a7b59429c05eb68ee29d31813235",
+          "bytes": 44863,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000036.png",
+          "sha256": "59c561dfe60cdeadca9b9cabf42827fe194dd0106e8e8dc349a3d3dd989ab269",
+          "bytes": 2578,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000036.png",
+          "sha256": "eee08a19e4792df468357cbc318d8017cab246fcef2755504339fe9f2f037ee7",
+          "bytes": 6357,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000038.png",
+          "sha256": "5383de6198b6348486f49183c0e588cfcdd4ae84622a0cb45efa6fb8921a4557",
+          "bytes": 46038,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000038.png",
+          "sha256": "cc8666e716e3290c6a1a81b66c5ea9d2ed8460d676350e4cc0994962d3ca0b19",
+          "bytes": 2678,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000038.png",
+          "sha256": "94237b7e264a87a464553d5a56d0a5e361457da18d071f8c7fb77d39901ed3f0",
+          "bytes": 6439,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000040.png",
+          "sha256": "82ffff2ac81aeeac64fd81b77636e542830fb0c69dda14aeafdc4acfe6e204e7",
+          "bytes": 44907,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000040.png",
+          "sha256": "775804df70f7312d4a037fe228dc4e22bb21ed64246695c778d3dba654b6417f",
+          "bytes": 2462,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000040.png",
+          "sha256": "6f7064e4e0ebbffee59966678dff1c3192a731861af79963a8d23167c53d13ba",
+          "bytes": 6186,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000042.png",
+          "sha256": "00713e2cdc006fb08726ddfb10c88fe9d16c6826c1314bc022ee7e268ad1afd9",
+          "bytes": 44307,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000042.png",
+          "sha256": "91e5e7c3d35519615647c1bb4487534dd1453b5a118990c11d4eec44905a644c",
+          "bytes": 2227,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000042.png",
+          "sha256": "fdb88daec1eda099b97d81d2ded41ecc54f870f8e95c29ecca0b9143437306f7",
+          "bytes": 5990,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000044.png",
+          "sha256": "1e831b9b3a52510f4c10c2cb67602d6090618ca2b9dc33f37f1d0ba699fadd4d",
+          "bytes": 43349,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000044.png",
+          "sha256": "b516037b407921b518a6301ed8e7e60f1ce82efa498f3e7a25d3717dc50cfc8d",
+          "bytes": 2060,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000044.png",
+          "sha256": "d789055214cb702edc0e693f99a03decfac2061b2ddf018e07059ecab6d700cb",
+          "bytes": 5564,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000046.png",
+          "sha256": "ef10d0a9b024db3ffa44c109dd3df4165bf95c44ac99db0b6eb34325289a626d",
+          "bytes": 44870,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000046.png",
+          "sha256": "1747e3c61811db7fb3db1697313234510abb74de0d4bce3f92b41f2adfe0b88f",
+          "bytes": 2185,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000046.png",
+          "sha256": "7be80a164bd14184230ca97acade2358459c4060b7e96b018ccf72755e703f8e",
+          "bytes": 5964,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/rgb/000048.png",
+          "sha256": "c80f1c6955ce05bcc1d6ab2ab6c27339b749a613481ab4624927e8fe59d5d310",
+          "bytes": 46462,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/masks/000048.png",
+          "sha256": "e151ccd04411547670ac4bd990700e522fb62ea34bd90955b31190dd2cc90f76",
+          "bytes": 2431,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/parts/000048.png",
+          "sha256": "fe914dd5517f771a44be1e3cd5b01736ff326cfa5c4026bb04433e4c9a521022",
+          "bytes": 6304,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/microphone/source-motion.npz",
+          "sha256": "4119aa35bce2038f9f1e1d1c01a3cd8c1024e9072fd57bfb63c914f7e43fdd99",
+          "bytes": 17879,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/validated/microphone-middle.json",
+          "sha256": "c99cbf3ecdf9966bc7375c595d51ad65b55803f27732a61d5b31038b7861e95c",
+          "bytes": 799,
+          "available": true,
+          "included": true,
+          "file": "configs/c99cbf3ecdf9966bc7375c595d51ad65b55803f27732a61d5b31038b7861e95c.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "c83d9bbfd36bc784ab42a1f06a6802b9d77f89185a19d9c000bcce1bb82e5116",
+        "reference_sha256": "af76abea8dc60cd0b5680a2fec3ad685de594c70ce83bd9cf82c1aa44c1c0942",
+        "train_frames": [
+          0,
+          2,
+          4,
+          6,
+          10,
+          12,
+          14,
+          16,
+          20,
+          22,
+          24,
+          26,
+          30,
+          32,
+          34,
+          36,
+          40,
+          42,
+          44,
+          46
+        ],
+        "validation_frames": [
+          8,
+          18,
+          28,
+          38,
+          48
+        ],
+        "baseline": {
+          "foreground_mse": 0.00882662907242775,
+          "iou": 0.9203826665878296,
+          "foreground_psnr": 20.943769666169853
+        },
+        "validation": {
+          "iteration": 400,
+          "foreground_mse": 0.0030338813085108995,
+          "iou": 0.9235963821411133,
+          "foreground_psnr": 25.510756628871498
+        },
+        "changes": "DC color, opacity and bounded log-scale; centers, rotations, point identities and all motion frozen",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training"
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 原始高斯",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 原始高斯",
+            "display_version": "V1",
+            "display_label": "V1 · 原始高斯"
+          },
+          "point_count": 227244,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 已提供修正版",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 已提供修正版",
+            "display_version": "V2",
+            "display_label": "V2 · 已提供修正版"
+          },
+          "point_count": 454420,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 光度与覆盖校正",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 光度与覆盖校正",
+            "display_version": "V3",
+            "display_label": "V3 · 光度与覆盖校正"
+          },
+          "point_count": 454420,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ],
+      "renderer_config": {
+        "renderer_class": "VersionPresentationRenderer",
+        "components": [
+          {
+            "versions": [
+              0,
+              2
+            ],
+            "renderer_class": "GaussianPairRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1,
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          },
+          {
+            "versions": [
+              1
+            ],
+            "renderer_class": "SingleStageRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

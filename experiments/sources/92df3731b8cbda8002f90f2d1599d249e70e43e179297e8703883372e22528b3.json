@@ -1,0 +1,998 @@
+{
+  "revision": "cycle-integrated-atlas-20261027",
+  "numerical_metrics_recomputed": false,
+  "cycles": {
+    "period_samples": 100,
+    "period_seconds": 3.3333333333333215,
+    "origin_seconds": 0.0,
+    "recurrence_normalized_mse": 4.834287669728098e-13,
+    "overlap_samples": 100,
+    "rule": "first normalized recurrence MSE < 0.1 after MSE > 0.5; at least two sampled periods",
+    "status": "available",
+    "source": "common source object translation",
+    "source_file": "reference/source-motion.npz",
+    "source_sha256": "924b6f18739c03e9703fabf350b8c10843a16a5012281fea1e79d43421a437c2",
+    "part_id": 147,
+    "part_selection": "largest translation variance among source objects; independent of predicted methods",
+    "boundary_convention": "cycle origin at first exported source state; half-cycle dotted lines"
+  },
+  "radar": {
+    "Image reconstruction": {
+      "keys": [
+        "psnr",
+        "foreground_psnr",
+        "ssim",
+        "foreground_ssim",
+        "lpips",
+        "iou"
+      ],
+      "cap": [
+        35.0,
+        30.0,
+        1.0,
+        1.0,
+        0.15000000000000002,
+        1.0
+      ],
+      "radius": [
+        [
+          0.5036245618636035,
+          0.4251064818825438,
+          0.7904921206610882,
+          0.22213268849946363,
+          0.9540938248236973,
+          0.832681822390775
+        ],
+        [
+          0.7456382294857095,
+          0.7236522651451672,
+          0.9398222962719609,
+          0.7900590619907194,
+          0.30003246050328014,
+          0.9187351016504124
+        ],
+        [
+          0.9095753167974562,
+          0.9102135798311879,
+          0.9772225232308849,
+          0.9239134565266021,
+          0.14850994876275456,
+          0.933486037057462
+        ]
+      ],
+      "rule": "raw / axis cap; no inversion"
+    },
+    "Structure & event response": {
+      "keys": [
+        "missing",
+        "part_missing",
+        "event_l1",
+        "event_cosine",
+        "polarity",
+        "silent"
+      ],
+      "cap": [
+        3.5,
+        6.5,
+        1.5,
+        1.0,
+        100.0,
+        0.008
+      ],
+      "radius": [
+        [
+          0.978949821116942,
+          0.51598961975584,
+          0.9969729490178433,
+          0.28414780339189527,
+          0.4109735230980073,
+          0.9504455109412254
+        ],
+        [
+          0.6474560582536862,
+          0.9512188082499551,
+          0.9205591067814333,
+          0.44057416902083657,
+          0.5689980140657053,
+          0.8586165594786088
+        ],
+        [
+          0.45927023248330767,
+          0.8530525891272838,
+          0.4628429993760749,
+          0.8382512501742027,
+          0.8187484318706771,
+          0.26604491851957546
+        ]
+      ],
+      "rule": "raw / axis cap; no inversion"
+    }
+  },
+  "relative_gains": [
+    {
+      "metric": "foreground_psnr",
+      "pair": "V1 -> V2",
+      "percent": 70.22847121515102
+    },
+    {
+      "metric": "psnr",
+      "pair": "V1 -> V2",
+      "percent": 48.05438136824837
+    },
+    {
+      "metric": "ssim",
+      "pair": "V1 -> V2",
+      "percent": 18.890786094868083
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V1 -> V2",
+      "percent": 255.6698779129156
+    },
+    {
+      "metric": "lpips",
+      "pair": "V1 -> V2",
+      "percent": 68.55314931330555
+    },
+    {
+      "metric": "iou",
+      "pair": "V1 -> V2",
+      "percent": 10.334473137958428
+    },
+    {
+      "metric": "missing",
+      "pair": "V1 -> V2",
+      "percent": 33.86218125920232
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V1 -> V2",
+      "percent": -84.34843877286917
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V1 -> V2",
+      "percent": 7.664585314144005
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V1 -> V2",
+      "percent": 55.05105573988858
+    },
+    {
+      "metric": "polarity",
+      "pair": "V1 -> V2",
+      "percent": 38.45125831378995
+    },
+    {
+      "metric": "silent",
+      "pair": "V1 -> V2",
+      "percent": 9.661674489017106
+    },
+    {
+      "metric": "foreground_psnr",
+      "pair": "V2 -> V3",
+      "percent": 25.78051968767013
+    },
+    {
+      "metric": "psnr",
+      "pair": "V2 -> V3",
+      "percent": 21.986142988513272
+    },
+    {
+      "metric": "ssim",
+      "pair": "V2 -> V3",
+      "percent": 3.979499859418242
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V2 -> V3",
+      "percent": 16.94232760252233
+    },
+    {
+      "metric": "lpips",
+      "pair": "V2 -> V3",
+      "percent": 50.5020395081115
+    },
+    {
+      "metric": "iou",
+      "pair": "V2 -> V3",
+      "percent": 1.6055700256310128
+    },
+    {
+      "metric": "missing",
+      "pair": "V2 -> V3",
+      "percent": 29.065420482426564
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V2 -> V3",
+      "percent": 10.320046057886177
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V2 -> V3",
+      "percent": 49.72153379761557
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V2 -> V3",
+      "percent": 90.2633674682272
+    },
+    {
+      "metric": "polarity",
+      "pair": "V2 -> V3",
+      "percent": 43.8930210002687
+    },
+    {
+      "metric": "silent",
+      "pair": "V2 -> V3",
+      "percent": 69.01469980020765
+    },
+    {
+      "metric": "foreground_psnr",
+      "pair": "V1 -> V3",
+      "percent": 114.1142557507929
+    },
+    {
+      "metric": "psnr",
+      "pair": "V1 -> V3",
+      "percent": 80.60582935663021
+    },
+    {
+      "metric": "ssim",
+      "pair": "V1 -> V3",
+      "percent": 23.622044760374603
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V1 -> V3",
+      "percent": 315.92863381241295
+    },
+    {
+      "metric": "lpips",
+      "pair": "V1 -> V3",
+      "percent": 84.43445027115682
+    },
+    {
+      "metric": "iou",
+      "pair": "V1 -> V3",
+      "percent": 12.10597036659939
+    },
+    {
+      "metric": "missing",
+      "pair": "V1 -> V3",
+      "percent": 53.085416374120285
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V1 -> V3",
+      "percent": -65.32359498451497
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V1 -> V3",
+      "percent": 53.575169734340385
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V1 -> V3",
+      "percent": 195.00535994574997
+    },
+    {
+      "metric": "polarity",
+      "pair": "V1 -> V3",
+      "percent": 99.22169820059804
+    },
+    {
+      "metric": "silent",
+      "pair": "V1 -> V3",
+      "percent": 72.00839864495637
+    }
+  ],
+  "gain_display": {
+    "kind": "three paired dot facets",
+    "x_scale": "symlog; linear within ±25%",
+    "y": "metric categories, not significance",
+    "size": "absolute measured percentage",
+    "colors": "six metric families"
+  },
+  "spatial_selection": {
+    "metric": "full-frame PSNR (dB)",
+    "rule": "top 4 sum of all pairwise absolute PSNR differences; finite matched frames; earlier-index tie break",
+    "sample_indices": [
+      193,
+      93,
+      88,
+      196
+    ],
+    "source_frames": [
+      386,
+      186,
+      176,
+      392
+    ],
+    "seconds": [
+      6.433333333333334,
+      3.1,
+      2.933333333333333,
+      6.533333333333333
+    ],
+    "gap_sum_db": [
+      30.995706042631994,
+      30.9725432216863,
+      30.953106222297293,
+      30.94310853294852
+    ]
+  },
+  "spatial_distributions": {
+    "scope": "all foreground pixels per selected frame",
+    "curves": "empirical CDF and exceedance tail",
+    "display_vertices_max": 1500,
+    "rows": [
+      {
+        "sample_index": 193,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.1372549019607843,
+            "p95": 0.4915032679738562,
+            "p99": 0.6496732026143791,
+            "foreground_pixels": 80308
+          },
+          {
+            "version": "V2",
+            "p50": 0.015686274509803866,
+            "p95": 0.08104575163398697,
+            "p99": 0.18814379084966398,
+            "foreground_pixels": 80308
+          },
+          {
+            "version": "V3",
+            "p50": 0.00784313725490196,
+            "p95": 0.07058823529411767,
+            "p99": 0.1529411764705882,
+            "foreground_pixels": 80308
+          }
+        ]
+      },
+      {
+        "sample_index": 93,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.13725490196078427,
+            "p95": 0.49104575163397923,
+            "p99": 0.6496732026143791,
+            "foreground_pixels": 80308
+          },
+          {
+            "version": "V2",
+            "p50": 0.015686274509803866,
+            "p95": 0.08235294117647056,
+            "p99": 0.18823529411764706,
+            "foreground_pixels": 80308
+          },
+          {
+            "version": "V3",
+            "p50": 0.00784313725490196,
+            "p95": 0.07058823529411767,
+            "p99": 0.15294117647058825,
+            "foreground_pixels": 80308
+          }
+        ]
+      },
+      {
+        "sample_index": 88,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.13594771241830061,
+            "p95": 0.4888888888888889,
+            "p99": 0.6470588235294118,
+            "foreground_pixels": 80292
+          },
+          {
+            "version": "V2",
+            "p50": 0.015686274509803977,
+            "p95": 0.11111111111111112,
+            "p99": 0.27854901960783857,
+            "foreground_pixels": 80292
+          },
+          {
+            "version": "V3",
+            "p50": 0.00784313725490196,
+            "p95": 0.06666666666666671,
+            "p99": 0.14901960784313728,
+            "foreground_pixels": 80292
+          }
+        ]
+      },
+      {
+        "sample_index": 196,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.13725490196078435,
+            "p95": 0.4915032679738562,
+            "p99": 0.6470588235294118,
+            "foreground_pixels": 80300
+          },
+          {
+            "version": "V2",
+            "p50": 0.015686274509803866,
+            "p95": 0.07058823529411766,
+            "p99": 0.1450980392156863,
+            "foreground_pixels": 80300
+          },
+          {
+            "version": "V3",
+            "p50": 0.00784313725490196,
+            "p95": 0.07450980392156858,
+            "p99": 0.15294117647058825,
+            "foreground_pixels": 80300
+          }
+        ]
+      }
+    ]
+  },
+  "spatial_delta": {
+    "formula": "mean(abs(V3-GT),RGB) - mean(abs(V2-GT),RGB)",
+    "display_range": [
+      -0.05,
+      0.05
+    ],
+    "tie_tolerance": 1e-10,
+    "rows": [
+      {
+        "sample_index": 193,
+        "frame": 386,
+        "time_seconds": 6.433333333333334,
+        "mean_error_delta": -0.0019360894097222223,
+        "foreground_improved_percent": 61.11097275489365,
+        "foreground_worse_percent": 29.000846740050807,
+        "foreground_tied_percent": 9.88818050505554
+      },
+      {
+        "sample_index": 93,
+        "frame": 186,
+        "time_seconds": 3.1,
+        "mean_error_delta": -0.0019080180249183008,
+        "foreground_improved_percent": 60.7685411167007,
+        "foreground_worse_percent": 29.300941375703545,
+        "foreground_tied_percent": 9.930517507595752
+      },
+      {
+        "sample_index": 88,
+        "frame": 176,
+        "time_seconds": 2.933333333333333,
+        "mean_error_delta": -0.003948829401552287,
+        "foreground_improved_percent": 64.70258556269616,
+        "foreground_worse_percent": 25.702436108205053,
+        "foreground_tied_percent": 9.59497832909879
+      },
+      {
+        "sample_index": 196,
+        "frame": 392,
+        "time_seconds": 6.533333333333333,
+        "mean_error_delta": -0.0011657794628267973,
+        "foreground_improved_percent": 59.43088418430884,
+        "foreground_worse_percent": 30.721046077210463,
+        "foreground_tied_percent": 9.8480697384807
+      }
+    ]
+  },
+  "parts": {
+    "definition": "missing pixel contribution by GT mean-area bins; percentage points of total common visible area",
+    "alpha_threshold": 0.5,
+    "size_groups": [
+      {
+        "label": "0–16 px",
+        "part_ids": [
+          41,
+          60,
+          65,
+          71,
+          118,
+          152,
+          158,
+          166,
+          169,
+          180,
+          181,
+          190,
+          192,
+          195,
+          205,
+          208,
+          210,
+          211,
+          212,
+          216,
+          217,
+          218,
+          234,
+          237,
+          252,
+          255,
+          273,
+          274,
+          314,
+          317,
+          337,
+          348,
+          350,
+          351,
+          352,
+          370,
+          372,
+          376,
+          383,
+          393,
+          396,
+          402,
+          404,
+          412,
+          432
+        ]
+      },
+      {
+        "label": "16–32 px",
+        "part_ids": [
+          9,
+          25,
+          51,
+          72,
+          73,
+          93,
+          104,
+          156,
+          215,
+          222,
+          256,
+          260,
+          261,
+          262,
+          263,
+          264,
+          265,
+          266,
+          267,
+          349,
+          405,
+          422
+        ]
+      },
+      {
+        "label": "32–64 px",
+        "part_ids": [
+          1,
+          2,
+          17,
+          31,
+          38,
+          43,
+          48,
+          59,
+          67,
+          79,
+          81,
+          97,
+          111,
+          128,
+          132,
+          135,
+          137,
+          138,
+          142,
+          159,
+          168,
+          170,
+          176,
+          179,
+          182,
+          189,
+          197,
+          209,
+          219,
+          221,
+          224,
+          230,
+          241,
+          242,
+          246,
+          253,
+          275,
+          315,
+          316,
+          353,
+          366,
+          373,
+          379,
+          384,
+          415,
+          428,
+          435
+        ]
+      },
+      {
+        "label": "64–128 px",
+        "part_ids": [
+          7,
+          8,
+          10,
+          12,
+          23,
+          24,
+          28,
+          32,
+          39,
+          42,
+          46,
+          47,
+          54,
+          57,
+          66,
+          74,
+          76,
+          77,
+          78,
+          80,
+          89,
+          92,
+          107,
+          109,
+          110,
+          112,
+          119,
+          123,
+          127,
+          133,
+          143,
+          154,
+          161,
+          163,
+          164,
+          165,
+          167,
+          171,
+          183,
+          185,
+          202,
+          207,
+          213,
+          235,
+          236,
+          238,
+          239,
+          240,
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          295,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          303,
+          304,
+          312,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359,
+          360,
+          361,
+          362,
+          363,
+          364,
+          365,
+          371,
+          378,
+          380,
+          385,
+          386,
+          391,
+          395,
+          399,
+          416,
+          425,
+          426
+        ]
+      },
+      {
+        "label": "128–256 px",
+        "part_ids": [
+          11,
+          13,
+          18,
+          20,
+          22,
+          27,
+          29,
+          30,
+          56,
+          75,
+          96,
+          106,
+          108,
+          144,
+          145,
+          146,
+          148,
+          149,
+          157,
+          160,
+          172,
+          174,
+          175,
+          184,
+          196,
+          198,
+          201,
+          214,
+          229,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          367,
+          368,
+          375,
+          377,
+          381,
+          388,
+          389,
+          394,
+          400,
+          403,
+          410
+        ]
+      },
+      {
+        "label": "256–512 px",
+        "part_ids": [
+          15,
+          19,
+          21,
+          33,
+          34,
+          36,
+          37,
+          105,
+          126,
+          130,
+          173,
+          178,
+          186,
+          187,
+          188,
+          200,
+          204,
+          226,
+          227,
+          228,
+          247,
+          387,
+          398,
+          401,
+          406,
+          407,
+          408,
+          409,
+          413
+        ]
+      },
+      {
+        "label": "512–1024 px",
+        "part_ids": [
+          14,
+          16,
+          35,
+          52,
+          55,
+          68,
+          90,
+          101,
+          102,
+          125,
+          136,
+          147,
+          151,
+          155,
+          199,
+          225,
+          257,
+          414,
+          418,
+          420,
+          423,
+          424,
+          427,
+          429,
+          430,
+          433,
+          434
+        ]
+      },
+      {
+        "label": "1024–2048 px",
+        "part_ids": [
+          49,
+          53,
+          58,
+          64,
+          91,
+          103,
+          150,
+          177,
+          203,
+          369,
+          411,
+          417,
+          419,
+          421
+        ]
+      },
+      {
+        "label": "2048–4096 px",
+        "part_ids": [
+          139,
+          153,
+          206,
+          259,
+          313
+        ]
+      }
+    ],
+    "total_parts": 337,
+    "excluded_pixel_frames": 0.0,
+    "heatmap_gamma": 0.5,
+    "heatmap_cap": 1.5,
+    "heatmap_samples": 200,
+    "trace_scale_percent": [
+      0,
+      4.5
+    ],
+    "heatmap_cycle_source": "data/cycle_protocol.json",
+    "gt_area_pooled_percent": [
+      3.430781855419928,
+      2.2631789511596407,
+      1.6072464562432578
+    ],
+    "within_part_tail_counts": [
+      {
+        "version": "V1",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          36,
+          17,
+          4
+        ],
+        "part_percent": [
+          10.682492581602373,
+          5.044510385756676,
+          1.1869436201780417
+        ],
+        "total_parts": 337
+      },
+      {
+        "version": "V2",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          60,
+          30,
+          20
+        ],
+        "part_percent": [
+          17.804154302670625,
+          8.902077151335313,
+          5.934718100890208
+        ],
+        "total_parts": 337
+      },
+      {
+        "version": "V3",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          51,
+          28,
+          18
+        ],
+        "part_percent": [
+          15.133531157270031,
+          8.30860534124629,
+          5.341246290801187
+        ],
+        "total_parts": 337
+      }
+    ],
+    "original_equal_part_percent": [
+      3.35393252841296,
+      6.182922253624708,
+      5.5448418293273445
+    ],
+    "monotonic_gt_area_measured": true,
+    "monotonic_equal_part_measured": false
+  },
+  "efficiency_display": {
+    "points": "all finite repeat-by-frame latencies with matched frame PSNR; no jitter or trimming",
+    "cycle_markers": "odd/even common GT cycle",
+    "density": "50x40 equal-width 2D histogram; Gaussian sigma 1.2 bins; contours enclose 50/90% smoothed grid mass",
+    "latency_quantiles": [
+      {
+        "version": "V1",
+        "measurements": 1000,
+        "p05": 12.227610126137733,
+        "p25": 14.327110722661018,
+        "p50": 18.60138401389122,
+        "p75": 21.81209810078144,
+        "p95": 25.893395394086838
+      },
+      {
+        "version": "V2",
+        "measurements": 1000,
+        "p05": 15.21223671734333,
+        "p25": 15.948988497257233,
+        "p50": 16.692131757736206,
+        "p75": 17.224494367837906,
+        "p95": 18.85315515100956
+      },
+      {
+        "version": "V3",
+        "measurements": 1000,
+        "p05": 33.1783939152956,
+        "p25": 34.06640142202377,
+        "p50": 34.932125359773636,
+        "p75": 36.726199090480804,
+        "p95": 49.45929013192653
+      }
+    ],
+    "latency_limits": [
+      10.51411235332489,
+      71.05633616447449
+    ]
+  },
+  "motion_display": {
+    "constraints": "parallel independent native axes; gap/swing log, SO3 jerk linear",
+    "residual": "position_v - position_0",
+    "residual_scale": "symlog linthresh=0.1",
+    "causal_smoothing_claim": false
+  }
+}

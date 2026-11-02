@@ -1,0 +1,5231 @@
+{
+  "format": "scgs_experiment_v1",
+  "scene": "gears",
+  "operation": "complete",
+  "scene_info": {
+    "name": "Gears · V1 / V2 / V3",
+    "description": "有界局部几何细化，保留源部件运动；RGB、SSIM、LPIPS、邻域一致性与低阶连续时序外观优化。5个时刻留出验证及选点，非独立新视角测试。 已提供修正版，绑定真实源动画，未新增事件训练。 版本重新编号：V1=原V2，V2=原V1，V3不变；模型、测量值与原始来源不变，不代表新增训练或已验证逐层消融。",
+    "frame_count": 25,
+    "gaussian_count": 301739,
+    "dynamic_gaussian_count": 217903,
+    "motion_label": "Blender 原始部件动画",
+    "default_stream_rate": 30,
+    "default_stream_quality": 95,
+    "default_still_quality": 95,
+    "default_resolution": 1024,
+    "fps": 30.0,
+    "duration_seconds": 0.8333333333333334,
+    "times_seconds": [
+      0.0,
+      0.03333333333333333,
+      0.06666666666666667,
+      0.1,
+      0.13333333333333333,
+      0.16666666666666666,
+      0.2,
+      0.23333333333333334,
+      0.26666666666666666,
+      0.3,
+      0.3333333333333333,
+      0.36666666666666664,
+      0.4,
+      0.43333333333333335,
+      0.4666666666666667,
+      0.5,
+      0.5333333333333333,
+      0.5666666666666667,
+      0.6,
+      0.6333333333333333,
+      0.6666666666666666,
+      0.7,
+      0.7333333333333333,
+      0.7666666666666667,
+      0.8
+    ],
+    "rpm": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ramp_seconds": null,
+    "cache": "cpu",
+    "cache_gib": 0.6900000000000001,
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "fovy": 39.59775410217631,
+    "baked": true,
+    "streaming": true,
+    "stream_window": 24,
+    "event_validation": false,
+    "default_background": "light",
+    "comparison": true,
+    "source_preview": false,
+    "comparison_modes": [
+      "gaussian",
+      "clay",
+      "pseudocolor"
+    ],
+    "left_label": "V1 · 已有修正版",
+    "right_label": "V3 · 时序表面细化",
+    "asset_identity": {
+      "source": {
+        "base": {
+          "manifest_sha256": "ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e",
+          "sequence_sha256": {
+            "left": "4a1822c7235fbcff24a4acaaa03aa729ebfea04531c72bc463a62a94e1628a11",
+            "right": "03a92c4b76adcd72c7cea112e1c7230e59a7905946fe172e6fc2c066a8ab5446"
+          },
+          "material_reference_sha256": "7b6b878ff35cff4622d649383e7d2f4777b26e42affffea7206349ad5a7d3865",
+          "detail_finish_sha256": null,
+          "appearance_refinement_sha256": "7d4e1d2920da5c4d7ea932413baf9baf3da2363fe7574f56262454293998277f",
+          "renderer_sha256": "a1ed0264d52f54c5bd81687a0b48ad21ed9729100c47d2c1056d9c3765de973a",
+          "renderer_components_sha256": {
+            "viewer.py": "cc706a537eb13cf6a93ad216a289f4c1d720ab2c93249fdec6617a3a79fd042d",
+            "utils/gaussian_sequence.py": "3c1b0e1bcf82c6c2932c6228d22b690e5a6f3ee75ea22fb95ae1eb65bde53c60",
+            "utils/gs_clay.py": "a65b5d8e89780f75bbea2fdb2611f012a618e9a60382f1923bad27ab88cd6de5",
+            "utils/gs_pseudocolor.py": "a0b44db41a8cc2863a1a7fb096554309d2ca5126d70fe605e0e06025c87e8b22",
+            "utils/lamp_detail.py": "e686f669292674eea181d8c206860426aa2a2bee6a29a62c335029ec1dae52a9",
+            "utils/appearance_stage.py": "1a8dc52eb20f7cdb857a14410ef009262f6617a89f2d512d9b59381082aa8c27",
+            "utils/viewer_state.py": "0589b0f647f6ce73305a3f0f01bf4a1d57b48429192c7c80015bb3af601f6367",
+            "gaussian_renderer/__init__.py": "4e41835ee6837df613088689c9b131e81c3b99cc21d1f43bf6e8e88897b6847b",
+            "scripts/rendering/render_ply.py": "23bcfb14f8af5459f864b83c01425c9ddbb8d6659d7f248df72f7ae12be5c06c"
+          }
+        },
+        "base_manifest_sha256": "ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e",
+        "middle": {
+          "manifest_sha256": "006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a",
+          "sequence_sha256": "7b6b878ff35cff4622d649383e7d2f4777b26e42affffea7206349ad5a7d3865",
+          "branch": "supplied-corrected",
+          "label": "V2 · 已有修正版",
+          "parents": {}
+        },
+        "renderer_sha256": "ab08b5ddd8a3e406adf0ddf61bfd05321eec00406ad117d33d5fa04c70fef9c1"
+      },
+      "version_presentation": "swap-v1-v2-20261027"
+    },
+    "surface_refinement": {
+      "method": "Source-surface tangent Gaussians with robust material/planar-patch V3 appearance",
+      "input_gaussians": 828050,
+      "output_gaussians": 301739,
+      "spacing": 0.003,
+      "planar_patches": 19767,
+      "supported_triangles": 34111,
+      "source_triangles": 34625,
+      "motion": "Exact source rigid-part ownership; no temporal filtering",
+      "limitation": "Uses supplied Blender geometry as a prior; not new event training or independent reconstruction accuracy",
+      "source_surface": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/surface.npz",
+      "binding": {
+        "gaussians": 301739,
+        "moving_gaussians": 217903,
+        "unattached": 0,
+        "extrapolated_nearest_part_rows": 0,
+        "maximum_attachment_distance": 0.030462273520032338,
+        "distances": {
+          "p50": 0.0035311309420119653,
+          "p90": 0.01231624448515587,
+          "p95": 0.014852954286748113,
+          "p99": 0.01961836635100783
+        },
+        "part_counts": [
+          6188,
+          2280,
+          28512,
+          336,
+          44818,
+          336,
+          31707,
+          10236,
+          679,
+          679,
+          10236,
+          6188,
+          2280,
+          336,
+          336,
+          55324,
+          58646,
+          679,
+          10236,
+          31707
+        ]
+      }
+    },
+    "appearance_refinement": {
+      "format": "scgs_appearance_stage_v1",
+      "parent_sha256": "03a92c4b76adcd72c7cea112e1c7230e59a7905946fe172e6fc2c066a8ab5446",
+      "reference_sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+      "train_frames": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18,
+        20,
+        21,
+        22,
+        23
+      ],
+      "initialization_sha256": "b309fb467d31a3a0c8d6c95bd47a7e4303a7446235a9e615bc6f366fa3226027",
+      "perceptual_weight": 0.2,
+      "temporal": {
+        "kind": "legendre",
+        "degree": 3,
+        "frame_count": 25
+      },
+      "train_sh": false,
+      "sh_degree": 0,
+      "train_views": [
+        "source"
+      ],
+      "validation_views": [
+        "source"
+      ],
+      "dc_anchor": null,
+      "achromatic_reference": true,
+      "spatial_weight": 0.03,
+      "freeze_surface": false,
+      "color_bound_rgb": null,
+      "smooth_field": false,
+      "spatial_field_basis": null,
+      "ssim_weight": 0.1,
+      "neighbor_count": 4,
+      "geometry_dice_weight": 0.1,
+      "final_lr_ratio": 0.15,
+      "render_supersample": 2,
+      "foreground_coverage_weight": 0.5,
+      "preserve_unobserved": true,
+      "visible_gaussians": 227006,
+      "selection": "Minimum validation LPIPS, MSE within 5 percent of previous stage",
+      "validation_frames": [
+        4,
+        9,
+        14,
+        19,
+        24
+      ],
+      "baseline": {
+        "foreground_mse": 0.026487040147185326,
+        "iou": 0.7644985795021058,
+        "lpips": 0.08773407191038132,
+        "foreground_missing": 0.08876914829015732,
+        "part_missing": null,
+        "per_frame_mse": [
+          0.026293275877833366,
+          0.03070361539721489,
+          0.025720560923218727,
+          0.024899587035179138,
+          0.024818161502480507
+        ],
+        "foreground_psnr": 15.783447196403046
+      },
+      "validation": {
+        "iteration": 1000,
+        "foreground_mse": 0.007611200213432312,
+        "iou": 0.7927774310111999,
+        "lpips": 0.039651548862457274,
+        "foreground_missing": 0.0596279539167881,
+        "part_missing": null,
+        "per_frame_mse": [
+          0.006818450056016445,
+          0.013690096326172352,
+          0.005703350529074669,
+          0.005571333691477776,
+          0.006272770464420319
+        ],
+        "foreground_psnr": 21.460718402275724
+      },
+      "changes": "Bounded canonical geometry offsets and appearance parameters",
+      "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training",
+      "geometry_refinement": {
+        "max_offset_scene_units": 0.004,
+        "representation": "time-independent local Gaussian-frame offset; follows parent rigid motion",
+        "regularization": "canonical neighbor displacement smoothness",
+        "freeze_appearance": false,
+        "freeze_geometry": false,
+        "groups_sha256": null
+      }
+    },
+    "render_supersamples": [
+      1,
+      2
+    ],
+    "gaussian_counts": [
+      467436,
+      828050,
+      301739
+    ],
+    "clay": {
+      "available": true,
+      "representation": "gaussian",
+      "default_resolution": 1024,
+      "left_label": "V1 · 已有修正版",
+      "right_label": "V3 · 时序表面细化",
+      "description": "清晰柔光白模，抑制表面颗粒、增强部件层次；保留连续筋条、孔边与轮廓，淡线框可选。",
+      "prewarmed_frames": 0
+    },
+    "pseudocolor": {
+      "available": true,
+      "representation": "gaussian",
+      "default_resolution": 1024,
+      "left_label": "V1 · 已有修正版",
+      "right_label": "V3 · 时序表面细化",
+      "description": "靛蓝、湖青、柔金与珊瑚橙平滑渐变，柔和亮部与清晰部件层次；配色固定在表面、随动画运动，两侧统一配色。颜色为展示配色，不代表真实材质或误差。",
+      "prewarmed_frames": 0
+    },
+    "panel_count": 3,
+    "export_sample_step": 2,
+    "version_labels": [
+      "V1 · 已有修正版",
+      "V2 · 原始高斯",
+      "V3 · 时序表面细化"
+    ],
+    "mode_version_labels": {
+      "gaussian": [
+        "V1 · 已有修正版",
+        "V2 · 原始高斯",
+        "V3 · 时序表面细化"
+      ],
+      "clay": [
+        "V1 · 已有修正版",
+        "V2 · 原始高斯",
+        "V3 · 时序表面细化"
+      ],
+      "pseudocolor": [
+        "V1 · 已有修正版",
+        "V2 · 原始高斯",
+        "V3 · 时序表面细化"
+      ],
+      "mesh": [
+        "V2 · 原始高斯",
+        "V3 · 时序表面细化"
+      ],
+      "hybrid": [
+        "V2 · 原始高斯",
+        "V3 · 时序表面细化"
+      ]
+    },
+    "prewarmed_frames": 0,
+    "image_cache_mib": 128,
+    "middle_version": {
+      "manifest_sha256": "006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a",
+      "sequence_sha256": "7b6b878ff35cff4622d649383e7d2f4777b26e42affffea7206349ad5a7d3865",
+      "branch": "supplied-corrected",
+      "label": "V2 · 已有修正版",
+      "parents": {}
+    },
+    "mesh": {
+      "prewarmed_frames": 0,
+      "left_label": "V2 · 原始高斯",
+      "right_label": "V3 · 时序表面细化"
+    },
+    "hybrid": {
+      "prewarmed_frames": 0,
+      "left_label": "V2 · 原始高斯",
+      "right_label": "V3 · 时序表面细化"
+    },
+    "mode_version_mapping": {
+      "gaussian": [
+        {
+          "source_panel_index": 1,
+          "source_version": "V2",
+          "source_label": "V2 · 已有修正版",
+          "display_version": "V1",
+          "display_label": "V1 · 已有修正版"
+        },
+        {
+          "source_panel_index": 0,
+          "source_version": "V1",
+          "source_label": "V1 · 原始高斯",
+          "display_version": "V2",
+          "display_label": "V2 · 原始高斯"
+        },
+        {
+          "source_panel_index": 2,
+          "source_version": "V3",
+          "source_label": "V3 · 时序表面细化",
+          "display_version": "V3",
+          "display_label": "V3 · 时序表面细化"
+        }
+      ],
+      "clay": [
+        {
+          "source_panel_index": 1,
+          "source_version": "V2",
+          "source_label": "V2 · 已有修正版",
+          "display_version": "V1",
+          "display_label": "V1 · 已有修正版"
+        },
+        {
+          "source_panel_index": 0,
+          "source_version": "V1",
+          "source_label": "V1 · 原始高斯",
+          "display_version": "V2",
+          "display_label": "V2 · 原始高斯"
+        },
+        {
+          "source_panel_index": 2,
+          "source_version": "V3",
+          "source_label": "V3 · 时序表面细化",
+          "display_version": "V3",
+          "display_label": "V3 · 时序表面细化"
+        }
+      ],
+      "pseudocolor": [
+        {
+          "source_panel_index": 1,
+          "source_version": "V2",
+          "source_label": "V2 · 已有修正版",
+          "display_version": "V1",
+          "display_label": "V1 · 已有修正版"
+        },
+        {
+          "source_panel_index": 0,
+          "source_version": "V1",
+          "source_label": "V1 · 原始高斯",
+          "display_version": "V2",
+          "display_label": "V2 · 原始高斯"
+        },
+        {
+          "source_panel_index": 2,
+          "source_version": "V3",
+          "source_label": "V3 · 时序表面细化",
+          "display_version": "V3",
+          "display_label": "V3 · 时序表面细化"
+        }
+      ],
+      "mesh": [
+        {
+          "source_panel_index": 0,
+          "source_version": "V1",
+          "source_label": "V1 · 原始高斯",
+          "display_version": "V2",
+          "display_label": "V2 · 原始高斯"
+        },
+        {
+          "source_panel_index": 1,
+          "source_version": "V3",
+          "source_label": "V3 · 时序表面细化",
+          "display_version": "V3",
+          "display_label": "V3 · 时序表面细化"
+        }
+      ],
+      "hybrid": [
+        {
+          "source_panel_index": 0,
+          "source_version": "V1",
+          "source_label": "V1 · 原始高斯",
+          "display_version": "V2",
+          "display_label": "V2 · 原始高斯"
+        },
+        {
+          "source_panel_index": 1,
+          "source_version": "V3",
+          "source_label": "V3 · 时序表面细化",
+          "display_version": "V3",
+          "display_label": "V3 · 时序表面细化"
+        }
+      ]
+    },
+    "version_presentation": {
+      "revision": "swap-v1-v2-20261027",
+      "source_to_display": {
+        "V1": "V2",
+        "V2": "V1",
+        "V3": "V3"
+      },
+      "disclosure": "版本重新编号：V1=原V2，V2=原V1，V3不变；模型、测量值与原始来源不变，不代表新增训练或已验证逐层消融。",
+      "changes": "Labels and display/export ordering only; raw assets and measured values unchanged"
+    },
+    "reference": {
+      "width": 640,
+      "height": 640,
+      "frame_count": 25,
+      "fps": 30.0,
+      "alignment": {
+        "space": "rgb_image",
+        "interval": "(previous RGB timestamp, current RGB timestamp]",
+        "event_time_unit": "seconds",
+        "event_frame_offset": 0,
+        "method": "Supplied pixel coordinates and timestamps, no synthesized events",
+        "limitation": "Shared pixel/time convention; no independent calibration claim"
+      },
+      "available": true
+    }
+  },
+  "export_profile": "evaluation_compact_v2",
+  "model_state_policy": "fixed sampled points and verified part transforms only; full models are external",
+  "sample_step": 1,
+  "samples": [
+    {
+      "id": 0,
+      "frame": 0,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.0,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 1,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.03333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 2,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.06666666666666667,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 3,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.1,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 4,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.13333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 5,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.16666666666666666,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 6,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.2,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 7,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.23333333333333334,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 8,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.26666666666666666,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 9,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.3,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 10,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.3333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 11,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.36666666666666664,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 12,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.4,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 13,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.43333333333333335,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 14,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.4666666666666667,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 15,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.5,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 16,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.5333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 17,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.5666666666666667,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 18,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.6,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 19,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.6333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 20,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.6666666666666666,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 21,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.7,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 22,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.7333333333333333,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 23,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.7666666666666667,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 0,
+      "frame": 24,
+      "width": 640,
+      "height": 640,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "zoom": 1.0,
+      "pan_x": 0.0,
+      "pan_y": 0.0,
+      "fovy": 39.59775410217631,
+      "quality": 85,
+      "background": "dark",
+      "render_mode": "gaussian",
+      "clay_style": "solid",
+      "hybrid_quality": "surface",
+      "camera": {
+        "pose_opengl_c2w": [
+          [
+            0.999994158744812,
+            0.002086564199998975,
+            0.002713320776820183,
+            0.0012658055638894439
+          ],
+          [
+            -0.0020850845612585545,
+            0.9999976754188538,
+            -0.0005480559193529189,
+            0.6357063055038452
+          ],
+          [
+            -0.002714458154514432,
+            0.0005423952243290842,
+            0.9999961853027344,
+            2.494263172149658
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "K": [
+          [
+            888.8888549804688,
+            0,
+            320.0
+          ],
+          [
+            0,
+            888.8888549804688,
+            320.0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "width": 640,
+        "height": 640,
+        "fovy_degrees": 39.59775410217631
+      },
+      "time_seconds": 0.8,
+      "background_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "versions": [
+    {
+      "id": "0",
+      "label": "V1 · 已有修正版",
+      "presentation": {
+        "source_panel_index": 1,
+        "source_version": "V2",
+        "source_label": "V2 · 已有修正版",
+        "display_version": "V1",
+        "display_label": "V1 · 已有修正版"
+      },
+      "point_count": 828050,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    },
+    {
+      "id": "1",
+      "label": "V2 · 原始高斯",
+      "presentation": {
+        "source_panel_index": 0,
+        "source_version": "V1",
+        "source_label": "V1 · 原始高斯",
+        "display_version": "V2",
+        "display_label": "V2 · 原始高斯"
+      },
+      "point_count": 467436,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    },
+    {
+      "id": "2",
+      "label": "V3 · 时序表面细化",
+      "presentation": {
+        "source_panel_index": 2,
+        "source_version": "V3",
+        "source_label": "V3 · 时序表面细化",
+        "display_version": "V3",
+        "display_label": "V3 · 时序表面细化"
+      },
+      "point_count": 301739,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    }
+  ],
+  "environment": {
+    "python": "3.10.8 (main, Nov 24 2022, 14:13:03) [GCC 11.2.0]",
+    "platform": "Linux-5.4.0-216-generic-x86_64-with-glibc2.35",
+    "packages": {
+      "numpy": "1.26.3",
+      "Pillow": "10.2.0",
+      "torch": "2.1.2+cu121",
+      "aiohttp": "3.11.4",
+      "nvdiffrast": "0.3.3",
+      "diff-gaussian-rasterization": "0.0.0",
+      "lpips": "0.1.4"
+    },
+    "cuda": "12.1",
+    "gpu": "NVIDIA GeForce RTX 3080"
+  },
+  "unavailable": {
+    "physical_joint_ground_truth": "Declared source-prior joints are not independently measured physical joint ground truth",
+    "cross_version_keypoints": "No verified cross-version correspondence between Gaussian row IDs"
+  },
+  "timing_scope": "serial render of all panels, GPU synchronization and CPU pixel transfer; no JPEG cache",
+  "load_seconds": 22.713606797158718,
+  "version_presentation": {
+    "revision": "swap-v1-v2-20261027",
+    "source_to_display": {
+      "V1": "V2",
+      "V2": "V1",
+      "V3": "V3"
+    },
+    "disclosure": "版本重新编号：V1=原V2，V2=原V1，V3不变；模型、测量值与原始来源不变，不代表新增训练或已验证逐层消融。",
+    "changes": "Labels and display/export ordering only; raw assets and measured values unchanged"
+  },
+  "version_mapping": [
+    {
+      "source_panel_index": 1,
+      "source_version": "V2",
+      "source_label": "V2 · 已有修正版",
+      "display_version": "V1",
+      "display_label": "V1 · 已有修正版"
+    },
+    {
+      "source_panel_index": 0,
+      "source_version": "V1",
+      "source_label": "V1 · 原始高斯",
+      "display_version": "V2",
+      "display_label": "V2 · 原始高斯"
+    },
+    {
+      "source_panel_index": 2,
+      "source_version": "V3",
+      "source_label": "V3 · 时序表面细化",
+      "display_version": "V3",
+      "display_label": "V3 · 时序表面细化"
+    }
+  ],
+  "renderer_config": {
+    "renderer_class": "VersionPresentationRenderer",
+    "components": [
+      {
+        "versions": [
+          1,
+          2
+        ],
+        "renderer_class": "GaussianPairRenderer",
+        "cache": "cpu",
+        "side_sampling": null,
+        "supersamples": [
+          1,
+          2
+        ],
+        "modules": {
+          "correction": false,
+          "completion": false,
+          "deformation": false,
+          "field": false,
+          "mesh": false,
+          "hybrid": false,
+          "bindings": false,
+          "surface_refinement": false,
+          "detail_normals": false
+        }
+      },
+      {
+        "versions": [
+          0
+        ],
+        "renderer_class": "SingleStageRenderer",
+        "cache": "cpu",
+        "side_sampling": null,
+        "supersamples": [
+          1
+        ],
+        "modules": {
+          "correction": false,
+          "completion": false,
+          "deformation": false,
+          "field": false,
+          "mesh": false,
+          "hybrid": false,
+          "bindings": false,
+          "surface_refinement": false,
+          "detail_normals": false
+        }
+      }
+    ]
+  },
+  "reference": {
+    "samples": [
+      {
+        "sample": 0,
+        "frame": 0,
+        "aligned": true,
+        "time_seconds": 0.0,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000000-rgb.png",
+        "foreground_mask": "reference/000000-foreground_mask.png",
+        "event_calibration": null
+      },
+      {
+        "sample": 1,
+        "frame": 1,
+        "aligned": true,
+        "time_seconds": 0.03333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000001-rgb.png",
+        "foreground_mask": "reference/000001-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 2,
+        "frame": 2,
+        "aligned": true,
+        "time_seconds": 0.06666666666666667,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000002-rgb.png",
+        "foreground_mask": "reference/000002-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 3,
+        "frame": 3,
+        "aligned": true,
+        "time_seconds": 0.1,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000003-rgb.png",
+        "foreground_mask": "reference/000003-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 4,
+        "frame": 4,
+        "aligned": true,
+        "time_seconds": 0.13333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000004-rgb.png",
+        "foreground_mask": "reference/000004-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 5,
+        "frame": 5,
+        "aligned": true,
+        "time_seconds": 0.16666666666666666,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000005-rgb.png",
+        "foreground_mask": "reference/000005-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 6,
+        "frame": 6,
+        "aligned": true,
+        "time_seconds": 0.2,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000006-rgb.png",
+        "foreground_mask": "reference/000006-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 7,
+        "frame": 7,
+        "aligned": true,
+        "time_seconds": 0.23333333333333334,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000007-rgb.png",
+        "foreground_mask": "reference/000007-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 8,
+        "frame": 8,
+        "aligned": true,
+        "time_seconds": 0.26666666666666666,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000008-rgb.png",
+        "foreground_mask": "reference/000008-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 9,
+        "frame": 9,
+        "aligned": true,
+        "time_seconds": 0.3,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000009-rgb.png",
+        "foreground_mask": "reference/000009-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 10,
+        "frame": 10,
+        "aligned": true,
+        "time_seconds": 0.3333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000010-rgb.png",
+        "foreground_mask": "reference/000010-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 11,
+        "frame": 11,
+        "aligned": true,
+        "time_seconds": 0.36666666666666664,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000011-rgb.png",
+        "foreground_mask": "reference/000011-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 12,
+        "frame": 12,
+        "aligned": true,
+        "time_seconds": 0.4,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000012-rgb.png",
+        "foreground_mask": "reference/000012-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 13,
+        "frame": 13,
+        "aligned": true,
+        "time_seconds": 0.43333333333333335,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000013-rgb.png",
+        "foreground_mask": "reference/000013-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 14,
+        "frame": 14,
+        "aligned": true,
+        "time_seconds": 0.4666666666666667,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000014-rgb.png",
+        "foreground_mask": "reference/000014-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 15,
+        "frame": 15,
+        "aligned": true,
+        "time_seconds": 0.5,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000015-rgb.png",
+        "foreground_mask": "reference/000015-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 16,
+        "frame": 16,
+        "aligned": true,
+        "time_seconds": 0.5333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000016-rgb.png",
+        "foreground_mask": "reference/000016-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 17,
+        "frame": 17,
+        "aligned": true,
+        "time_seconds": 0.5666666666666667,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000017-rgb.png",
+        "foreground_mask": "reference/000017-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 18,
+        "frame": 18,
+        "aligned": true,
+        "time_seconds": 0.6,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000018-rgb.png",
+        "foreground_mask": "reference/000018-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 19,
+        "frame": 19,
+        "aligned": true,
+        "time_seconds": 0.6333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000019-rgb.png",
+        "foreground_mask": "reference/000019-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 20,
+        "frame": 20,
+        "aligned": true,
+        "time_seconds": 0.6666666666666666,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000020-rgb.png",
+        "foreground_mask": "reference/000020-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 21,
+        "frame": 21,
+        "aligned": true,
+        "time_seconds": 0.7,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000021-rgb.png",
+        "foreground_mask": "reference/000021-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 22,
+        "frame": 22,
+        "aligned": true,
+        "time_seconds": 0.7333333333333333,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000022-rgb.png",
+        "foreground_mask": "reference/000022-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 23,
+        "frame": 23,
+        "aligned": true,
+        "time_seconds": 0.7666666666666667,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000023-rgb.png",
+        "foreground_mask": "reference/000023-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      },
+      {
+        "sample": 24,
+        "frame": 24,
+        "aligned": true,
+        "time_seconds": 0.8,
+        "camera": {
+          "pose_opengl_c2w": [
+            [
+              0.9999941420525883,
+              0.0020865642892692322,
+              0.0027133208406577734,
+              0.0012658056027567734
+            ],
+            [
+              -0.00208508460289958,
+              0.9999976760257553,
+              -0.0005480559250556105,
+              0.6357063220705998
+            ],
+            [
+              -0.0027144580888949334,
+              0.0005423952110614203,
+              0.9999961687550272,
+              2.494263104457162
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "width": 640,
+          "height": 640,
+          "K": [
+            [
+              888.8888549804688,
+              0.0,
+              320.0
+            ],
+            [
+              0.0,
+              888.8888549804688,
+              320.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "fovy_degrees": 39.59775410217631
+        },
+        "background_matches": true,
+        "rgb": "reference/000024-rgb.png",
+        "foreground_mask": "reference/000024-foreground_mask.png",
+        "event_calibration": null,
+        "events_unavailable": "Missing event bin or mismatched camera inside sampled interval"
+      }
+    ],
+    "unavailable": {
+      "part_mask": "No independent semantic part masks supplied",
+      "events": "Raw event file is not available on this host",
+      "event_response": "Independent contrast thresholds/response calibration are unavailable"
+    },
+    "mask_definition": "Source RGB max channel > 12/255; dark material may be omitted",
+    "mask_quality": "rgb_background_proxy"
+  },
+  "memory_baseline": {
+    "allocated_bytes": 203026944,
+    "reserved_bytes": 461373440,
+    "peak_allocated_bytes": 203026944,
+    "peak_reserved_bytes": 461373440
+  },
+  "performance": {
+    "timings": "performance/timings.json",
+    "plan": "plan.json",
+    "warmup": 2,
+    "repeats": 2,
+    "measurements": 50
+  },
+  "sources": [
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/rgb-compact-perceptual-20261102/manifest.json",
+      "sha256": "ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e",
+      "bytes": 2421,
+      "available": true,
+      "included": true,
+      "file": "configs/ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e.json"
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/baseline/left.npz",
+      "sha256": "4a1822c7235fbcff24a4acaaa03aa729ebfea04531c72bc463a62a94e1628a11",
+      "bytes": 166660860,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/optimized/right.npz",
+      "sha256": "03a92c4b76adcd72c7cea112e1c7230e59a7905946fe172e6fc2c066a8ab5446",
+      "bytes": 126245455,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/baseline/right.npz",
+      "sha256": "7b6b878ff35cff4622d649383e7d2f4777b26e42affffea7206349ad5a7d3865",
+      "bytes": 317733813,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/surface.npz",
+      "sha256": "b77574d7f97d3dd91616d222b142cc06f46ff9c4a3640c44b393921874d07559",
+      "bytes": 1372161,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/rgb-compact-perceptual-20261102/appearance.npz",
+      "sha256": "7d4e1d2920da5c4d7ea932413baf9baf3da2363fe7574f56262454293998277f",
+      "bytes": 9768499,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/evaluation.json",
+      "sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+      "bytes": 5833,
+      "available": true,
+      "included": true,
+      "file": "configs/51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7.json"
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0000-rgb.png",
+      "sha256": "a8542e2d4453554a4bac6c658984a43ec49f6a478432b4650112a2e66ea39dbf",
+      "bytes": 75146,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0000-mask.png",
+      "sha256": "b61c66c4794c9dff3f2ab61757e347979014b6cddf5e2a70e9da09260239afe1",
+      "bytes": 5436,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0001-rgb.png",
+      "sha256": "b5ed8042358bb5fe85e19a6ecdc9eb86cbd47cbd0edbfb6bab08602d0be45ceb",
+      "bytes": 75145,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0001-mask.png",
+      "sha256": "b61c66c4794c9dff3f2ab61757e347979014b6cddf5e2a70e9da09260239afe1",
+      "bytes": 5436,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0002-rgb.png",
+      "sha256": "0371754bb81ec8cc12a56892a7c356ecff8303acafa3fe55897f78888af89dea",
+      "bytes": 75149,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0002-mask.png",
+      "sha256": "44d3a4f3ff646fc8977a492a820957dcc5cb7dcfda416e655a8d99660816f5b5",
+      "bytes": 5433,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0003-rgb.png",
+      "sha256": "3eb2cf9045dfba54ce7777298f695674f64c6ec6927bbc14f8b2886da49db3cd",
+      "bytes": 77659,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0003-mask.png",
+      "sha256": "2406ce121e6b2bb42c32c76a6f3e7c4e9472b70fa6f18760b30d1110afd8cfb0",
+      "bytes": 5492,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0004-rgb.png",
+      "sha256": "8f28f11f84d4a24a19d819fc34611a6a64b72926fa35e38cc74ea4e9abc1b3c3",
+      "bytes": 77948,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0004-mask.png",
+      "sha256": "7bc069069ef84fda6188cf99a655be46fca1ae45b662e7e7a11ac77a8ca5ca64",
+      "bytes": 5370,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0005-rgb.png",
+      "sha256": "359ba30de282553d18535651162b073ddb10bcb24861a015129606bce99a2aac",
+      "bytes": 77324,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0005-mask.png",
+      "sha256": "20db772a4e9eb8dc076f82a14a9dc3a07887c23eaa6768df9eea556181647fc4",
+      "bytes": 5374,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0006-rgb.png",
+      "sha256": "1556c681e068e8bba13f5e662b2d529fcd038fa0a7b2bb529ca44308372da21a",
+      "bytes": 77465,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0006-mask.png",
+      "sha256": "d25e72e9f5559933a7a7f16f365cf287068a587c9c44c6716cb580a178ae26c9",
+      "bytes": 5263,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0007-rgb.png",
+      "sha256": "721e3f7fc8f4884a706d890a7df5de319fd1f826ced0f6fbe409ccfa53320985",
+      "bytes": 77746,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0007-mask.png",
+      "sha256": "577429cd63ee1a3e69717d95cb1628d2c7079daf8e12bbb8524312ddaaf79447",
+      "bytes": 5310,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0008-rgb.png",
+      "sha256": "383424153ae5ebe893e86938ea775a76b2239af1f611913ec905d04b34f62c58",
+      "bytes": 77461,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0008-mask.png",
+      "sha256": "19eb4111124ccb9507ab833f00b9e3557f7f242070a1150f0bf386cc887263e2",
+      "bytes": 5431,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0009-rgb.png",
+      "sha256": "bee644a1b7e80b7141fd6705c997cca92ad0643e49a2edf36d50e465358ca996",
+      "bytes": 78030,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0009-mask.png",
+      "sha256": "718ba83a74614adcefd5202a0b4da44a8bc6785d29bab945299437f7d2eec224",
+      "bytes": 5438,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0010-rgb.png",
+      "sha256": "73d329d2a048e5c95efe251b43b53619f158ab5bd4face36f5c2267d952ebe7e",
+      "bytes": 78190,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0010-mask.png",
+      "sha256": "03daa8e3a39d55e4564480cb14d2603ee062fa6f8c19b29d32e7519e9234ef1c",
+      "bytes": 5321,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0011-rgb.png",
+      "sha256": "34ac1c751717cb20eeaa6b89ac37060d170395718f492cf14c5427daee577a2a",
+      "bytes": 78499,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0011-mask.png",
+      "sha256": "eef7039268801794d3177fe75bcb799a75086db2b8e6aab6773c41dad14d089a",
+      "bytes": 5429,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0012-rgb.png",
+      "sha256": "60509f5ba8bc383e7464f24a3a319a28e248188db8fc834e611605e84ca37350",
+      "bytes": 78421,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0012-mask.png",
+      "sha256": "5530cd29c279aa8aa33b1ce3fcdf4f05d4cd3d1964548daec2d7c909e488a0fd",
+      "bytes": 5349,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0013-rgb.png",
+      "sha256": "fec88f8b47f6c2733a9a84599ec0ca8bae791bdcd16d0085f445c78f50b9e3b8",
+      "bytes": 78368,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0013-mask.png",
+      "sha256": "7762d30a9fa5353dab968ad2b4df20e80762f10cf18f7dc440fde0cdce8e5fb3",
+      "bytes": 5343,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0014-rgb.png",
+      "sha256": "4155b34fba7a9cb95309df45b52aa7c76a4f484cd7308980e8bc8f89fa0ad8ca",
+      "bytes": 78576,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0014-mask.png",
+      "sha256": "a0e4242464261adeec43ea9493a38d6813fb3c612c88d7976106e01a371c55e4",
+      "bytes": 5341,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0015-rgb.png",
+      "sha256": "81d066a3cad0201ab6c04bdca8d397ea8729f0514231552c58572ee3b46432e8",
+      "bytes": 78499,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0015-mask.png",
+      "sha256": "96b9285d1d073a3829cc0a5507a57c82c0aef80274848226653e204867f2faa0",
+      "bytes": 5382,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0016-rgb.png",
+      "sha256": "fabdc2ea6e6d90b19f0045c96e0a1074e7c98660e0c2cc373ae3e02aad45814f",
+      "bytes": 78672,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0016-mask.png",
+      "sha256": "cee51853abc76b4e1b4209ab795a9edb253ce0de047221d3a04be43bc5369fe7",
+      "bytes": 5372,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0017-rgb.png",
+      "sha256": "2be71ee2ea1e76646c05f72ebe04822496a1bf5340c62976d21d79bb29a69486",
+      "bytes": 78952,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0017-mask.png",
+      "sha256": "b0054867e59feb00107500693d5ed44d40671d6e5f03a284eab32422b43ec158",
+      "bytes": 5382,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0018-rgb.png",
+      "sha256": "be60d21bf7f672bdc487c0693314acf22cc2c55c24b740742b4d09a946380081",
+      "bytes": 74692,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0018-mask.png",
+      "sha256": "f90490fe8fe31ab7eb9c715cad25d58abe73b602ca9796b51a52752b1df5937f",
+      "bytes": 5227,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0019-rgb.png",
+      "sha256": "b6f2fff2814b156486b6139766a06c47e3b8cb76fd15cf482ffd8223191f9d37",
+      "bytes": 78043,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0019-mask.png",
+      "sha256": "d8613a1466fd17a9e06124c53cff0373ec8ea57ce6afe950598f4f926794e04c",
+      "bytes": 5418,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0020-rgb.png",
+      "sha256": "c18018752bee58ca231e36fcc13d3ef9518381684663de8d0d3edb42cca5b3ba",
+      "bytes": 78223,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0020-mask.png",
+      "sha256": "be31fc29082ef1fc9aa8d093f11fa35f88f39351b73ca5323a21a4701af0b60b",
+      "bytes": 5440,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0021-rgb.png",
+      "sha256": "aaaf364f23f006013b0b7ee9e2108759e1ce6ab7b6a130d116855203cbddc967",
+      "bytes": 78133,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0021-mask.png",
+      "sha256": "ad760647f6f6eaf9a060f55de9c5f5390af4f1488732c90aa069bcc2c007eb7c",
+      "bytes": 5439,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0022-rgb.png",
+      "sha256": "f9b2708d28940ab91421c2821464263d1c32375c7bb82e11fd604ff244b257ee",
+      "bytes": 78541,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0022-mask.png",
+      "sha256": "6d2f41f16b3243c86ddf1bd3f46a9ce077dc37961a54e31d4de5e349d6e2713e",
+      "bytes": 5498,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0023-rgb.png",
+      "sha256": "c799d9f13c6753afc23f8be58f9d3dc8ed45cab2d9400d6870147f89eac3aea3",
+      "bytes": 78274,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0023-mask.png",
+      "sha256": "b609fb7ba7e1ffb4a0373bde5f4b85609346e39042bf9418e700cd4a2cdadc2a",
+      "bytes": 5477,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0024-rgb.png",
+      "sha256": "fc5961c8a9b0597a00255d1c642af2f4f43960e15d62cd6aab83228dce991542",
+      "bytes": 77882,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0024-mask.png",
+      "sha256": "bf895d9a142580cd397c6db1c708ab8a023a2554275296e91d5da9a8b2481a12",
+      "bytes": 5442,
+      "available": true,
+      "included": false
+    },
+    {
+      "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/middle.json",
+      "sha256": "006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a",
+      "bytes": 372,
+      "available": true,
+      "included": true,
+      "file": "configs/006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a.json"
+    }
+  ],
+  "implementation": {
+    "arguments/__init__.py": "1885a8394e7bc3c123979ca7cbc9a1d8111f400cc3e6cd40fbff2f21b4794de1",
+    "gaussian_renderer/__init__.py": "4e41835ee6837df613088689c9b131e81c3b99cc21d1f43bf6e8e88897b6847b",
+    "scene/__init__.py": "f6f969a8e99631136e3186b03d626235e78736c5c916aaa0b95dc047b732b7b2",
+    "scene/cameras.py": "51f80154839b684338743b10b2590a0f495358c7ef0779556264bc3730747a11",
+    "scene/colmap_loader.py": "956a9da77185ad9847775677ba8adb2ed72c08f50744228d41d932fe05e336ed",
+    "scene/dataset_readers.py": "2feea6da61df8f8814d4f309b9a9d934d5d40843a1c2390be1396820d43cc6ff",
+    "scene/gaussian_model.py": "4d20b21a99cc1b7b60aec89061c3a7c0274dd64d38be1ca49d37436285b43921",
+    "scripts/__init__.py": "ceae13d95e9cca8dd09cc96c34abe69d2cc7abe4169b23be7591d4dedea2fa61",
+    "scripts/rendering/render_ply.py": "23bcfb14f8af5459f864b83c01425c9ddbb8d6659d7f248df72f7ae12be5c06c",
+    "utils/appearance_stage.py": "1a8dc52eb20f7cdb857a14410ef009262f6617a89f2d512d9b59381082aa8c27",
+    "utils/cam_utils.py": "bd4a6f51477385115e3b884c81ad55854437299435a0879add88259e8d26178d",
+    "utils/camera_utils.py": "f9b2f9db47dde146f097d4ac69c5025e36eea2dac9452da7a30362b048ae01a8",
+    "utils/comparison_io.py": "1cb0847b31716b2f0f86063ee3e5623bb00771ec8f8bd15ff86553dfb7597b5b",
+    "utils/comparison_outputs.py": "aa5b717d5683cf98205354547a81005e8961a335bb3cdc9bb443d710ff1f0f8a",
+    "utils/event_refinement.py": "aaccf6bc8f697de41b30b1be231a17d856d1b048644a2784b00325ea1a87ad37",
+    "utils/experiment_export.py": "38f5803ea1b1be6fc86b7eed7b1c3df842a3473f10999e46ae4e714a6cadf6d7",
+    "utils/experiment_format.py": "637cc3256d521e06721a37c3d2edf405bf14d6fb0f2348ffae1052d6a104ba39",
+    "utils/fvv_gateway.py": "6c568cc4230b4a86866128e2d8c0a056d69e3b177546bb6335d2ed78c2383787",
+    "utils/gaussian_pair_renderer.py": "a1ed0264d52f54c5bd81687a0b48ad21ed9729100c47d2c1056d9c3765de973a",
+    "utils/gaussian_sequence.py": "3c1b0e1bcf82c6c2932c6228d22b690e5a6f3ee75ea22fb95ae1eb65bde53c60",
+    "utils/general_utils.py": "4a275f61e70ec355716574c2667775d62ab5e9fe15779408d2d2ec67a337cd8e",
+    "utils/graphics_utils.py": "a4122faad3053b4482885200aadf04dc0db275ba06ff42fdb3dd3521b9aa2afd",
+    "utils/gs_clay.py": "a65b5d8e89780f75bbea2fdb2611f012a618e9a60382f1923bad27ab88cd6de5",
+    "utils/gs_pseudocolor.py": "a0b44db41a8cc2863a1a7fb096554309d2ca5126d70fe605e0e06025c87e8b22",
+    "utils/hybrid_sampling.py": "acfa72065ae41688997218c8782f2267ec84d9654eb1096a0388b60a4a973db8",
+    "utils/ply_utils.py": "91df936e8031776888183669bcb097453b05b7e2d94624d2eefdb305b8615758",
+    "utils/rigid_utils.py": "0da31529d6918ab65d74d89f25cca1e54804ae38ad1ff09baabb090103a469ab",
+    "utils/sh_utils.py": "3968caad16d58c8ca4ccbae4515646a9295b22d824e71b8a362c37f171862570",
+    "utils/system_utils.py": "b4ec2272f48306161fd543ed329a30d846be4da07b8bce96f9c4e77b0a9a681f",
+    "utils/version_presentation.py": "1df9d8fb240fb2232a512ec5b051e226aaa7e84bb0b12b6b03260c764a052f7b",
+    "utils/version_triplet.py": "ab08b5ddd8a3e406adf0ddf61bfd05321eec00406ad117d33d5fa04c70fef9c1",
+    "utils/viewer_cache.py": "09b13b5b56ea89451f10a4cf5fb5b1359b7f9c2d58c2d15ba071c66980093ff6",
+    "utils/viewer_comparisons.py": "62b93178479f842da4adbbc87de2e5941d181a5f54c17a8d72cd832be6873375",
+    "utils/viewer_experiments.py": "b946002f723f33a85172cfbc781b73dafc1d38c9b6d487db14a704ba22fdd5a2",
+    "utils/viewer_reference.py": "df8b5f6ffed34bb21bd2d80b6302b6ab3466006aac373ba4f3392f354152bc43",
+    "utils/viewer_state.py": "0589b0f647f6ce73305a3f0f01bf4a1d57b48429192c7c80015bb3af601f6367",
+    "viewer.py": "cc706a537eb13cf6a93ad216a289f4c1d720ab2c93249fdec6617a3a79fd042d"
+  },
+  "data_availability": "data_availability.json",
+  "files": {
+    "README.txt": {
+      "sha256": "e43387c4d124ad3b17f5384a38930a6be5c5080cbe3888a95f80353318796b09",
+      "bytes": 2115
+    },
+    "code/scripts/evaluation/evaluate_experiment.py": {
+      "sha256": "4b02c41c18ef85cac85de01b1e6aa08a7231aa8c8e94634c39ee8f8f993bb3b8",
+      "bytes": 23177
+    },
+    "code/utils/experiment_format.py": {
+      "sha256": "637cc3256d521e06721a37c3d2edf405bf14d6fb0f2348ffae1052d6a104ba39",
+      "bytes": 588
+    },
+    "code/utils/mesh_motion.py": {
+      "sha256": "9c729ab5770a11e1775975fe2c89daa338337132243dc2a85cac56bc0977e3be",
+      "bytes": 4103
+    },
+    "configs/006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a.json": {
+      "sha256": "006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a",
+      "bytes": 372
+    },
+    "configs/51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7.json": {
+      "sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+      "bytes": 5833
+    },
+    "configs/ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e.json": {
+      "sha256": "ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e",
+      "bytes": 2421
+    },
+    "data_availability.json": {
+      "sha256": "94441f8db5ca96163d03833d81d43c22c8fbf017e43cba8dc7d53cbb6508ce39",
+      "bytes": 1574
+    },
+    "evaluate.py": {
+      "sha256": "815c35a53a137cb0720bd1dab5c6f8ee9f4de059566e61324f8ae943a93b0d50",
+      "bytes": 325
+    },
+    "performance/timings.json": {
+      "sha256": "3f99e949deec55a8722205b9e6d23250fe1d71ee3826fa300660d1b213571f77",
+      "bytes": 23690
+    },
+    "plan.json": {
+      "sha256": "43307fe37d2ecda7a1a2cb21920e8ae816650d9532f344ae4d012836205ff1eb",
+      "bytes": 37311
+    },
+    "reference/000000-foreground_mask.png": {
+      "sha256": "af58eb44ef5fcd018d9d0fd82be1d7580a271cf9cf9a6926061d4057fdb4b245",
+      "bytes": 4955
+    },
+    "reference/000000-rgb.png": {
+      "sha256": "75a2a038c564bb88f02d5465bd49628162a597d7898fa9135a4dee6ad2983af5",
+      "bytes": 79787
+    },
+    "reference/000001-foreground_mask.png": {
+      "sha256": "af58eb44ef5fcd018d9d0fd82be1d7580a271cf9cf9a6926061d4057fdb4b245",
+      "bytes": 4955
+    },
+    "reference/000001-rgb.png": {
+      "sha256": "aa54f6d8bf0ef2bf7893f677bbe6093943df2e5b6c3d152a44afb763c683551b",
+      "bytes": 79799
+    },
+    "reference/000002-foreground_mask.png": {
+      "sha256": "1c9d11354fbf72f1fb51570fd90fd960969feb9b2a0b7be3017d2e1fb51e7495",
+      "bytes": 4953
+    },
+    "reference/000002-rgb.png": {
+      "sha256": "f072e1fa044c1d957546491fd8abcce49755e9f3e10e51600b817313660387cb",
+      "bytes": 79810
+    },
+    "reference/000003-foreground_mask.png": {
+      "sha256": "d82ae4e3a1a3f2fe88570d1bab6672ce22e6aaa10cc93647de6fb0c2686a9f60",
+      "bytes": 4974
+    },
+    "reference/000003-rgb.png": {
+      "sha256": "8fe548fd970fd3db7a37ef1aa874a8de17f8f4769016f539aa8eebb8a8014d7f",
+      "bytes": 82305
+    },
+    "reference/000004-foreground_mask.png": {
+      "sha256": "c9900455eb2901e5cfc48fe02dcdd57edc4b876fce94d289f1124db8a32749eb",
+      "bytes": 4919
+    },
+    "reference/000004-rgb.png": {
+      "sha256": "ad3ad8d3edca04f638d8800f55d84d9befcd0f5369f67a874cd75a30fe277d96",
+      "bytes": 82759
+    },
+    "reference/000005-foreground_mask.png": {
+      "sha256": "513bdd76f4a58da2290bfd36343575be7712c9636372a159079165ce8e309cda",
+      "bytes": 4907
+    },
+    "reference/000005-rgb.png": {
+      "sha256": "5713399de8967edce7363235caa4dc96b784ec68342075155afe62240e7390c4",
+      "bytes": 82727
+    },
+    "reference/000006-foreground_mask.png": {
+      "sha256": "8b4c4218099b7b8a3efcf140b13ad7ad4edd0f616a6f43a1401d6d6e3b5b5ede",
+      "bytes": 4906
+    },
+    "reference/000006-rgb.png": {
+      "sha256": "b85b3dcb2c8d7ff9ef1c3f909842f74f33d145512f4ceae8bdeb09f22b4944e5",
+      "bytes": 82560
+    },
+    "reference/000007-foreground_mask.png": {
+      "sha256": "abece0936cc127b21d2971d13d769e6945e4976a2b4b4a5017bd024344f588bd",
+      "bytes": 4849
+    },
+    "reference/000007-rgb.png": {
+      "sha256": "4e0f6d4af201a0ef1ec457233dcbb90d7db12f72779dda21c833558fbdcbbb1c",
+      "bytes": 82928
+    },
+    "reference/000008-foreground_mask.png": {
+      "sha256": "11160651452f90fa02a50e5917d68876fd53a00c0b7fb7454b9d6e9c8e881f6c",
+      "bytes": 4935
+    },
+    "reference/000008-rgb.png": {
+      "sha256": "4f670c8cf994b1e8715ab1fd7cc00ab80593c5b1064841b222f32b0d4d8183d7",
+      "bytes": 82901
+    },
+    "reference/000009-foreground_mask.png": {
+      "sha256": "bc63b59fff77910c2ae1b8f286758e4e4dc54d7b32443eaeed6a25ac1187dab5",
+      "bytes": 4941
+    },
+    "reference/000009-rgb.png": {
+      "sha256": "198ab9cf687eaf8ecd3827d9428172ebe45dd5979305fa996c31696f4e986f37",
+      "bytes": 83384
+    },
+    "reference/000010-foreground_mask.png": {
+      "sha256": "85b93b845a00c8cb50e8af694bb87126257b34f6f66b0d3a0e7e97ef7f03ecb2",
+      "bytes": 4856
+    },
+    "reference/000010-rgb.png": {
+      "sha256": "4c88b6e9522d4ef3c1ce49e1d755c1a283f91aa16a93c9b8bdbfe100a167a13b",
+      "bytes": 83539
+    },
+    "reference/000011-foreground_mask.png": {
+      "sha256": "a2b14158854e4ea6185d316507dc8a3543307d47d09e37baab0ab435b586f14a",
+      "bytes": 4943
+    },
+    "reference/000011-rgb.png": {
+      "sha256": "c6cf51f1eaeda3cdcaff0c8124e5183498163f961a6d6e97f210dfffd72e8b13",
+      "bytes": 83993
+    },
+    "reference/000012-foreground_mask.png": {
+      "sha256": "f30ae20262ddbb99173e8df02233fa1574bcdc7370f96102693e3ec79497f132",
+      "bytes": 4951
+    },
+    "reference/000012-rgb.png": {
+      "sha256": "fd4ea01d30fcd7af46e93b509aec0b977ca3ebfb2c1dcd21ddfa7192469dcca6",
+      "bytes": 83639
+    },
+    "reference/000013-foreground_mask.png": {
+      "sha256": "0ad1caaaa7cdfd4783811fb2ec3d1537762165e71d209b04ccf28e46893712ed",
+      "bytes": 4838
+    },
+    "reference/000013-rgb.png": {
+      "sha256": "9bee1ebeb966b5f7cf0eee854a94011d526d2a2f59ee72e32f801754c9aea257",
+      "bytes": 83889
+    },
+    "reference/000014-foreground_mask.png": {
+      "sha256": "8a50bc6a6693da2db0f48e58064d3cb58318798295c1ac6ee6a2526a2e307140",
+      "bytes": 4940
+    },
+    "reference/000014-rgb.png": {
+      "sha256": "cb031883ad6a106c7efb143a308e14154b35acfc0969139182d4c87c12a7d66d",
+      "bytes": 84206
+    },
+    "reference/000015-foreground_mask.png": {
+      "sha256": "1244f2ace09ed8e086382502872f5e8a1423381edf2cf0207c695777d3b4e4d4",
+      "bytes": 4959
+    },
+    "reference/000015-rgb.png": {
+      "sha256": "7c6047e997dd7d95e9f945ef4a2f82d2747931dab89bca6a698dbd391d3d4455",
+      "bytes": 83837
+    },
+    "reference/000016-foreground_mask.png": {
+      "sha256": "1b5de28caa8f55bac96003b131555c2e07b68078b2c8a4b1741425b3f5f841b8",
+      "bytes": 4892
+    },
+    "reference/000016-rgb.png": {
+      "sha256": "78830467f75cc985cdae6f0978bcf84a8ed8ed3b900bf6b244fad20797b06cf4",
+      "bytes": 84251
+    },
+    "reference/000017-foreground_mask.png": {
+      "sha256": "3541bdbbe9b46170f9de44404fbf2515c4f859c4deee76b39f7abe37e41e352a",
+      "bytes": 4872
+    },
+    "reference/000017-rgb.png": {
+      "sha256": "c709dd9dc661099601004ed515fa756f14ffda52a112bf29f2de2e8734f5b54f",
+      "bytes": 84678
+    },
+    "reference/000018-foreground_mask.png": {
+      "sha256": "b61c41378326149971975e454b2c67eda08324e4a0d6eb4e389aca2886d20bed",
+      "bytes": 4851
+    },
+    "reference/000018-rgb.png": {
+      "sha256": "3c8dfbbc620416e8e446c6c58f8a4ffa211f69355df3925b26b0a610940f8a65",
+      "bytes": 79938
+    },
+    "reference/000019-foreground_mask.png": {
+      "sha256": "39cf48269ddbc14d9fcef6a69fa5113523e7cf952096506e051c6836dc31ce24",
+      "bytes": 4927
+    },
+    "reference/000019-rgb.png": {
+      "sha256": "18681be61b508ee128ec7c843de42389a1cfae4ac20dd7913e2c77c04b83191b",
+      "bytes": 83131
+    },
+    "reference/000020-foreground_mask.png": {
+      "sha256": "7be586953bce54c9bdd96a09bd7446c22828315d3ce74c70b3b3bd44760fdcdb",
+      "bytes": 4951
+    },
+    "reference/000020-rgb.png": {
+      "sha256": "7e6c27aa41e34300fb2e154e317b90f1b02fa737fc6eb8e9d782efcb083c68bd",
+      "bytes": 83247
+    },
+    "reference/000021-foreground_mask.png": {
+      "sha256": "510d3ef9b78ce9d3df07d333ee4537bdcf49b75252d79d3f3163b9998f7f0445",
+      "bytes": 4947
+    },
+    "reference/000021-rgb.png": {
+      "sha256": "1e9376805db42e7df10b9346bc70552b84efd7700b99a80bb65f4bd24a9dbd54",
+      "bytes": 83277
+    },
+    "reference/000022-foreground_mask.png": {
+      "sha256": "e5a94b260752e58ebc6a90442cf65311f3cb2bebb607dcb361fc43deddce330d",
+      "bytes": 5029
+    },
+    "reference/000022-rgb.png": {
+      "sha256": "ea17cb61b75769b05f227add79ae36019bf5e7facba10923033e3478c3040c97",
+      "bytes": 83966
+    },
+    "reference/000023-foreground_mask.png": {
+      "sha256": "9915285a71d3deae717c7c81a8705647fa6770151dd1603af51002f8d0ff80c2",
+      "bytes": 4987
+    },
+    "reference/000023-rgb.png": {
+      "sha256": "46fd01b913967a698140aed60b92d7d6ebb76b0e03a5bebb7292f0d49258ba39",
+      "bytes": 83660
+    },
+    "reference/000024-foreground_mask.png": {
+      "sha256": "de2fa98e1fb60c49f05ce6cb693f8ad79072b1abd9ce93f4977f913b10d41192",
+      "bytes": 4942
+    },
+    "reference/000024-rgb.png": {
+      "sha256": "02b7abcdaf7fb0f258db8af8be55a956957c49a789cf861700296bbd60d32152",
+      "bytes": 83239
+    },
+    "reference/source.json": {
+      "sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+      "bytes": 5833
+    },
+    "timings.json": {
+      "sha256": "6fbea69d93a4b76e8b54447abb8d700181cf03bdb6353ad8655fc88f408456eb",
+      "bytes": 11805
+    },
+    "versions/0/alpha/000000.png": {
+      "sha256": "1f42f31cc7f65e0a4269b3526ec7124628902bceb57923f089578a428984a56e",
+      "bytes": 97327
+    },
+    "versions/0/alpha/000001.png": {
+      "sha256": "a769da35950ffebeef4ccbd8b9cf72bd3f8171683f247dd9933aba5026b7cdae",
+      "bytes": 97328
+    },
+    "versions/0/alpha/000002.png": {
+      "sha256": "a769da35950ffebeef4ccbd8b9cf72bd3f8171683f247dd9933aba5026b7cdae",
+      "bytes": 97328
+    },
+    "versions/0/alpha/000003.png": {
+      "sha256": "51dda3d95e0310988f189dfdf7adab756b9db751fdde747e55f410607d28c44d",
+      "bytes": 99305
+    },
+    "versions/0/alpha/000004.png": {
+      "sha256": "729bbeb8884ac6d3b5d47d888e8d8e92bb7f52fa9dfeeabcbdd45babda06401e",
+      "bytes": 101027
+    },
+    "versions/0/alpha/000005.png": {
+      "sha256": "e1f0783ac6d37e0cfc3d0e2320dce599fa75bc26e45ad1b8f14148994c207abe",
+      "bytes": 101625
+    },
+    "versions/0/alpha/000006.png": {
+      "sha256": "5398a817449eb47d48f63850beb7c86bd32bf2922bd699631e32722d30aff7ca",
+      "bytes": 101275
+    },
+    "versions/0/alpha/000007.png": {
+      "sha256": "6347c4055af695988e7e65fb54e014ed62ba6c14abb733e1d3895606cf9679a2",
+      "bytes": 101135
+    },
+    "versions/0/alpha/000008.png": {
+      "sha256": "656f391b3aed58edf540bbf9a6e9a17e34e4f1fdd39b60eb7c7cd30f57c01765",
+      "bytes": 99739
+    },
+    "versions/0/alpha/000009.png": {
+      "sha256": "dc3127ff25bf7ba5bfd6df09b3127a1065d663be25e1fd3bb7a79351b4dfc5d7",
+      "bytes": 99843
+    },
+    "versions/0/alpha/000010.png": {
+      "sha256": "78c1b016023f94e242327f6d776c5edb2cfae183d0e492e507da69c631126fcd",
+      "bytes": 99646
+    },
+    "versions/0/alpha/000011.png": {
+      "sha256": "d26e711cdf8288ad98e5fdd7694be90264c5c9f73bdda75d6f52ea013854b649",
+      "bytes": 99912
+    },
+    "versions/0/alpha/000012.png": {
+      "sha256": "63d28bfcaaa74b8d4258673f483f0264a94abe500d5950e75f20317dd3ac38d0",
+      "bytes": 100915
+    },
+    "versions/0/alpha/000013.png": {
+      "sha256": "b92781d15639bee8c0b2cbf6f3658bb93080c37dbe047fedb6916a008f1def1b",
+      "bytes": 101496
+    },
+    "versions/0/alpha/000014.png": {
+      "sha256": "00eb5c6d9685c28cfb14d851b3ff33070af9a1914b2a0ffe85dee759ddc3b7ed",
+      "bytes": 100780
+    },
+    "versions/0/alpha/000015.png": {
+      "sha256": "20b86a1c10fa4385870dd4918d8f32769cc0516bfa7eec27c353905115922688",
+      "bytes": 100677
+    },
+    "versions/0/alpha/000016.png": {
+      "sha256": "7ea47918855619e703b6d12dbc42ae8b8559e710388b775f74269ee21ca1c4d4",
+      "bytes": 101222
+    },
+    "versions/0/alpha/000017.png": {
+      "sha256": "7053d22effd377d92fa3cc875bd13b2c2e76e1f18242f9582c158077320250f2",
+      "bytes": 100949
+    },
+    "versions/0/alpha/000018.png": {
+      "sha256": "e2c3ff3634e13c7f0e3fc893866e4f326f5fd1ba43565e859cf9ff0ea6368f10",
+      "bytes": 99776
+    },
+    "versions/0/alpha/000019.png": {
+      "sha256": "7a3a1c58b03ed3e69700867aa3a6afec535abb7d812b351a24f4287ef5056560",
+      "bytes": 99432
+    },
+    "versions/0/alpha/000020.png": {
+      "sha256": "e78bc09917c237886625a44851294eb0e166bc3239ed16979275557eba38deca",
+      "bytes": 99037
+    },
+    "versions/0/alpha/000021.png": {
+      "sha256": "1a4f0d72012b6bdd7e717d32057589c6c1681b40e22aa4f9c21f92cd8f48fb62",
+      "bytes": 101702
+    },
+    "versions/0/alpha/000022.png": {
+      "sha256": "b6507335f43ad07dcc8f51f08b4b66519e5c2540a3a32a288a5e1c2dd8de697e",
+      "bytes": 102108
+    },
+    "versions/0/alpha/000023.png": {
+      "sha256": "d4f032043793dc38cb521137a157e04c86b1ad421c3a4ce196e8676d48b767aa",
+      "bytes": 101215
+    },
+    "versions/0/alpha/000024.png": {
+      "sha256": "7442bebf69f443cb069485d056841acbd68e837fe4a246a14cc18fce3ce615c5",
+      "bytes": 101130
+    },
+    "versions/0/frames/000000.png": {
+      "sha256": "82e1db07f696eca88457e5d680c64069ed90c8da681ec3004cf5ded548cfbcb2",
+      "bytes": 108176
+    },
+    "versions/0/frames/000001.png": {
+      "sha256": "82e1db07f696eca88457e5d680c64069ed90c8da681ec3004cf5ded548cfbcb2",
+      "bytes": 108176
+    },
+    "versions/0/frames/000002.png": {
+      "sha256": "82e1db07f696eca88457e5d680c64069ed90c8da681ec3004cf5ded548cfbcb2",
+      "bytes": 108176
+    },
+    "versions/0/frames/000003.png": {
+      "sha256": "f4892563ce28520c7a8bf831771ca76ec5ce7d53816cb7e66c032cc21e0b1caa",
+      "bytes": 115528
+    },
+    "versions/0/frames/000004.png": {
+      "sha256": "8d0c7b5a5e1046caa865f8ab71e751942c10f55cb9cea989e29cfe0a1ef6c242",
+      "bytes": 116786
+    },
+    "versions/0/frames/000005.png": {
+      "sha256": "eb019891348e1f87f0c9bec5c51d91a7dcf0ec114221e3778ed109d8523c5ffd",
+      "bytes": 118028
+    },
+    "versions/0/frames/000006.png": {
+      "sha256": "761bcbae6faafad20e466d9dcdfc7a2476d0563d215c64da7a2fdbcbd986b2f8",
+      "bytes": 117663
+    },
+    "versions/0/frames/000007.png": {
+      "sha256": "8c01d31ae04234dbdde20af226e34c0a2c9f8375fa2355872ea5a0a452aa9b7d",
+      "bytes": 117285
+    },
+    "versions/0/frames/000008.png": {
+      "sha256": "e30f29b1183839071a5657e977ae37cc8fd5d0e69abd1858c2688f2cb9fa6c8f",
+      "bytes": 116155
+    },
+    "versions/0/frames/000009.png": {
+      "sha256": "5b7135b9071c284ee00a7b470fab659964b5258dc850fd08d929b5a057013e9e",
+      "bytes": 115773
+    },
+    "versions/0/frames/000010.png": {
+      "sha256": "47d23e693360aa01d9e18be18d8d28c90d68108f98579f97d85dd84c30a1771a",
+      "bytes": 114804
+    },
+    "versions/0/frames/000011.png": {
+      "sha256": "f26f110d6b7fe80a99467bc47524e8984536c0da852679748ac0663ff939e84b",
+      "bytes": 116223
+    },
+    "versions/0/frames/000012.png": {
+      "sha256": "eabfef7853ff3e6b3df2bb79db7b4d2f5f244653a2c5bdd44ec3e0379c6cef9c",
+      "bytes": 117339
+    },
+    "versions/0/frames/000013.png": {
+      "sha256": "2053cd2bbbc057ae821e2148d978bace66e46bc0bb8d1cf258bf02604a63d93e",
+      "bytes": 117182
+    },
+    "versions/0/frames/000014.png": {
+      "sha256": "52f02aeb9e3e4cc2e6b7ddd69f56aca7e93e2d7b7878f76d07b000a6c4b78465",
+      "bytes": 116699
+    },
+    "versions/0/frames/000015.png": {
+      "sha256": "423434f20ed875887ccec691bd78a6e35b18925c6f1ceadd6d861911b32c7bd2",
+      "bytes": 116496
+    },
+    "versions/0/frames/000016.png": {
+      "sha256": "7518995dbee1195965c9e773be20aa154f311603762f8af8ff0b6d9238120dba",
+      "bytes": 117265
+    },
+    "versions/0/frames/000017.png": {
+      "sha256": "781d1cfd878f3d74737b190bd1477eb2dca15df0463d6d24ced71cde57eb4997",
+      "bytes": 117754
+    },
+    "versions/0/frames/000018.png": {
+      "sha256": "d22715ad0307c08cf6a4f9bf1a98e9933dd5c0b8ccabb178d783a9de8eb225a0",
+      "bytes": 115903
+    },
+    "versions/0/frames/000019.png": {
+      "sha256": "61a2c0e2b3a1c59c2c3f0253aaf8bedbceef30c8d0d6b9a9bfc8432e23d42e58",
+      "bytes": 114362
+    },
+    "versions/0/frames/000020.png": {
+      "sha256": "73a8f2c144763d3339276c6f8d75104d94fec076ffa96dae1f391aef33824e1b",
+      "bytes": 115208
+    },
+    "versions/0/frames/000021.png": {
+      "sha256": "6d3ccf9744ceee173604d3eae6e84ceae0ea55f6165b45846b0dea0a79913808",
+      "bytes": 117489
+    },
+    "versions/0/frames/000022.png": {
+      "sha256": "a5825dc88f7ff4efd9035373f35d627aa3de8252996dae1a3abaec9607eebfb3",
+      "bytes": 117760
+    },
+    "versions/0/frames/000023.png": {
+      "sha256": "ebe2d4077a0fae082335c1b3f75c0d2f3e8aee01cf8ddc5d9b9e56c6fc592dfe",
+      "bytes": 117452
+    },
+    "versions/0/frames/000024.png": {
+      "sha256": "b80f5cb52d7f2008ee780f8d2636b286f35f1dfce9d7aab4777d54b0243b6c9e",
+      "bytes": 116754
+    },
+    "versions/0/motion.npz": {
+      "sha256": "7104bdf2f32d48b318bbf0ac402b6de5613f7419fbb6d71020a39fcac5fb66eb",
+      "bytes": 50208
+    },
+    "versions/1/alpha/000000.png": {
+      "sha256": "b27654967df2292b60774032a82b3bc686f7bdb692cd43f59a2998d1a4e9c204",
+      "bytes": 73680
+    },
+    "versions/1/alpha/000001.png": {
+      "sha256": "78a215659e5bbf31f5143f5eb12770d1e5db62ba3134c757cf80637de59faa6b",
+      "bytes": 73686
+    },
+    "versions/1/alpha/000002.png": {
+      "sha256": "78a215659e5bbf31f5143f5eb12770d1e5db62ba3134c757cf80637de59faa6b",
+      "bytes": 73686
+    },
+    "versions/1/alpha/000003.png": {
+      "sha256": "c0e34138233d06a2d716a6985c68730fc383ce041d0f8475488bd8c282b00f14",
+      "bytes": 83062
+    },
+    "versions/1/alpha/000004.png": {
+      "sha256": "6634128cac565cdb0c47bdd81bd4b768b1cab9223b86480c839b64440373853a",
+      "bytes": 82610
+    },
+    "versions/1/alpha/000005.png": {
+      "sha256": "95225b5310b1c2f9799d63b520eb10073c840b50792062f2954c57b9b1db2ce5",
+      "bytes": 81606
+    },
+    "versions/1/alpha/000006.png": {
+      "sha256": "d9ba1163f549587d1d81e80b4c49b310c0d3a9a1e57007d4b68737de2b2acb07",
+      "bytes": 82254
+    },
+    "versions/1/alpha/000007.png": {
+      "sha256": "9bfeb181ddc14a633200b708ee7e6916ea7c9726122f47293fba50f742ca3584",
+      "bytes": 82621
+    },
+    "versions/1/alpha/000008.png": {
+      "sha256": "83644b08401ab27538ae265b636685db26f76e01bb8bdbaf72bc69285c164552",
+      "bytes": 81719
+    },
+    "versions/1/alpha/000009.png": {
+      "sha256": "ab693a644076983f77b5fe6721df3025a1c237a249bae1f2eec9f9c792003513",
+      "bytes": 81120
+    },
+    "versions/1/alpha/000010.png": {
+      "sha256": "03c011afdba817403be0b9900844711a035d22defa3b4e097c366d6ca9b0ca91",
+      "bytes": 81380
+    },
+    "versions/1/alpha/000011.png": {
+      "sha256": "e6ce4e1da2d987a6104b717839af0fa16c56aa794fc25637f5b444bc4a99de8a",
+      "bytes": 83137
+    },
+    "versions/1/alpha/000012.png": {
+      "sha256": "ae39dc7332ed437fb7bac43bf9e08921f55d4df565b0e5b2bad3ddc648abb3d0",
+      "bytes": 83925
+    },
+    "versions/1/alpha/000013.png": {
+      "sha256": "2841b22541414b7d17fdbcb74887f360b8dc8e287e58c3a19fc6e6638fb3a36b",
+      "bytes": 82254
+    },
+    "versions/1/alpha/000014.png": {
+      "sha256": "2e71be459a3916bba11012d5e07300426a4348816cad0208bcfade92097d4682",
+      "bytes": 80946
+    },
+    "versions/1/alpha/000015.png": {
+      "sha256": "78b42b39006eba64d765cd4bfa6d8b92ab90ab911037419e21c54b21b2993a2d",
+      "bytes": 81466
+    },
+    "versions/1/alpha/000016.png": {
+      "sha256": "0424f1f8d5bc4d152ae13a84c33a4a1e3252081375294e98937a29a5198dd91a",
+      "bytes": 82704
+    },
+    "versions/1/alpha/000017.png": {
+      "sha256": "211efb15e73c0d77c2efc5c09065f032b8ab9fbf65f7b8e50759f7607200af26",
+      "bytes": 83180
+    },
+    "versions/1/alpha/000018.png": {
+      "sha256": "79ae73cce8120727d9c4e3c63a598f47ed5b6d763a1f4ee66c6ee1e00aa4eb52",
+      "bytes": 82973
+    },
+    "versions/1/alpha/000019.png": {
+      "sha256": "12fb53045f39692b46865cfb2bcc8124944a8051a100c1972fa9c3f7491be649",
+      "bytes": 81793
+    },
+    "versions/1/alpha/000020.png": {
+      "sha256": "84226dfe69b743b3a93c29dc14b945a89ea71cfced6994e4e56821fc6ac58792",
+      "bytes": 81107
+    },
+    "versions/1/alpha/000021.png": {
+      "sha256": "0563b429240b9140b51f97e574d5eb6a770bb358a1caa5b0a0c5b2840ec32b00",
+      "bytes": 82913
+    },
+    "versions/1/alpha/000022.png": {
+      "sha256": "5083c2702e1e1e7d88b7e45d3d07b0307388418f26cb29d69dc61d170683f3dd",
+      "bytes": 82926
+    },
+    "versions/1/alpha/000023.png": {
+      "sha256": "81a67123d60e469010317df571fcde03866f8424a3ed0513cb3b9bb0513d3d49",
+      "bytes": 81796
+    },
+    "versions/1/alpha/000024.png": {
+      "sha256": "7eebae14b24b582cbcfd993e51953c1d39790991f91f2e2443fb5885c697194c",
+      "bytes": 81463
+    },
+    "versions/1/frames/000000.png": {
+      "sha256": "3c7ad567d32a4beac151c209bc76561c448dd66008fd876d0c0ea448254a47d9",
+      "bytes": 89756
+    },
+    "versions/1/frames/000001.png": {
+      "sha256": "3c7ad567d32a4beac151c209bc76561c448dd66008fd876d0c0ea448254a47d9",
+      "bytes": 89756
+    },
+    "versions/1/frames/000002.png": {
+      "sha256": "3c7ad567d32a4beac151c209bc76561c448dd66008fd876d0c0ea448254a47d9",
+      "bytes": 89756
+    },
+    "versions/1/frames/000003.png": {
+      "sha256": "8a7134f9fb62f339ca049ce1e0ec44f4f90f5071d1e9e357731ec03177b4cd39",
+      "bytes": 99281
+    },
+    "versions/1/frames/000004.png": {
+      "sha256": "0dbffcb3b4ff47ad586064ba82147e9293f160e86ceec45c01a977f335eea33f",
+      "bytes": 100001
+    },
+    "versions/1/frames/000005.png": {
+      "sha256": "e3e44a70af4f24ed4ad68e762b2973c3ae5c01ca82dd95ec3144078fcd5eb601",
+      "bytes": 98507
+    },
+    "versions/1/frames/000006.png": {
+      "sha256": "920607744c25b7111b964caabb1ca927fe7586ebd74ee5bae5f604f21c54d5c3",
+      "bytes": 99721
+    },
+    "versions/1/frames/000007.png": {
+      "sha256": "0217853f2b054747d1b2e701825e229ad85d7ec1336f0a229953c536ed793b85",
+      "bytes": 99719
+    },
+    "versions/1/frames/000008.png": {
+      "sha256": "06f54a7f9fbb16afd4aa447cd63bfe5f893bb9458f96ed1aaec965925d481a10",
+      "bytes": 99268
+    },
+    "versions/1/frames/000009.png": {
+      "sha256": "b4737dfb339d551d5e0afaf566c2928a6caff9e637a4ae81e892d8054af8b3d1",
+      "bytes": 99481
+    },
+    "versions/1/frames/000010.png": {
+      "sha256": "6627d84dd4eeb0f9748a846554aaa79f7d136091f9573e8359f48265972a4801",
+      "bytes": 97957
+    },
+    "versions/1/frames/000011.png": {
+      "sha256": "b99a1078814a7ed50cf608b7a9df17e037b8ca451dd46faa426c7beae4cd8143",
+      "bytes": 98919
+    },
+    "versions/1/frames/000012.png": {
+      "sha256": "4fc9221c97d37ca1ddfb39b8e1d823c47fc55bce4c1d1adf80babbb07b4921b7",
+      "bytes": 100622
+    },
+    "versions/1/frames/000013.png": {
+      "sha256": "9bf558dae75d3f6d32f08b4f05be3071dc3afbcafdcb847e47d3c2ebc6e7254e",
+      "bytes": 99402
+    },
+    "versions/1/frames/000014.png": {
+      "sha256": "91317f6e11c373a5e029940afe6d29355bd6d39283f9d11b1d03d297605a512e",
+      "bytes": 98322
+    },
+    "versions/1/frames/000015.png": {
+      "sha256": "6cdad0189ffbda96d7521576bb33ae5bbe8b861538446a77f121935c53b6703b",
+      "bytes": 99018
+    },
+    "versions/1/frames/000016.png": {
+      "sha256": "46daebf0a76526d7cfc7512a2390697f79cf409ed30780f42f64348a4af3d606",
+      "bytes": 100057
+    },
+    "versions/1/frames/000017.png": {
+      "sha256": "81841378fb367c25002428884cb1f220242c95753c79a970fe4e3eb386a8b1da",
+      "bytes": 100319
+    },
+    "versions/1/frames/000018.png": {
+      "sha256": "6c8c24cfe4038d4f98f49769384f709c04175e16a2156d6f221c9c21bddaa163",
+      "bytes": 99463
+    },
+    "versions/1/frames/000019.png": {
+      "sha256": "ffe84ec89067d40f1ab3029dce3a60f4a5c14149c816a0e8772a335b0235f7f9",
+      "bytes": 97283
+    },
+    "versions/1/frames/000020.png": {
+      "sha256": "6872ef92180a93044186df28c7476bc1dae1640759ba589a6dfe967dc4fbaeae",
+      "bytes": 98617
+    },
+    "versions/1/frames/000021.png": {
+      "sha256": "06ca1abf46b8df2c6943af0180fae9d140115633ad97849263ce222280ed196b",
+      "bytes": 100263
+    },
+    "versions/1/frames/000022.png": {
+      "sha256": "d7628866c63fba6b54bb40bfae95c1fb79239032a89efdfa70b515d3fbba1092",
+      "bytes": 99895
+    },
+    "versions/1/frames/000023.png": {
+      "sha256": "5db3d732f0c1ed1e782f1665bb2fc5071686b5d209eac51b31cc707e5e1d2a42",
+      "bytes": 98523
+    },
+    "versions/1/frames/000024.png": {
+      "sha256": "75ae161dd71653338f1096070679213977c0bfa3ccee09a10d7316102f7cdd4a",
+      "bytes": 99570
+    },
+    "versions/1/motion.npz": {
+      "sha256": "59117f3463b993a9a9410619be090d8d7e2502ee44e749bee8a2699f212e150b",
+      "bytes": 41786
+    },
+    "versions/2/alpha/000000.png": {
+      "sha256": "edc09a94276f613b4ab35013739f870b31a42f51c3db07c62f7c4cddca47f58e",
+      "bytes": 101834
+    },
+    "versions/2/alpha/000001.png": {
+      "sha256": "edc09a94276f613b4ab35013739f870b31a42f51c3db07c62f7c4cddca47f58e",
+      "bytes": 101834
+    },
+    "versions/2/alpha/000002.png": {
+      "sha256": "edc09a94276f613b4ab35013739f870b31a42f51c3db07c62f7c4cddca47f58e",
+      "bytes": 101834
+    },
+    "versions/2/alpha/000003.png": {
+      "sha256": "212d5f9862d2d28ad992984df18c351cacace275e432393fd4d1074fd440dca4",
+      "bytes": 102249
+    },
+    "versions/2/alpha/000004.png": {
+      "sha256": "dd47dfd74e9c419f5692a16299ba8b37f3d705282cf4c2ae0606a1d117e1405e",
+      "bytes": 102178
+    },
+    "versions/2/alpha/000005.png": {
+      "sha256": "3471598dabcc0fc9e07f5483faa69f6d0b8706882eaf662337e9476ad7fb3102",
+      "bytes": 102287
+    },
+    "versions/2/alpha/000006.png": {
+      "sha256": "399a6aca1760aba21d39cbdce4f359621ffdbb0b7ec1c0e1138e85a2b28ae1d7",
+      "bytes": 102379
+    },
+    "versions/2/alpha/000007.png": {
+      "sha256": "129c91d7ba7581ff1e1038bf60c6e36dd8d9a7e2a6d7d9fb63df800f2bbd5c4d",
+      "bytes": 101403
+    },
+    "versions/2/alpha/000008.png": {
+      "sha256": "1eb206e876883c44d5bcca9d086c8ce394f704fc7680f4a596470cc1b007da48",
+      "bytes": 101711
+    },
+    "versions/2/alpha/000009.png": {
+      "sha256": "76295c6052bc2f5a756ea369adfa31e7f1f03fe913ec0dc1f85d92aff3319d0e",
+      "bytes": 102277
+    },
+    "versions/2/alpha/000010.png": {
+      "sha256": "a6684637b39e67b949b7098face34118ccfb02b3488aa9f43991b1d6080c8d86",
+      "bytes": 101830
+    },
+    "versions/2/alpha/000011.png": {
+      "sha256": "443710cc9af901724b57c38640e5dd9d39a5e0192d17179e8b298b12e8aadfad",
+      "bytes": 102115
+    },
+    "versions/2/alpha/000012.png": {
+      "sha256": "95f2ed7aea86ad1e49d6ecf5eb75443255befd78b8bc46660ad1f743b98b46bd",
+      "bytes": 101960
+    },
+    "versions/2/alpha/000013.png": {
+      "sha256": "99dd7c9c92c7ead898f49b944ab85af65d520cbe967b23ebf32da400d8914b80",
+      "bytes": 101996
+    },
+    "versions/2/alpha/000014.png": {
+      "sha256": "14ce0443a509d9ef0a3aa8faa02211c8b19b0f5b356231b165a4ad4996b704e5",
+      "bytes": 101778
+    },
+    "versions/2/alpha/000015.png": {
+      "sha256": "767e33d495d29ccd3fa25639f097b705e13439cef08afd4ac3aa4c40e70fd796",
+      "bytes": 102434
+    },
+    "versions/2/alpha/000016.png": {
+      "sha256": "48098a74e98de046d4b5efd974a4022b5fd91b45154c2d9f0c32adfeb4a03e3f",
+      "bytes": 102093
+    },
+    "versions/2/alpha/000017.png": {
+      "sha256": "62303ee40efc9a76605dea492651df625b80a925483d5846c6d6a320c6477e33",
+      "bytes": 101832
+    },
+    "versions/2/alpha/000018.png": {
+      "sha256": "8b16a1258091f338020d48101ea41f78c343dd411754ee0d80bd55d1f20bf623",
+      "bytes": 101786
+    },
+    "versions/2/alpha/000019.png": {
+      "sha256": "b79859daf90f34596381017b0b96d3ca73261ca234566606f2ce1b2a36f33ca0",
+      "bytes": 101868
+    },
+    "versions/2/alpha/000020.png": {
+      "sha256": "8443a3eaffb89eb431da79ceafcf38dac9fec5efb54bd0681c7659a703376aaf",
+      "bytes": 101672
+    },
+    "versions/2/alpha/000021.png": {
+      "sha256": "792f84d74c2fc7336868e4e3d2c7e840a8a49843fbdbf5d2eb67c54ff4eee83b",
+      "bytes": 102574
+    },
+    "versions/2/alpha/000022.png": {
+      "sha256": "7dc48c75a9888f331b865f85890d1b6c0d0fed048bf47cb781fb6062927535e1",
+      "bytes": 102261
+    },
+    "versions/2/alpha/000023.png": {
+      "sha256": "6a66ef26be48c7f887734bc9ef6d88869c1c5a30b5b17de8c4eea4904fd7952b",
+      "bytes": 102240
+    },
+    "versions/2/alpha/000024.png": {
+      "sha256": "ae398b260bef98eaf88da79627f25c0cae54510f2c7bb31f595a1666eb72b244",
+      "bytes": 101804
+    },
+    "versions/2/frames/000000.png": {
+      "sha256": "7b78e9096b69e6660986ddec351fa403d2eef571648d00d883cc226cc646bd5e",
+      "bytes": 89413
+    },
+    "versions/2/frames/000001.png": {
+      "sha256": "89820a4f4c5bb310a921ba102f77d292e2868e3d1ec3f2a69c3b549ad2e38963",
+      "bytes": 87060
+    },
+    "versions/2/frames/000002.png": {
+      "sha256": "3f68aad59ac23fc0e52a9bbe5068584d0e39619d81e9abe65070ca5f92a2a23b",
+      "bytes": 86717
+    },
+    "versions/2/frames/000003.png": {
+      "sha256": "046c15f3db0ccd101122a66949ec00d6865fefaf879c052e1e6c4fd5c3b829b5",
+      "bytes": 87090
+    },
+    "versions/2/frames/000004.png": {
+      "sha256": "4eeff534e054e1e92f0ccfa8126f2060e27a1b323d0eadda24aa17995c7f9b77",
+      "bytes": 87115
+    },
+    "versions/2/frames/000005.png": {
+      "sha256": "8414795592ce3724c41824b2fc8f8d39a82e0dd4a85b65a6e7b60eeb51b3ee7a",
+      "bytes": 87550
+    },
+    "versions/2/frames/000006.png": {
+      "sha256": "e0cc49757bc0fd5c98e565295c702e710763ae5a07c9d7206ccc026415974851",
+      "bytes": 87532
+    },
+    "versions/2/frames/000007.png": {
+      "sha256": "f63efd6da252de6ab00b655b28db2cd44813dd1a5c26a96bcd2f44ecfa9b83a1",
+      "bytes": 87583
+    },
+    "versions/2/frames/000008.png": {
+      "sha256": "a8a02abae7e4bab4fe765ae2aed744f1f604cab16e734912f412663963837132",
+      "bytes": 87631
+    },
+    "versions/2/frames/000009.png": {
+      "sha256": "480f2cc2171834dc76757cff89f175ff8323061f9887c9cf937bb540cb57b1f1",
+      "bytes": 88519
+    },
+    "versions/2/frames/000010.png": {
+      "sha256": "81367902a21fe1649cbe5d34a94b9da7a5f74b98e70fee23b00067659494fba5",
+      "bytes": 88106
+    },
+    "versions/2/frames/000011.png": {
+      "sha256": "d00cb85c47d922c2510dc2b5aaec45e9a34a69fecf1dcd495797cc4e358c9075",
+      "bytes": 88195
+    },
+    "versions/2/frames/000012.png": {
+      "sha256": "b54dcaeaa272b9dd4fa4c4660dc9456cdd38957429e6583fe84b83d182f626cc",
+      "bytes": 88011
+    },
+    "versions/2/frames/000013.png": {
+      "sha256": "2ffe29b12006e538d19ab96fe6f5609ea9d0d2dab1094d6ed803e82b8fdb6830",
+      "bytes": 87940
+    },
+    "versions/2/frames/000014.png": {
+      "sha256": "29d3a6cc4d0fb4bc2dd0c2682c9f270836b6d30d3f46c67c9031a9d948ca8066",
+      "bytes": 87947
+    },
+    "versions/2/frames/000015.png": {
+      "sha256": "7048707cd3425454aa6b1ed9def0d7f9e3e387be2c0de0ba27acf50c415f9059",
+      "bytes": 87993
+    },
+    "versions/2/frames/000016.png": {
+      "sha256": "2e1cdfe5a315b69f5573556029df79932cb1407ea8afd5a117ef213062508c0e",
+      "bytes": 87540
+    },
+    "versions/2/frames/000017.png": {
+      "sha256": "0761fcefd5009061ec9e8d3b748de4a77ba4e1f76b8f4a41d1c79249d24ddda0",
+      "bytes": 87523
+    },
+    "versions/2/frames/000018.png": {
+      "sha256": "5812dbe2d7e315c89ea0426349fc4e52d8310e9a626f7544411a4d984fb02547",
+      "bytes": 87062
+    },
+    "versions/2/frames/000019.png": {
+      "sha256": "11dc93ebf14a2622a6b397ca504bba6bfa3601115407cbe01e8e8d0e475694aa",
+      "bytes": 87321
+    },
+    "versions/2/frames/000020.png": {
+      "sha256": "92e5c8446f66b8e82b751972d39312af9b560cf47fe7a7e44edcdbcbd729fdd8",
+      "bytes": 86935
+    },
+    "versions/2/frames/000021.png": {
+      "sha256": "760c8e9b149d379d23af5912635e5de7f15eec4f581e6b4883f5faf3c6ae96e6",
+      "bytes": 88158
+    },
+    "versions/2/frames/000022.png": {
+      "sha256": "beb87560c5638236e6fff7e217bbaad438938e2041112ab5e74d362350033b74",
+      "bytes": 88568
+    },
+    "versions/2/frames/000023.png": {
+      "sha256": "d28260ae5a0918e42fecbc7b7fff970c7e1869787d0eb0c4e4c101abbc2ff68c",
+      "bytes": 89641
+    },
+    "versions/2/frames/000024.png": {
+      "sha256": "ac55384eb119d761452b2000e3d536fe8e04d05865463c2ed21f253777434799",
+      "bytes": 91831
+    },
+    "versions/2/motion.npz": {
+      "sha256": "c949c56cc887595974aff95de5d3a4e5a250e43cfeff637587511daf2432057f",
+      "bytes": 50399
+    }
+  }
+}

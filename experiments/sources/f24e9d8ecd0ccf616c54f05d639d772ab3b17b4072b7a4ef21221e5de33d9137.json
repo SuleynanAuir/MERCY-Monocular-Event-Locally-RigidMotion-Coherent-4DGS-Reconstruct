@@ -1,0 +1,626 @@
+{
+  "archive": "/tmp/gears-compact-export.zip",
+  "versions": [
+    {
+      "id": "0",
+      "label": "V1 \u00b7 \u5df2\u6709\u4fee\u6b63\u7248",
+      "presentation": {
+        "source_panel_index": 1,
+        "source_version": "V2",
+        "source_label": "V2 \u00b7 \u5df2\u6709\u4fee\u6b63\u7248",
+        "display_version": "V1",
+        "display_label": "V1 \u00b7 \u5df2\u6709\u4fee\u6b63\u7248"
+      },
+      "point_count": 828050,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    },
+    {
+      "id": "1",
+      "label": "V2 \u00b7 \u539f\u59cb\u9ad8\u65af",
+      "presentation": {
+        "source_panel_index": 0,
+        "source_version": "V1",
+        "source_label": "V1 \u00b7 \u539f\u59cb\u9ad8\u65af",
+        "display_version": "V2",
+        "display_label": "V2 \u00b7 \u539f\u59cb\u9ad8\u65af"
+      },
+      "point_count": 467436,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    },
+    {
+      "id": "2",
+      "label": "V3 \u00b7 \u65f6\u5e8f\u8868\u9762\u7ec6\u5316",
+      "presentation": {
+        "source_panel_index": 2,
+        "source_version": "V3",
+        "source_label": "V3 \u00b7 \u65f6\u5e8f\u8868\u9762\u7ec6\u5316",
+        "display_version": "V3",
+        "display_label": "V3 \u00b7 \u65f6\u5e8f\u8868\u9762\u7ec6\u5316"
+      },
+      "point_count": 301739,
+      "sampled_point_count": 256,
+      "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+    }
+  ],
+  "samples": [
+    {
+      "frame": 0,
+      "versions": [
+        {
+          "mae": 0.007876152088439545,
+          "foreground_mae": 0.03506704808983458,
+          "foreground_p95": 0.18823529411764706
+        },
+        {
+          "mae": 0.02134307023590686,
+          "foreground_mae": 0.09746662695318012,
+          "foreground_p95": 0.3215686274509804
+        },
+        {
+          "mae": 0.004038286994485295,
+          "foreground_mae": 0.01612215568436779,
+          "foreground_p95": 0.0627450980392157
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9274605139975236,
+      "foreground_degraded_fraction": 0.06941382538580014
+    },
+    {
+      "frame": 1,
+      "versions": [
+        {
+          "mae": 0.007875912734885623,
+          "foreground_mae": 0.0350703641264839,
+          "foreground_p95": 0.18823529411764706
+        },
+        {
+          "mae": 0.02134246706495098,
+          "foreground_mae": 0.09746781125198346,
+          "foreground_p95": 0.3215686274509804
+        },
+        {
+          "mae": 0.004070401858660131,
+          "foreground_mae": 0.014284972689082678,
+          "foreground_p95": 0.050980392156862786
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9409748437169692,
+      "foreground_degraded_fraction": 0.05597499471506659
+    },
+    {
+      "frame": 2,
+      "versions": [
+        {
+          "mae": 0.007875548917483662,
+          "foreground_mae": 0.03507438410654589,
+          "foreground_p95": 0.18823529411764706
+        },
+        {
+          "mae": 0.021344215941584962,
+          "foreground_mae": 0.0974694125858445,
+          "foreground_p95": 0.3215686274509804
+        },
+        {
+          "mae": 0.005097739225898693,
+          "foreground_mae": 0.018118048943020874,
+          "foreground_p95": 0.07450980392156864
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9071484658129984,
+      "foreground_degraded_fraction": 0.08948417492147862
+    },
+    {
+      "frame": 3,
+      "versions": [
+        {
+          "mae": 0.0236127099928513,
+          "foreground_mae": 0.08993345950537016,
+          "foreground_p95": 0.39215686274509803
+        },
+        {
+          "mae": 0.029792196435866013,
+          "foreground_mae": 0.12303706525023302,
+          "foreground_p95": 0.38823529411764707
+        },
+        {
+          "mae": 0.016345926521650327,
+          "foreground_mae": 0.05483800868638374,
+          "foreground_p95": 0.36470588235294116
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.832344526426743,
+      "foreground_degraded_fraction": 0.11788887215780756
+    },
+    {
+      "frame": 4,
+      "versions": [
+        {
+          "mae": 0.01963193487030229,
+          "foreground_mae": 0.0756389826767789,
+          "foreground_p95": 0.37254901960784315
+        },
+        {
+          "mae": 0.026097120098039217,
+          "foreground_mae": 0.11322138763740365,
+          "foreground_p95": 0.37254901960784315
+        },
+        {
+          "mae": 0.010537572125204248,
+          "foreground_mae": 0.03438087644342209,
+          "foreground_p95": 0.203921568627451
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.882489653931506,
+      "foreground_degraded_fraction": 0.09338451388472381
+    },
+    {
+      "frame": 5,
+      "versions": [
+        {
+          "mae": 0.022463059768178098,
+          "foreground_mae": 0.08211902325464417,
+          "foreground_p95": 0.3803921568627451
+        },
+        {
+          "mae": 0.02824715328839869,
+          "foreground_mae": 0.11735625787913369,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.012572281581903598,
+          "foreground_mae": 0.04181289238478781,
+          "foreground_p95": 0.3058823529411765
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8785924723424724,
+      "foreground_degraded_fraction": 0.08164983164983165
+    },
+    {
+      "frame": 6,
+      "versions": [
+        {
+          "mae": 0.018941572201797385,
+          "foreground_mae": 0.07158276973266414,
+          "foreground_p95": 0.34771241830065364
+        },
+        {
+          "mae": 0.025443981694240204,
+          "foreground_mae": 0.11144175027829549,
+          "foreground_p95": 0.3686274509803922
+        },
+        {
+          "mae": 0.00887389259089052,
+          "foreground_mae": 0.02923323254190665,
+          "foreground_p95": 0.15294117647058822
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9006848799578535,
+      "foreground_degraded_fraction": 0.07979227816662904
+    },
+    {
+      "frame": 7,
+      "versions": [
+        {
+          "mae": 0.019143095128676468,
+          "foreground_mae": 0.07331552730473763,
+          "foreground_p95": 0.35294117647058826
+        },
+        {
+          "mae": 0.025349146624795746,
+          "foreground_mae": 0.10999500347046687,
+          "foreground_p95": 0.36470588235294116
+        },
+        {
+          "mae": 0.008700549555759806,
+          "foreground_mae": 0.029287342478710735,
+          "foreground_p95": 0.14901960784313728
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8994681170743434,
+      "foreground_degraded_fraction": 0.08119478334034497
+    },
+    {
+      "frame": 8,
+      "versions": [
+        {
+          "mae": 0.021630600873161758,
+          "foreground_mae": 0.0825201313594919,
+          "foreground_p95": 0.38039215686274513
+        },
+        {
+          "mae": 0.02732838031045752,
+          "foreground_mae": 0.11719820945088677,
+          "foreground_p95": 0.38039215686274513
+        },
+        {
+          "mae": 0.010849421083537583,
+          "foreground_mae": 0.038373428527083656,
+          "foreground_p95": 0.27058823529411763
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.88844327176781,
+      "foreground_degraded_fraction": 0.07903505465510742
+    },
+    {
+      "frame": 9,
+      "versions": [
+        {
+          "mae": 0.02383197061376634,
+          "foreground_mae": 0.08984652855130852,
+          "foreground_p95": 0.3882352941176471
+        },
+        {
+          "mae": 0.03031032347834966,
+          "foreground_mae": 0.12530408667043957,
+          "foreground_p95": 0.39215686274509803
+        },
+        {
+          "mae": 0.016209370532066992,
+          "foreground_mae": 0.05549829339088452,
+          "foreground_p95": 0.3568627450980392
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8332907184863206,
+      "foreground_degraded_fraction": 0.11626332967347
+    },
+    {
+      "frame": 10,
+      "versions": [
+        {
+          "mae": 0.01841202320772059,
+          "foreground_mae": 0.07202487425503204,
+          "foreground_p95": 0.3647058823529412
+        },
+        {
+          "mae": 0.02473961843852124,
+          "foreground_mae": 0.10860018150824786,
+          "foreground_p95": 0.36470588235294116
+        },
+        {
+          "mae": 0.008677392897263074,
+          "foreground_mae": 0.02996794323799237,
+          "foreground_p95": 0.15294117647058825
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8956491671176859,
+      "foreground_degraded_fraction": 0.08600938120151543
+    },
+    {
+      "frame": 11,
+      "versions": [
+        {
+          "mae": 0.022195369944852942,
+          "foreground_mae": 0.08351068258303075,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.02794175730187909,
+          "foreground_mae": 0.11661531230030699,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.012124301087622549,
+          "foreground_mae": 0.0426297760568241,
+          "foreground_p95": 0.30980392156862746
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8762726903583836,
+      "foreground_degraded_fraction": 0.08554283909584467
+    },
+    {
+      "frame": 12,
+      "versions": [
+        {
+          "mae": 0.01982604102839052,
+          "foreground_mae": 0.07659294741592657,
+          "foreground_p95": 0.37254901960784315
+        },
+        {
+          "mae": 0.026168192146650317,
+          "foreground_mae": 0.11359909418149174,
+          "foreground_p95": 0.3764705882352941
+        },
+        {
+          "mae": 0.009021251404207516,
+          "foreground_mae": 0.031080819179429234,
+          "foreground_p95": 0.1803921568627451
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9021227475789284,
+      "foreground_degraded_fraction": 0.07459598836686356
+    },
+    {
+      "frame": 13,
+      "versions": [
+        {
+          "mae": 0.01987380323223039,
+          "foreground_mae": 0.07534912497443368,
+          "foreground_p95": 0.3686274509803922
+        },
+        {
+          "mae": 0.026106394250408487,
+          "foreground_mae": 0.11207529000348211,
+          "foreground_p95": 0.3764705882352941
+        },
+        {
+          "mae": 0.00902621400122549,
+          "foreground_mae": 0.03131436970247285,
+          "foreground_p95": 0.1843137254901961
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9016457444891585,
+      "foreground_degraded_fraction": 0.0736380563397201
+    },
+    {
+      "frame": 14,
+      "versions": [
+        {
+          "mae": 0.018826516544117645,
+          "foreground_mae": 0.07270172332835416,
+          "foreground_p95": 0.35294117647058815
+        },
+        {
+          "mae": 0.02547924325980393,
+          "foreground_mae": 0.11209410315074277,
+          "foreground_p95": 0.3712418300653595
+        },
+        {
+          "mae": 0.008894333384395423,
+          "foreground_mae": 0.030733233907513504,
+          "foreground_p95": 0.17647058823529407
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8988217213114754,
+      "foreground_degraded_fraction": 0.08116863548698168
+    },
+    {
+      "frame": 15,
+      "versions": [
+        {
+          "mae": 0.023648660896650332,
+          "foreground_mae": 0.08807308036405266,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.03003552964154413,
+          "foreground_mae": 0.1233295552947706,
+          "foreground_p95": 0.3895424836601307
+        },
+        {
+          "mae": 0.015092744715073526,
+          "foreground_mae": 0.050876274842176904,
+          "foreground_p95": 0.3490196078431372
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.851773839256161,
+      "foreground_degraded_fraction": 0.10003610868714832
+    },
+    {
+      "frame": 16,
+      "versions": [
+        {
+          "mae": 0.019071046517565363,
+          "foreground_mae": 0.07275075026781078,
+          "foreground_p95": 0.3568627450980392
+        },
+        {
+          "mae": 0.02523508029513889,
+          "foreground_mae": 0.11042375220205701,
+          "foreground_p95": 0.3686274509803922
+        },
+        {
+          "mae": 0.00878207656760621,
+          "foreground_mae": 0.029200196399480308,
+          "foreground_p95": 0.15686274509803924
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9026152528878941,
+      "foreground_degraded_fraction": 0.07826230640969792
+    },
+    {
+      "frame": 17,
+      "versions": [
+        {
+          "mae": 0.0239381733813317,
+          "foreground_mae": 0.08883199989942277,
+          "foreground_p95": 0.39215686274509803
+        },
+        {
+          "mae": 0.029691288168913407,
+          "foreground_mae": 0.12309836373436928,
+          "foreground_p95": 0.39215686274509803
+        },
+        {
+          "mae": 0.014117426853553923,
+          "foreground_mae": 0.04778117225891718,
+          "foreground_p95": 0.3450980392156862
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.86158030776629,
+      "foreground_degraded_fraction": 0.09076701130079345
+    },
+    {
+      "frame": 18,
+      "versions": [
+        {
+          "mae": 0.018735214333129083,
+          "foreground_mae": 0.07270796206249323,
+          "foreground_p95": 0.3686274509803922
+        },
+        {
+          "mae": 0.024832197201797385,
+          "foreground_mae": 0.1087824648312894,
+          "foreground_p95": 0.36470588235294116
+        },
+        {
+          "mae": 0.008678446052900326,
+          "foreground_mae": 0.028995882080231256,
+          "foreground_p95": 0.1450980392156863
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.9018262078974421,
+      "foreground_degraded_fraction": 0.08033500634939832
+    },
+    {
+      "frame": 19,
+      "versions": [
+        {
+          "mae": 0.01836995761846405,
+          "foreground_mae": 0.07175474579857628,
+          "foreground_p95": 0.3686274509803921
+        },
+        {
+          "mae": 0.0247935910692402,
+          "foreground_mae": 0.10756490340857405,
+          "foreground_p95": 0.36078431372549025
+        },
+        {
+          "mae": 0.009022907730800653,
+          "foreground_mae": 0.030210512964025726,
+          "foreground_p95": 0.16078431372549018
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8955471447743414,
+      "foreground_degraded_fraction": 0.08457861483480857
+    },
+    {
+      "frame": 20,
+      "versions": [
+        {
+          "mae": 0.018864608864379077,
+          "foreground_mae": 0.07475876522984053,
+          "foreground_p95": 0.36470588235294116
+        },
+        {
+          "mae": 0.025626522288602942,
+          "foreground_mae": 0.11272169457420404,
+          "foreground_p95": 0.37254901960784315
+        },
+        {
+          "mae": 0.009241434334150322,
+          "foreground_mae": 0.030722860565628833,
+          "foreground_p95": 0.1725490196078431
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8991644712081295,
+      "foreground_degraded_fraction": 0.08103876552502823
+    },
+    {
+      "frame": 21,
+      "versions": [
+        {
+          "mae": 0.024161340252246734,
+          "foreground_mae": 0.09052180672983502,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.030580125995710784,
+          "foreground_mae": 0.12567109739540944,
+          "foreground_p95": 0.39215686274509803
+        },
+        {
+          "mae": 0.015570494408700982,
+          "foreground_mae": 0.051529432165635145,
+          "foreground_p95": 0.35294117647058815
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8455385815900838,
+      "foreground_degraded_fraction": 0.10528527266724691
+    },
+    {
+      "frame": 22,
+      "versions": [
+        {
+          "mae": 0.01889500995710784,
+          "foreground_mae": 0.0720725822292456,
+          "foreground_p95": 0.3490196078431372
+        },
+        {
+          "mae": 0.02561321742238562,
+          "foreground_mae": 0.11206233423445688,
+          "foreground_p95": 0.37254901960784315
+        },
+        {
+          "mae": 0.00924487783394608,
+          "foreground_mae": 0.03010244258950233,
+          "foreground_p95": 0.15294117647058825
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8949038837580097,
+      "foreground_degraded_fraction": 0.08641436779880268
+    },
+    {
+      "frame": 23,
+      "versions": [
+        {
+          "mae": 0.022453839869281046,
+          "foreground_mae": 0.08225968720645892,
+          "foreground_p95": 0.3803921568627451
+        },
+        {
+          "mae": 0.028034990298202625,
+          "foreground_mae": 0.11664059709314165,
+          "foreground_p95": 0.3843137254901961
+        },
+        {
+          "mae": 0.011881526373570261,
+          "foreground_mae": 0.04024522034031104,
+          "foreground_p95": 0.29411764705882354
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8798813270884475,
+      "foreground_degraded_fraction": 0.08180599689763708
+    },
+    {
+      "frame": 24,
+      "versions": [
+        {
+          "mae": 0.019105018765318626,
+          "foreground_mae": 0.07180482109067245,
+          "foreground_p95": 0.35686274509803917
+        },
+        {
+          "mae": 0.0250475643382353,
+          "foreground_mae": 0.10945933512763893,
+          "foreground_p95": 0.3686274509803922
+        },
+        {
+          "mae": 0.01028997842626634,
+          "foreground_mae": 0.03612844606184668,
+          "foreground_p95": 0.1843137254901961
+        }
+      ],
+      "v3_better_than_both": true,
+      "foreground_improved_fraction": 0.8566638472692122,
+      "foreground_degraded_fraction": 0.1236104398260029
+    }
+  ],
+  "all_frames_improved": true,
+  "scope": "Same-view source RGB; local regressions retained; improvement in MAE is not proof of every metric or unseen-view quality"
+}

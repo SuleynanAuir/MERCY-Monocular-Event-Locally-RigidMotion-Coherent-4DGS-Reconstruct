@@ -1,0 +1,20 @@
+{
+  "rows": [
+    {
+      "display_version": "V1",
+      "source_version_id": "0",
+      "source_label": "V1 · 修复前"
+    },
+    {
+      "display_version": "V2",
+      "source_version_id": "1",
+      "source_label": "V2 · 支架绑定修复"
+    },
+    {
+      "display_version": "V3",
+      "source_version_id": "2",
+      "source_label": "V3 · 光度与覆盖校正"
+    }
+  ],
+  "revision": "swap-v1-v2-20261027"
+}

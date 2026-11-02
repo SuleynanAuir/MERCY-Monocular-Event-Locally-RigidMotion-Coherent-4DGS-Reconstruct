@@ -1,0 +1,81 @@
+{
+  "scope": "九个物品六面实验及Robot分离的多视角审计；不将不同数据、视角、时间范围、管线的分数混算。",
+  "selection_policy": "每物品保留一个综合推荐版本；不做任意加权总分、不逐指标拼接最佳数值。不能证明全局最优时明确保留取舍。",
+  "remote_status": "2026-11-02 SSH region-41.seetacloud.com:30253 Connection refused；依据本地原始快照，未实时核验远端模型存在性。",
+  "objects": [
+    {
+      "object": "lego",
+      "source": "experiment/output/lego_20261027_192313_389544/data/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 200,
+      "selection_reason": "本地具有完整三版本参考与原始指标的六面实验；选择V3。独立Hybrid FVV训练日志不与本实验混算。"
+    },
+    {
+      "object": "fan",
+      "source": "experiment/output/fan_20261029_094351_952280/data/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 50,
+      "selection_reason": "推荐周期外观V3；相比早期V3图像与事件表现更优，但早期V3的IoU略高，保留其原始记录。"
+    },
+    {
+      "object": "lamp",
+      "source": "outputs/lamp-recovery-20261030/server/reports/lamp_recovered_20261030_224817_518682/data/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 25,
+      "selection_reason": "推荐连续表面/覆盖修复V3，优先整体几何覆盖；早期外观版PSNR更高但IoU较低，不将两版数值拼接。"
+    },
+    {
+      "object": "metronome",
+      "source": "experiment/output/metronome_20261027_210532_030915/data/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 25,
+      "selection_reason": "本地完整三版本实验中推荐V3；保留原始速度和运动指标，不要求这些指标同步最优。"
+    },
+    {
+      "object": "microphone",
+      "source": "experiment/output/microphone_20261027_210649_602833/data/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 25,
+      "selection_reason": "本地完整三版本实验中推荐V3；模型外观推荐不等于速度最优。"
+    },
+    {
+      "object": "arm",
+      "source": "outputs/six-object-preview/arm-rgb-optimized-result.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 13,
+      "selection_reason": "推荐RGB结构优化V3；5时刻留出结果另存，正式13帧含训练/选点重叠，不是独立测试。",
+      "model_locator_reported": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Arm/rgb-structure-refinement/appearance.npz"
+    },
+    {
+      "object": "robot",
+      "source": "outputs/six-object-preview/robot-multiview-quality-20261102/audit.json",
+      "pointer": "/summary/original_all/candidate",
+      "version": "V3",
+      "sample_count": 24,
+      "selection_reason": "推荐多视角SH V3，以原视频24帧为主表，合成训练/验证/独立角度测试分开。旧V1/V2仅有12帧历史完整报告，不拼成24帧对照。",
+      "model_locator_reported": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Robot/multiview-quality-20261102-122549-v2-sh3/appearance.npz"
+    },
+    {
+      "object": "gears",
+      "source": "outputs/six-object-preview/gears-compact-quality-20261102/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 25,
+      "selection_reason": "推荐紧致感知V3：大位移候选PSNR/IoU更高，但侧背面粗糙；当前紧位移版LPIPS更好。保留全部候选，不声称单项分数全局最高。"
+    },
+    {
+      "object": "rotation",
+      "source": "outputs/six-object-preview/rotation-quality-20261102/analysis.json",
+      "pointer": "/summary/2",
+      "version": "V3",
+      "sample_count": 40,
+      "selection_reason": "推荐连续时序外观V3；8个留出时刻七项均值也优于V1/V2，属于同源视角选点验证。"
+    }
+  ]
+}

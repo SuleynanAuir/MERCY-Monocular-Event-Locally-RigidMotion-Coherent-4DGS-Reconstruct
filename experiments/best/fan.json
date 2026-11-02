@@ -1,0 +1,1215 @@
+{
+  "object": "fan",
+  "recommended_version": "V3",
+  "sample_count": 50,
+  "source_original": "experiment/output/fan_20261029_094351_952280/data/analysis.json",
+  "source_snapshot": "sources/00e5822d6bc0ac5a42087284cfb3063db3c73abde188ae80d8ffe43b2a566bf4.json",
+  "source_sha256": "00e5822d6bc0ac5a42087284cfb3063db3c73abde188ae80d8ffe43b2a566bf4",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "24.022734831949286",
+    "psnr": "29.763931415327978",
+    "ssim": "0.9730666831017706",
+    "foreground_ssim": "0.9232645448866552",
+    "lpips": "0.016968038380146027",
+    "iou": "0.9656726924991039",
+    "missing": "2.1462883093985745",
+    "part_missing": null,
+    "event_l1": "0.41429993073794336",
+    "event_cosine": "0.8755456083407751",
+    "polarity": "87.35221722935094",
+    "silent": "0.007604171352926579",
+    "latency_ms": "29.83078521490097",
+    "point_count": "906401",
+    "metric_unavailable_reasons": {}
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "24.022734831949286",
+    "psnr": "29.763931415327978",
+    "ssim": "0.9730666831017706",
+    "foreground_ssim": "0.9232645448866552",
+    "lpips": "0.016968038380146027",
+    "iou": "0.9656726924991039",
+    "missing": "2.1462883093985745",
+    "part_missing": null,
+    "event_l1": "0.41429993073794336",
+    "event_cosine": "0.8755456083407751",
+    "polarity": "87.35221722935094",
+    "silent": "0.007604171352926579",
+    "latency_ms": "29.83078521490097",
+    "point_count": "906401",
+    "metric_unavailable_reasons": {}
+  },
+  "selection_reason": "推荐周期外观V3；相比早期V3图像与事件表现更优，但早期V3的IoU略高，保留其原始记录。",
+  "attachments": [
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/protocol.json",
+      "snapshot": "sources/4aeeb997d02ba6e8a61a662c2c27ad534c2511ae2f41beb484fe483ef1fa6186.json",
+      "sha256": "4aeeb997d02ba6e8a61a662c2c27ad534c2511ae2f41beb484fe483ef1fa6186",
+      "bytes": 1358
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/availability.json",
+      "snapshot": "sources/87a161df894616afb0596cb5ec4273a0a2849c16569bb051713bea001a539d05.json",
+      "sha256": "87a161df894616afb0596cb5ec4273a0a2849c16569bb051713bea001a539d05",
+      "bytes": 2513
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/version_mapping.json",
+      "snapshot": "sources/6c75f47dd474b9dd66d1369ba5ca34923db131765274692a433188775e4701e9.json",
+      "sha256": "6c75f47dd474b9dd66d1369ba5ca34923db131765274692a433188775e4701e9",
+      "bytes": 424
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/input_manifest.json.gz",
+      "snapshot": "sources/9023f9f500b76d7690179297d876bf67d6acb104bb0154d043459967a62809da.json.gz",
+      "sha256": "9023f9f500b76d7690179297d876bf67d6acb104bb0154d043459967a62809da",
+      "bytes": 39285
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/base_metrics.json.gz",
+      "snapshot": "sources/36a24c97df6d35e389f2f5c9a1a12ea03d90035f98624257e0a2f8ebfcba266a.json.gz",
+      "sha256": "36a24c97df6d35e389f2f5c9a1a12ea03d90035f98624257e0a2f8ebfcba266a",
+      "bytes": 33734
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/series.npz",
+      "snapshot": "sources/672c0331605b686abfa1df9079a89b62e473d05b4e64adef6d3d497423c8b6a7.npz",
+      "sha256": "672c0331605b686abfa1df9079a89b62e473d05b4e64adef6d3d497423c8b6a7",
+      "bytes": 20061
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/lpips.json",
+      "snapshot": "sources/5aa5c820aa9c80bbeb58eee5cf608093f6e3bafa8123984f7f4be2f2971b0b2b.json",
+      "sha256": "5aa5c820aa9c80bbeb58eee5cf608093f6e3bafa8123984f7f4be2f2971b0b2b",
+      "bytes": 4645
+    },
+    {
+      "original": "experiment/output/fan_20261029_094351_952280/data/visualization_protocol.json",
+      "snapshot": "sources/d222c6a9630fa5744dc066b3b65b8b77f3bdb9c424c3711df24da9007253c4fb.json",
+      "sha256": "d222c6a9630fa5744dc066b3b65b8b77f3bdb9c424c3711df24da9007253c4fb",
+      "bytes": 13501
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/9023f9f500b76d7690179297d876bf67d6acb104bb0154d043459967a62809da.json.gz",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/scgs-fan-20261029/rotor-pair.json",
+          "sha256": "7af922bee90dd565cfe4036bc71a7909605c5f435dc0b7b23d468beb4bcd82d2",
+          "bytes": 1318,
+          "available": true,
+          "included": true,
+          "file": "configs/7af922bee90dd565cfe4036bc71a7909605c5f435dc0b7b23d468beb4bcd82d2.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-before/fan-motion.npz",
+          "sha256": "90029d96162f3dcb75082d8751e531a923ebee55f622401aea61480af27e3477",
+          "bytes": 905730938,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-after/fan-motion.npz",
+          "sha256": "0731c8bd15dd55f5dd847471e0164a9d5a24ea80b879025761312845ef8bcaf5",
+          "bytes": 1243617604,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-mesh-refined/left-mesh.npz",
+          "sha256": "532845810c36971e4224e42f3013bd4328fd6f2b8ef07b02f41e6fd05ac0c7a6",
+          "bytes": 72576413,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-mesh-smooth/mesh.npz",
+          "sha256": "037e5ac7c7cc93413337fafa98e999b47dff31a07e9d697ed9029597c7dbb5dd",
+          "bytes": 73563414,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-mesh-refined/left-binding.npz",
+          "sha256": "3f9bd70e2d9c36d69cb5b15b195011009c047b4ba40dd5e30353d39bc8227f0c",
+          "bytes": 23515036,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-restore-20261026/fan-final/right-binding.npz",
+          "sha256": "2be9ab6b072856dca016510c73ea677b0b399f071a83e8f46c290660f4714e00",
+          "bytes": 23477789,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-fan-20261029/rotor/appearance.npz",
+          "sha256": "7d49dcd05c855871b7f5f7bdd44cdcebc9335a6d952de43e6f024ae93c54d6c8",
+          "bytes": 27314814,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-fan-20261029/rotor/training.json",
+          "sha256": "a30a6eb2a05c8fb06764a6650e2c7c743c10a04c771b9f3666bc541b280880a7",
+          "bytes": 15218,
+          "available": true,
+          "included": true,
+          "file": "configs/a30a6eb2a05c8fb06764a6650e2c7c743c10a04c771b9f3666bc541b280880a7.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/reference.json",
+          "sha256": "b018d3d847604b18daf3e7a0424166e8f95a32a41b14e8554883467a986df865",
+          "bytes": 9075,
+          "available": true,
+          "included": true,
+          "file": "configs/b018d3d847604b18daf3e7a0424166e8f95a32a41b14e8554883467a986df865.json"
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000000.png",
+          "sha256": "7ea1e519151754bfa52b728174c822b6067fb29f24c5deae6d982f8e8685fee9",
+          "bytes": 89457,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000000.png",
+          "sha256": "bf5681d874499e5ddd9c9e45a3a983e1fc6f658741ec5e0efb0356928aeb19de",
+          "bytes": 3167,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000002.png",
+          "sha256": "c14776cb8ad0193a4051afe97c8bcaa0652f56a7adb18f3d4972f031634c82f8",
+          "bytes": 90386,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000002.png",
+          "sha256": "9a7ab4a1994b53e4484cc64fe7b5022c85c58ccf46f1d9d32597481c2af9d673",
+          "bytes": 3120,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000004.png",
+          "sha256": "ce61595f5698099642d21fec53c6176da429f18a33192ffd4115b7f9b9cad9bb",
+          "bytes": 91637,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000004.png",
+          "sha256": "17346143c3bdc26d224d7fe952b84ef1c78d6e52a9d4aff00b5d367f30521408",
+          "bytes": 3102,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000006.png",
+          "sha256": "0425da18a7d343212934d67dc21ac26d28efa02ef9acf4c45200789acfcc37f1",
+          "bytes": 92435,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000006.png",
+          "sha256": "64dd657f6219e18152f6c26d0be739f5aaf0a8411f8376f637a2561d61f7f303",
+          "bytes": 3134,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000008.png",
+          "sha256": "35c35623a6f0c9ffcce89bf71b54b08d608919bf9dc5fddfe5c031c7f23548da",
+          "bytes": 92262,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000008.png",
+          "sha256": "43ae5ac2e1ad4b616d6bade02f0949700f12768197350f0c2040c2f72615daf6",
+          "bytes": 3088,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000010.png",
+          "sha256": "91e506457f37c1ec12db9a6bda1ccc7dbe72ef021a5493ec6cfedb40f8023b87",
+          "bytes": 92544,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000010.png",
+          "sha256": "4034561e3cf0c73233592d4b76e69af2a2922c919d802489dc8d6ef29051a4f9",
+          "bytes": 3119,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000012.png",
+          "sha256": "0a022a23e3309052f22833f14ab9339246990c24aecaca327772115ccc256270",
+          "bytes": 92122,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000012.png",
+          "sha256": "d54d40c70a2963fd477f1f49acf411edebbb37caf3f10593d0fe079d626056fa",
+          "bytes": 3146,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000014.png",
+          "sha256": "e437bd0d5738042b54fdbdb37eede33786718a2a113cc7041fa92b5ed2296a62",
+          "bytes": 91385,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000014.png",
+          "sha256": "06eb4c463b1d7d19843614bfb56476ffce0e69005d0f11aee2de33412c9d8769",
+          "bytes": 3230,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000016.png",
+          "sha256": "a4e8ce6f5eab306ebf77156d5ba837d76fc5233341381393065f127e8b3ae091",
+          "bytes": 91349,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000016.png",
+          "sha256": "f673dd1075d2636e6f816a40fe543031cf514c27aa0618db8e5194c733e69398",
+          "bytes": 3295,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000018.png",
+          "sha256": "2f7c87053c36ca113111590d27ff0f8903f1aad67c303258144e578699a0e2be",
+          "bytes": 88494,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000018.png",
+          "sha256": "559d20675b86d8834e32aad7ab02f67a2089087e2d56281dc439fa015a2f80b5",
+          "bytes": 3287,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000020.png",
+          "sha256": "49463d8cb77750fcf70e86620b3521de32b2edd708276fdf87ce85f4ef8dd2d5",
+          "bytes": 90914,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000020.png",
+          "sha256": "901aa180439f3cfaae3551f5537b1730aef7d43f3ffa0d4c8c654adfecf79e22",
+          "bytes": 3264,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000022.png",
+          "sha256": "ff4d30e12b1155f95e718623c8b9ae5a23bd9ba453fcff9094b6c0392c82f01c",
+          "bytes": 91960,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000022.png",
+          "sha256": "91f392acea5ea155d9084c14155467ea8d569e777efeaeb259405fc53f2261f9",
+          "bytes": 3213,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000024.png",
+          "sha256": "bc9f035150c63dddcd55a5bb4f4e68672bc3ea67ab01e99b3c3a4cb50aa078ce",
+          "bytes": 93415,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000024.png",
+          "sha256": "ed2cece5bedf07d7bad892f148dff35690aae03433d676793018319845a36913",
+          "bytes": 3106,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000026.png",
+          "sha256": "cb0090bce3ebbf816ad7aade46b788073bd83a39f73aa5fdfbab28d53bc88db3",
+          "bytes": 93945,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000026.png",
+          "sha256": "e0634f12a52432c5d287c9aa081894c16f9649b399417a72fae5cbb86822a05b",
+          "bytes": 3187,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000028.png",
+          "sha256": "4f2abc50f2cc024152b5c9aa11d69f7bdc5530da7e120251bcb26c4ac9030c1c",
+          "bytes": 92172,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000028.png",
+          "sha256": "5201389bf26259d691d37b8f04f2f4c245e987b5b83863bdbe285a5b6ef600c9",
+          "bytes": 3164,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000030.png",
+          "sha256": "9316a45d2e999343261a03deaad5a61c87515f9bdaef84dff2213840a0f97e36",
+          "bytes": 91985,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000030.png",
+          "sha256": "038e5940c5078da87b744ded60b71a7e96f7da419318ba77ccfc961a56a5c00a",
+          "bytes": 3312,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000032.png",
+          "sha256": "03a7e737b19adf7ba4933e4908b1c35b50610cc7ab9c149f08d756761779572f",
+          "bytes": 91323,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000032.png",
+          "sha256": "1c79998205451423d971f7a4369e3d89780f0c72aad2ec1a061928cebeef789a",
+          "bytes": 3291,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000034.png",
+          "sha256": "64ce53180f3497ad63433683b43dc7b04dbd69fbeedb08d0cd12a4a4fe90afb7",
+          "bytes": 91511,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000034.png",
+          "sha256": "89570dae1128e1aff1d252ed64e149bbd6e88f3b9eee726c9e3790803f49954f",
+          "bytes": 3309,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000036.png",
+          "sha256": "c742659be69a3555122cea33056d12c6864f80ddd6cf77198a77f57c05046313",
+          "bytes": 88536,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000036.png",
+          "sha256": "bb7eb96a7595443464a6bdd04d93a98aa95669e5598195bf49b7488eaa92b8e6",
+          "bytes": 3205,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000038.png",
+          "sha256": "f51f3d03d5d90740809d056215315765dd03af3e79adccc7595324799955cb4c",
+          "bytes": 91894,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000038.png",
+          "sha256": "7e95dc3a59ed093c8e762602637679111a22dab62f45d395529e10cf9c156aef",
+          "bytes": 3246,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000040.png",
+          "sha256": "43466ba789388878774d8499d93c1a95257584e1536df8faace729c530f9d24b",
+          "bytes": 93278,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000040.png",
+          "sha256": "6504ffccdd54377405ebfc332d0043621533787bb13dd87a4290de538077ffa8",
+          "bytes": 3241,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000042.png",
+          "sha256": "8d5f7f366ec7c7da41c8bebf83fce1dd6f1b695d3447cb10d850d418cc5abee8",
+          "bytes": 93971,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000042.png",
+          "sha256": "077d0d55a86d2936276aeb8768e631190994c3c751d2413492d39947bedf6202",
+          "bytes": 3148,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000044.png",
+          "sha256": "0fd6ea869e1905c99ddb8804fa231391c3e31bc8e593ed942e73bc15e7b0b6be",
+          "bytes": 94338,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000044.png",
+          "sha256": "fc237f06bf4455bcf5346fe3e9a7bdfdc28639d17cb73a6ae1490081dcd05fec",
+          "bytes": 3180,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000046.png",
+          "sha256": "e38a73132f2d47b03659ef53e2c50dd341897d94ad2a5f946eb7b059855cb151",
+          "bytes": 94333,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000046.png",
+          "sha256": "4aa49ffd44c31596017cade7b141b51390f83d7f69ef1cc1ca81365615dd2c65",
+          "bytes": 3218,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000048.png",
+          "sha256": "2743b276de961f404cd53644f25c7c79115acb24bd5108366bb4c386d0ab79ca",
+          "bytes": 94347,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000048.png",
+          "sha256": "503a8fce2f977388df1d50c665785e786c2877753b2b45393417d02e98fec88d",
+          "bytes": 3160,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000050.png",
+          "sha256": "fb877f6cad0eb70409dfce6537247507b59fde00a7b1e3c458d1a41103109deb",
+          "bytes": 94267,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000050.png",
+          "sha256": "dc9a8239d1aa2fb282326e1caf276baa45b81dc672f301c73d906aa76e2ebbf4",
+          "bytes": 3194,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000052.png",
+          "sha256": "b756cf8d8a80a1e8fb9453f6aae073a88ab44c73d0e5875645c17ddb8990a708",
+          "bytes": 94126,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000052.png",
+          "sha256": "7e4c2389dbd4f60d7b20e57449c6a9469ac12be979f0d7b7dda8055c61e5af42",
+          "bytes": 3127,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000054.png",
+          "sha256": "b6e4e197265735c9bc14d98c48b58b1df7d6f5cf7d5984fe78b99222077bed3f",
+          "bytes": 92071,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000054.png",
+          "sha256": "9c3c54eabafd35c9d96c19f25783652d5c27ac1ed8e4eca0be56c591499b8aba",
+          "bytes": 3077,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000056.png",
+          "sha256": "e3f471f6b94d41717ba620bedcffd7f499b52c529fc524ea87b3578a3a1ce511",
+          "bytes": 93013,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000056.png",
+          "sha256": "5c255e2dd4d055bd94fec82fed7aa381914ef140960eb779eced6060aef55965",
+          "bytes": 3097,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000058.png",
+          "sha256": "0f43af1be16cfa1ab1a207c8ad9248a18e32c2ba0d4bbe16bedcf8fc318596eb",
+          "bytes": 92945,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000058.png",
+          "sha256": "e96ad4654c66b3342900b770b8b4c9a0899b9aa8376246a109948d3f521bab46",
+          "bytes": 3181,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000060.png",
+          "sha256": "209e67fbe59768ae434233c70ffc311a7e32d3d644ff6f00ea694a0ac1e0e560",
+          "bytes": 93062,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000060.png",
+          "sha256": "3ab48d4414d8ea686135bf56902d7ab9211c3f782a62b7d2698988f805573628",
+          "bytes": 3203,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000062.png",
+          "sha256": "d80c35635460e8bf3436ca3640c24f9f0d7e545688669977e95f1d105b8647d0",
+          "bytes": 92688,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000062.png",
+          "sha256": "0a7057545997e9dd614a5f1af54d1ab003a9edeb478dd46dd3b97c5c6fdbb0da",
+          "bytes": 3193,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000064.png",
+          "sha256": "1fe1e26f788ab92a19fa8721069781543cb8e26d62ab14bf3e2bf7cd96162355",
+          "bytes": 92496,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000064.png",
+          "sha256": "3954a294dee6037c98c24244888695853312778c871cb948e149cb2c789f57b9",
+          "bytes": 3256,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000066.png",
+          "sha256": "f3abb3b2cab7b581aaa1b454da1e875eeba2edcb5cf6c5aae40e58d1497a26d8",
+          "bytes": 92124,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000066.png",
+          "sha256": "915a85af85dcf61adb069aea67571aecdff33f52f5eba929fccb6179774aa8aa",
+          "bytes": 3299,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000068.png",
+          "sha256": "9f9b5170114cc8708588f4907155345c6f9b63b49c369eee9c60e428e762462e",
+          "bytes": 91673,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000068.png",
+          "sha256": "1ee37d5fa12d11246f6deec582b6780848422498293ffb56acb8cbd931f7f7a7",
+          "bytes": 3296,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000070.png",
+          "sha256": "83dca2bd372ef602d6b1e2726f332a86c78306d854338c0fc0eb1fa6f8021fe6",
+          "bytes": 91410,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000070.png",
+          "sha256": "f32c803f4f3a8ebccdbe1982fb485689b7f67f0d83b84b9172d7ca5d29c99675",
+          "bytes": 3334,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000072.png",
+          "sha256": "871e6e4d60e22465169b4cef6e96d27080883eeb3a9c451a21b2276d3f721e83",
+          "bytes": 88924,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000072.png",
+          "sha256": "073e4fcddcbc6f46e2d5ce21729cb7e6c1763799c474c26639780a5227d0a8b7",
+          "bytes": 3239,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000074.png",
+          "sha256": "9ccc8944fbc4aa64c25c227d968274904db4337debda2b93953756bde5441dc4",
+          "bytes": 91570,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000074.png",
+          "sha256": "03c75f370ee42c2d69926a844ff1234bcb7ad4a579127f78a842f9d3a944169e",
+          "bytes": 3212,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000076.png",
+          "sha256": "61b650f197bf7fc42d89739ebed3ed8424f982f63582f85498dbf26165383f15",
+          "bytes": 93901,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000076.png",
+          "sha256": "39907bc2b2295f96309249f9951daf23790d087b931247fb70666aacdb6420bf",
+          "bytes": 3227,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000078.png",
+          "sha256": "3cb7d220dc9dec2d79b6980e14df7293f57aa1cbd84650a2f6c588c535f0dfc6",
+          "bytes": 94380,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000078.png",
+          "sha256": "1a075c8a397d5a220cfa02105d6a53f55a1edb79c3cca7b9df7cb34d960ed583",
+          "bytes": 3187,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000080.png",
+          "sha256": "893f61ed68733ed3521df7175b3a8a4a5ea319e7fa4460c713430c9b2684d3d8",
+          "bytes": 93529,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000080.png",
+          "sha256": "d18e724a45d2cf9c65a9419d9ed6be1fa27c1713ced4495fd125d070e6d0db3e",
+          "bytes": 3131,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000082.png",
+          "sha256": "3e1e4eb79cc78f1134a7879224d17b8a0f63b6e1209f151616f7bb6763ad4c87",
+          "bytes": 92987,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000082.png",
+          "sha256": "5fbd27a6924a0b442327477402b9829c2b5855381a81c19ea0cca049080bdaca",
+          "bytes": 3295,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000084.png",
+          "sha256": "5591edf2060d3c09b36394b6177941f34103fd4978a1ccddf58f8815e32372f5",
+          "bytes": 92057,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000084.png",
+          "sha256": "d57e637bc23021a943d49a3848b7f841daf3e643a8992474271cb57a81641448",
+          "bytes": 3211,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000086.png",
+          "sha256": "98c0db1669f34fb4413ecdcbf53220da2b1c5dd8c9f8d727a5d64dce877a55b6",
+          "bytes": 92179,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000086.png",
+          "sha256": "75dad1252919e53fbbcb14a9d4f883b57d6102c77b214f3256c5eae1e1794ef9",
+          "bytes": 3255,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000088.png",
+          "sha256": "74538a19b4927272850eb6c409138529596556c608274ad46e0e72b828e3ae4d",
+          "bytes": 92103,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000088.png",
+          "sha256": "ceeb34520a2249318e6ed7b760d47dac10539296248ccc3d8e70980d426cd774",
+          "bytes": 3325,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000090.png",
+          "sha256": "62dbc050660335f606f854d623cb0f482f57615439ee7a1975e8eabdaaaa127d",
+          "bytes": 88253,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000090.png",
+          "sha256": "d7e7cdeb5e4d38574d2e7441ee79bfd86bf5a89bc72a5aa2d792a7830e14c48d",
+          "bytes": 3175,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000092.png",
+          "sha256": "4eea4f61fc0a1bb0d908b647600a18f9eb2b2d2d1354761317fb1a5d721f2180",
+          "bytes": 90495,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000092.png",
+          "sha256": "b05a5e4ffa43aab815b3b2ffc9af3f9d2b9fc3d75a776dd206038da4ce439edf",
+          "bytes": 3258,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000094.png",
+          "sha256": "6b0646490e8b27b473baa01c943d1e8347b5577b8016e0ddaaee9f5d5a523f52",
+          "bytes": 90903,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000094.png",
+          "sha256": "c97b088af748c9d73b3126e6bcc6c5714a364e65780d7ced0e93afab38315fdb",
+          "bytes": 3186,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000096.png",
+          "sha256": "c7041003a4c123493108846e5ca32472d58c57c4c3880447200edbb42ce9c9fa",
+          "bytes": 91893,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000096.png",
+          "sha256": "9001e72b1f13dc8979ca96c7cd9b23547bab22f127b27520480ffa2d98042f97",
+          "bytes": 3192,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/rgb/000098.png",
+          "sha256": "ceb9e1916db2c7ed08015a1b7f7371314bf9000156aa7452f88c4405144e3f0d",
+          "bytes": 91729,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-evaluation-references-20261027-step2/fan-rgb-support/masks/000098.png",
+          "sha256": "fd18925c8c3e99c56b7501f2cec0d9c03630d1b6dab8a64a674d4d8900b5e899",
+          "bytes": 3198,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/scgs-object-triplets-20261027/validated/fan-middle.json",
+          "sha256": "ee23f073297a4d6d5a3cdd68578a80d45f1e4dcbb926bcff6b724d4c4d133737",
+          "bytes": 787,
+          "available": true,
+          "included": true,
+          "file": "configs/ee23f073297a4d6d5a3cdd68578a80d45f1e4dcbb926bcff6b724d4c4d133737.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "0731c8bd15dd55f5dd847471e0164a9d5a24ea80b879025761312845ef8bcaf5",
+        "reference_sha256": "b018d3d847604b18daf3e7a0424166e8f95a32a41b14e8554883467a986df865",
+        "train_frames": [
+          0,
+          2,
+          4,
+          6,
+          10,
+          12,
+          14,
+          16,
+          20,
+          22,
+          24,
+          26,
+          30,
+          32,
+          34,
+          36,
+          40,
+          42,
+          44,
+          46,
+          50,
+          52,
+          54,
+          56,
+          60,
+          62,
+          64,
+          66,
+          70,
+          72,
+          74,
+          76,
+          80,
+          82,
+          84,
+          86,
+          90,
+          92,
+          94,
+          96
+        ],
+        "initialization_sha256": null,
+        "perceptual_weight": 0.05,
+        "temporal": {
+          "kind": "rotor_fourier",
+          "degree": 8,
+          "frame_count": 100,
+          "angles_rad": [
+            0.0,
+            -0.005586056155934284,
+            -0.021735593916349563,
+            -0.048470551460311276,
+            -0.08452390214287948,
+            -0.12946171770917042,
+            -0.1828048781786294,
+            -0.24419962520852506,
+            -0.3132615440757576,
+            -0.38934809673201626,
+            -0.4725193229838985,
+            -0.5621309389008716,
+            -0.657634129785544,
+            -0.758470468171364,
+            -0.8641559225814338,
+            -0.97473927075961,
+            -1.0897993800107972,
+            -1.2082414090943416,
+            -1.3304229874821125,
+            -1.4553777457217834,
+            -1.582618118959493,
+            -1.7116881003570779,
+            -1.842176586096806,
+            -1.975168985422422,
+            -2.1093562385555815,
+            -2.244022860154134,
+            -2.3780332097009453,
+            -2.5115841410064723,
+            -2.6447326244420344,
+            -2.776643777332402,
+            -2.9061333670291516,
+            -3.0337218214212425,
+            -3.1581679403695864,
+            -3.279231744376867,
+            -3.396761372053244,
+            -3.5102924996220786,
+            -3.6190506068270887,
+            -3.7231983787043794,
+            -3.822619964213734,
+            -3.916146518836437,
+            -4.004132576028411,
+            -4.086180739917398,
+            -4.161897467544385,
+            -4.230057485972772,
+            -4.290263604726088,
+            -4.342449646940508,
+            -4.385650440525971,
+            -4.419557885106995,
+            -4.4443511339102955,
+            -4.458940021412219,
+            -4.4631056178545805,
+            -4.4578762980566875,
+            -4.443859200369496,
+            -4.421212504042525,
+            -4.390580475974111,
+            -4.35272370071076,
+            -4.306889668640741,
+            -4.254600029433446,
+            -4.195550080155253,
+            -4.1303772576695135,
+            -4.059082684081361,
+            -3.9833490174633175,
+            -3.902599711874469,
+            -3.817459444032332,
+            -3.728275405041003,
+            -3.6353283031621935,
+            -3.5386123267538814,
+            -3.438653131903135,
+            -3.3354920976700826,
+            -3.2299442284049356,
+            -3.122090973039402,
+            -3.0122806646850835,
+            -2.900573332155884,
+            -2.7879214221892883,
+            -2.6742629106966467,
+            -2.5601289930192683,
+            -2.4464030468626157,
+            -2.3331326920348343,
+            -2.220581423489916,
+            -2.1090256822290563,
+            -1.9987629795638036,
+            -1.8902390417129258,
+            -1.7851288271940637,
+            -1.682879820913917,
+            -1.5833869818051598,
+            -1.4866347024169935,
+            -1.3939247151124574,
+            -1.3049482359059388,
+            -1.220587591674569,
+            -1.1404261381327636,
+            -1.0658465761790685,
+            -0.9966208113324778,
+            -0.9331247314048589,
+            -0.8760688082635638,
+            -0.8254356737419705,
+            -0.781910638686978,
+            -0.7457276869157347,
+            -0.7168744490461957,
+            -0.6960577172298673,
+            -0.6837221660607035
+          ],
+          "trajectory_sha256": "6c8bf993c318494a07f76120f39aa84fc482a9f6a897ad2beef7caf6edce0d27"
+        },
+        "dc_anchor": "original parent; static rows unchanged",
+        "achromatic_reference": true,
+        "spatial_weight": 0.001,
+        "freeze_surface": true,
+        "color_bound_rgb": 0.8,
+        "smooth_field": false,
+        "spatial_field_basis": null,
+        "ssim_weight": 0.1,
+        "neighbor_count": 4,
+        "selection": "Minimum validation LPIPS, MSE within 5 percent of previous stage",
+        "validation_frames": [
+          8,
+          18,
+          28,
+          38,
+          48,
+          58,
+          68,
+          78,
+          88,
+          98
+        ],
+        "baseline": {
+          "foreground_mse": 0.016947563737630844,
+          "iou": 0.9654322862625122,
+          "lpips": 0.0446628350764513,
+          "foreground_missing": 0.0218592026270926,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.0042167119681835175,
+            0.01711549423635006,
+            0.020554250106215477,
+            0.02148735336959362,
+            0.019395463168621063,
+            0.019802015274763107,
+            0.021398598328232765,
+            0.01862909458577633,
+            0.016448790207505226,
+            0.010427866131067276
+          ],
+          "foreground_psnr": 18.077236026491544
+        },
+        "validation": {
+          "iteration": 1500,
+          "foreground_mse": 0.004531313362531364,
+          "iou": 0.9654322862625122,
+          "lpips": 0.02005707137286663,
+          "foreground_missing": 0.0218592026270926,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.0023610154166817665,
+            0.004450667183846235,
+            0.006189827341586351,
+            0.005354365799576044,
+            0.00455086026340723,
+            0.004130758345127106,
+            0.005859612487256527,
+            0.004769342020153999,
+            0.004313354380428791,
+            0.003333330387249589
+          ],
+          "foreground_psnr": 23.57994532946113
+        },
+        "changes": "Bounded temporal DC color only; opacity, scales, centers, rotations and motion frozen",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training"
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 修复前",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 修复前",
+            "display_version": "V1",
+            "display_label": "V1 · 修复前"
+          },
+          "point_count": 906401,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 支架绑定修复",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 支架绑定修复",
+            "display_version": "V2",
+            "display_label": "V2 · 支架绑定修复"
+          },
+          "point_count": 906401,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 光度与覆盖校正",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 光度与覆盖校正",
+            "display_version": "V3",
+            "display_label": "V3 · 光度与覆盖校正"
+          },
+          "point_count": 906401,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ],
+      "renderer_config": {
+        "renderer_class": "VersionPresentationRenderer",
+        "components": [
+          {
+            "versions": [
+              0,
+              2
+            ],
+            "renderer_class": "FanRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": null,
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": true,
+              "hybrid": false,
+              "bindings": true,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          },
+          {
+            "versions": [
+              1
+            ],
+            "renderer_class": "SingleStageRenderer",
+            "cache": "cpu",
+            "side_sampling": null,
+            "supersamples": [
+              1
+            ],
+            "modules": {
+              "correction": false,
+              "completion": false,
+              "deformation": false,
+              "field": false,
+              "mesh": false,
+              "hybrid": false,
+              "bindings": false,
+              "surface_refinement": false,
+              "detail_normals": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

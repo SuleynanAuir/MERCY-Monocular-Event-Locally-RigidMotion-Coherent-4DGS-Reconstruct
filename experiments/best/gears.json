@@ -1,0 +1,671 @@
+{
+  "object": "gears",
+  "recommended_version": "V3",
+  "sample_count": 25,
+  "source_original": "outputs/six-object-preview/gears-compact-quality-20261102/analysis.json",
+  "source_snapshot": "sources/1d78963aa8b5d2c0619284f11c6a55b5f21216f716b8a0e54fe2875ec9fc4755.json",
+  "source_sha256": "1d78963aa8b5d2c0619284f11c6a55b5f21216f716b8a0e54fe2875ec9fc4755",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "22.272410431067932",
+    "psnr": "26.904059104718353",
+    "ssim": "0.9367989195756833",
+    "foreground_ssim": "0.8057704072403398",
+    "lpips": "0.030549167469143868",
+    "iou": "0.7978299336181484",
+    "missing": "5.669175339247538",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "18.16778402775526",
+    "point_count": "301739",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "22.272410431067932",
+    "psnr": "26.904059104718353",
+    "ssim": "0.9367989195756833",
+    "foreground_ssim": "0.8057704072403398",
+    "lpips": "0.030549167469143868",
+    "iou": "0.7978299336181484",
+    "missing": "5.669175339247538",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "18.16778402775526",
+    "point_count": "301739",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "selection_reason": "推荐紧致感知V3：大位移候选PSNR/IoU更高，但侧背面粗糙；当前紧位移版LPIPS更好。保留全部候选，不声称单项分数全局最高。",
+  "attachments": [
+    {
+      "original": "outputs/six-object-preview/gears-compact-quality-20261102/series.npz",
+      "snapshot": "sources/7fe49f09d4fb1472123d50a2e13ae6526e4c70f22cf2367c050604ebca1a41cf.npz",
+      "sha256": "7fe49f09d4fb1472123d50a2e13ae6526e4c70f22cf2367c050604ebca1a41cf",
+      "bytes": 9645
+    },
+    {
+      "original": "outputs/six-object-preview/gears-compact-quality-20261102/quality-gate.json",
+      "snapshot": "sources/d92c88bbb819818d1b9a3f1a9bf812f17345947f4b020bf055fedf0f8df6997c.json",
+      "sha256": "d92c88bbb819818d1b9a3f1a9bf812f17345947f4b020bf055fedf0f8df6997c",
+      "bytes": 301
+    },
+    {
+      "original": "outputs/six-object-preview/gears-compact-quality-20261102/validation.json",
+      "snapshot": "sources/ebcdd61cbb01e4db926747000bc7d639c0b764c5a157099ed2f89f6646714c3a.json",
+      "sha256": "ebcdd61cbb01e4db926747000bc7d639c0b764c5a157099ed2f89f6646714c3a",
+      "bytes": 6243
+    },
+    {
+      "original": "outputs/six-object-preview/gears-compact-quality-20261102/spatial-validation.json",
+      "snapshot": "sources/f24e9d8ecd0ccf616c54f05d639d772ab3b17b4072b7a4ef21221e5de33d9137.json",
+      "sha256": "f24e9d8ecd0ccf616c54f05d639d772ab3b17b4072b7a4ef21221e5de33d9137",
+      "bytes": 18796
+    },
+    {
+      "original": "outputs/six-object-preview/gears-compact-quality-20261102/heldout-validation.json",
+      "snapshot": "sources/ec20f26a21dea014af6e5f379b457afff9e29a4e61a94179019ac1ca71bc15ed.json",
+      "sha256": "ec20f26a21dea014af6e5f379b457afff9e29a4e61a94179019ac1ca71bc15ed",
+      "bytes": 641
+    },
+    {
+      "original": "/tmp/gears-compact-export.zip!/gears_20261102T045929Z_2262f7f5/manifest.json",
+      "snapshot": "sources/ea244e8df25121acdb820da59b75901902abf44e6bba0b071cad6aaf0b09cbd4.json",
+      "sha256": "ea244e8df25121acdb820da59b75901902abf44e6bba0b071cad6aaf0b09cbd4",
+      "bytes": 147170
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/ea244e8df25121acdb820da59b75901902abf44e6bba0b071cad6aaf0b09cbd4.json",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/rgb-compact-perceptual-20261102/manifest.json",
+          "sha256": "ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e",
+          "bytes": 2421,
+          "available": true,
+          "included": true,
+          "file": "configs/ab2557c15e52518dace310691b175bc717b2175799a0bca1f5dcff05b307f22e.json"
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/baseline/left.npz",
+          "sha256": "4a1822c7235fbcff24a4acaaa03aa729ebfea04531c72bc463a62a94e1628a11",
+          "bytes": 166660860,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/optimized/right.npz",
+          "sha256": "03a92c4b76adcd72c7cea112e1c7230e59a7905946fe172e6fc2c066a8ab5446",
+          "bytes": 126245455,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/baseline/right.npz",
+          "sha256": "7b6b878ff35cff4622d649383e7d2f4777b26e42affffea7206349ad5a7d3865",
+          "bytes": 317733813,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/surface.npz",
+          "sha256": "b77574d7f97d3dd91616d222b142cc06f46ff9c4a3640c44b393921874d07559",
+          "bytes": 1372161,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/rgb-compact-perceptual-20261102/appearance.npz",
+          "sha256": "7d4e1d2920da5c4d7ea932413baf9baf3da2363fe7574f56262454293998277f",
+          "bytes": 9768499,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/evaluation.json",
+          "sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+          "bytes": 5833,
+          "available": true,
+          "included": true,
+          "file": "configs/51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7.json"
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0000-rgb.png",
+          "sha256": "a8542e2d4453554a4bac6c658984a43ec49f6a478432b4650112a2e66ea39dbf",
+          "bytes": 75146,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0000-mask.png",
+          "sha256": "b61c66c4794c9dff3f2ab61757e347979014b6cddf5e2a70e9da09260239afe1",
+          "bytes": 5436,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0001-rgb.png",
+          "sha256": "b5ed8042358bb5fe85e19a6ecdc9eb86cbd47cbd0edbfb6bab08602d0be45ceb",
+          "bytes": 75145,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0001-mask.png",
+          "sha256": "b61c66c4794c9dff3f2ab61757e347979014b6cddf5e2a70e9da09260239afe1",
+          "bytes": 5436,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0002-rgb.png",
+          "sha256": "0371754bb81ec8cc12a56892a7c356ecff8303acafa3fe55897f78888af89dea",
+          "bytes": 75149,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0002-mask.png",
+          "sha256": "44d3a4f3ff646fc8977a492a820957dcc5cb7dcfda416e655a8d99660816f5b5",
+          "bytes": 5433,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0003-rgb.png",
+          "sha256": "3eb2cf9045dfba54ce7777298f695674f64c6ec6927bbc14f8b2886da49db3cd",
+          "bytes": 77659,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0003-mask.png",
+          "sha256": "2406ce121e6b2bb42c32c76a6f3e7c4e9472b70fa6f18760b30d1110afd8cfb0",
+          "bytes": 5492,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0004-rgb.png",
+          "sha256": "8f28f11f84d4a24a19d819fc34611a6a64b72926fa35e38cc74ea4e9abc1b3c3",
+          "bytes": 77948,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0004-mask.png",
+          "sha256": "7bc069069ef84fda6188cf99a655be46fca1ae45b662e7e7a11ac77a8ca5ca64",
+          "bytes": 5370,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0005-rgb.png",
+          "sha256": "359ba30de282553d18535651162b073ddb10bcb24861a015129606bce99a2aac",
+          "bytes": 77324,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0005-mask.png",
+          "sha256": "20db772a4e9eb8dc076f82a14a9dc3a07887c23eaa6768df9eea556181647fc4",
+          "bytes": 5374,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0006-rgb.png",
+          "sha256": "1556c681e068e8bba13f5e662b2d529fcd038fa0a7b2bb529ca44308372da21a",
+          "bytes": 77465,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0006-mask.png",
+          "sha256": "d25e72e9f5559933a7a7f16f365cf287068a587c9c44c6716cb580a178ae26c9",
+          "bytes": 5263,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0007-rgb.png",
+          "sha256": "721e3f7fc8f4884a706d890a7df5de319fd1f826ced0f6fbe409ccfa53320985",
+          "bytes": 77746,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0007-mask.png",
+          "sha256": "577429cd63ee1a3e69717d95cb1628d2c7079daf8e12bbb8524312ddaaf79447",
+          "bytes": 5310,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0008-rgb.png",
+          "sha256": "383424153ae5ebe893e86938ea775a76b2239af1f611913ec905d04b34f62c58",
+          "bytes": 77461,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0008-mask.png",
+          "sha256": "19eb4111124ccb9507ab833f00b9e3557f7f242070a1150f0bf386cc887263e2",
+          "bytes": 5431,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0009-rgb.png",
+          "sha256": "bee644a1b7e80b7141fd6705c997cca92ad0643e49a2edf36d50e465358ca996",
+          "bytes": 78030,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0009-mask.png",
+          "sha256": "718ba83a74614adcefd5202a0b4da44a8bc6785d29bab945299437f7d2eec224",
+          "bytes": 5438,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0010-rgb.png",
+          "sha256": "73d329d2a048e5c95efe251b43b53619f158ab5bd4face36f5c2267d952ebe7e",
+          "bytes": 78190,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0010-mask.png",
+          "sha256": "03daa8e3a39d55e4564480cb14d2603ee062fa6f8c19b29d32e7519e9234ef1c",
+          "bytes": 5321,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0011-rgb.png",
+          "sha256": "34ac1c751717cb20eeaa6b89ac37060d170395718f492cf14c5427daee577a2a",
+          "bytes": 78499,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0011-mask.png",
+          "sha256": "eef7039268801794d3177fe75bcb799a75086db2b8e6aab6773c41dad14d089a",
+          "bytes": 5429,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0012-rgb.png",
+          "sha256": "60509f5ba8bc383e7464f24a3a319a28e248188db8fc834e611605e84ca37350",
+          "bytes": 78421,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0012-mask.png",
+          "sha256": "5530cd29c279aa8aa33b1ce3fcdf4f05d4cd3d1964548daec2d7c909e488a0fd",
+          "bytes": 5349,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0013-rgb.png",
+          "sha256": "fec88f8b47f6c2733a9a84599ec0ca8bae791bdcd16d0085f445c78f50b9e3b8",
+          "bytes": 78368,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0013-mask.png",
+          "sha256": "7762d30a9fa5353dab968ad2b4df20e80762f10cf18f7dc440fde0cdce8e5fb3",
+          "bytes": 5343,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0014-rgb.png",
+          "sha256": "4155b34fba7a9cb95309df45b52aa7c76a4f484cd7308980e8bc8f89fa0ad8ca",
+          "bytes": 78576,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0014-mask.png",
+          "sha256": "a0e4242464261adeec43ea9493a38d6813fb3c612c88d7976106e01a371c55e4",
+          "bytes": 5341,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0015-rgb.png",
+          "sha256": "81d066a3cad0201ab6c04bdca8d397ea8729f0514231552c58572ee3b46432e8",
+          "bytes": 78499,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0015-mask.png",
+          "sha256": "96b9285d1d073a3829cc0a5507a57c82c0aef80274848226653e204867f2faa0",
+          "bytes": 5382,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0016-rgb.png",
+          "sha256": "fabdc2ea6e6d90b19f0045c96e0a1074e7c98660e0c2cc373ae3e02aad45814f",
+          "bytes": 78672,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0016-mask.png",
+          "sha256": "cee51853abc76b4e1b4209ab795a9edb253ce0de047221d3a04be43bc5369fe7",
+          "bytes": 5372,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0017-rgb.png",
+          "sha256": "2be71ee2ea1e76646c05f72ebe04822496a1bf5340c62976d21d79bb29a69486",
+          "bytes": 78952,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0017-mask.png",
+          "sha256": "b0054867e59feb00107500693d5ed44d40671d6e5f03a284eab32422b43ec158",
+          "bytes": 5382,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0018-rgb.png",
+          "sha256": "be60d21bf7f672bdc487c0693314acf22cc2c55c24b740742b4d09a946380081",
+          "bytes": 74692,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0018-mask.png",
+          "sha256": "f90490fe8fe31ab7eb9c715cad25d58abe73b602ca9796b51a52752b1df5937f",
+          "bytes": 5227,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0019-rgb.png",
+          "sha256": "b6f2fff2814b156486b6139766a06c47e3b8cb76fd15cf482ffd8223191f9d37",
+          "bytes": 78043,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0019-mask.png",
+          "sha256": "d8613a1466fd17a9e06124c53cff0373ec8ea57ce6afe950598f4f926794e04c",
+          "bytes": 5418,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0020-rgb.png",
+          "sha256": "c18018752bee58ca231e36fcc13d3ef9518381684663de8d0d3edb42cca5b3ba",
+          "bytes": 78223,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0020-mask.png",
+          "sha256": "be31fc29082ef1fc9aa8d093f11fa35f88f39351b73ca5323a21a4701af0b60b",
+          "bytes": 5440,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0021-rgb.png",
+          "sha256": "aaaf364f23f006013b0b7ee9e2108759e1ce6ab7b6a130d116855203cbddc967",
+          "bytes": 78133,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0021-mask.png",
+          "sha256": "ad760647f6f6eaf9a060f55de9c5f5390af4f1488732c90aa069bcc2c007eb7c",
+          "bytes": 5439,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0022-rgb.png",
+          "sha256": "f9b2708d28940ab91421c2821464263d1c32375c7bb82e11fd604ff244b257ee",
+          "bytes": 78541,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0022-mask.png",
+          "sha256": "6d2f41f16b3243c86ddf1bd3f46a9ce077dc37961a54e31d4de5e349d6e2713e",
+          "bytes": 5498,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0023-rgb.png",
+          "sha256": "c799d9f13c6753afc23f8be58f9d3dc8ed45cab2d9400d6870147f89eac3aea3",
+          "bytes": 78274,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0023-mask.png",
+          "sha256": "b609fb7ba7e1ffb4a0373bde5f4b85609346e39042bf9418e700cd4a2cdadc2a",
+          "bytes": 5477,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0024-rgb.png",
+          "sha256": "fc5961c8a9b0597a00255d1c642af2f4f43960e15d62cd6aab83228dce991542",
+          "bytes": 77882,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/Gears/0024-mask.png",
+          "sha256": "bf895d9a142580cd397c6db1c708ab8a023a2554275296e91d5da9a8b2481a12",
+          "bytes": 5442,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/Gears/middle.json",
+          "sha256": "006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a",
+          "bytes": 372,
+          "available": true,
+          "included": true,
+          "file": "configs/006089e3af890431a59b32dfe038c3ce0b908e18554845e210eea72892a57d0a.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "03a92c4b76adcd72c7cea112e1c7230e59a7905946fe172e6fc2c066a8ab5446",
+        "reference_sha256": "51e0a7e638437f98efdab4f161daa8502f6ad430d249823361abf76cb6ae9ec7",
+        "train_frames": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23
+        ],
+        "initialization_sha256": "b309fb467d31a3a0c8d6c95bd47a7e4303a7446235a9e615bc6f366fa3226027",
+        "perceptual_weight": 0.2,
+        "temporal": {
+          "kind": "legendre",
+          "degree": 3,
+          "frame_count": 25
+        },
+        "train_sh": false,
+        "sh_degree": 0,
+        "train_views": [
+          "source"
+        ],
+        "validation_views": [
+          "source"
+        ],
+        "dc_anchor": null,
+        "achromatic_reference": true,
+        "spatial_weight": 0.03,
+        "freeze_surface": false,
+        "color_bound_rgb": null,
+        "smooth_field": false,
+        "spatial_field_basis": null,
+        "ssim_weight": 0.1,
+        "neighbor_count": 4,
+        "geometry_dice_weight": 0.1,
+        "final_lr_ratio": 0.15,
+        "render_supersample": 2,
+        "foreground_coverage_weight": 0.5,
+        "preserve_unobserved": true,
+        "visible_gaussians": 227006,
+        "selection": "Minimum validation LPIPS, MSE within 5 percent of previous stage",
+        "validation_frames": [
+          4,
+          9,
+          14,
+          19,
+          24
+        ],
+        "baseline": {
+          "foreground_mse": 0.026487040147185326,
+          "iou": 0.7644985795021058,
+          "lpips": 0.08773407191038132,
+          "foreground_missing": 0.08876914829015732,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.026293275877833366,
+            0.03070361539721489,
+            0.025720560923218727,
+            0.024899587035179138,
+            0.024818161502480507
+          ],
+          "foreground_psnr": 15.783447196403046
+        },
+        "validation": {
+          "iteration": 1000,
+          "foreground_mse": 0.007611200213432312,
+          "iou": 0.7927774310111999,
+          "lpips": 0.039651548862457274,
+          "foreground_missing": 0.0596279539167881,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.006818450056016445,
+            0.013690096326172352,
+            0.005703350529074669,
+            0.005571333691477776,
+            0.006272770464420319
+          ],
+          "foreground_psnr": 21.460718402275724
+        },
+        "changes": "Bounded canonical geometry offsets and appearance parameters",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training",
+        "geometry_refinement": {
+          "max_offset_scene_units": 0.004,
+          "representation": "time-independent local Gaussian-frame offset; follows parent rigid motion",
+          "regularization": "canonical neighbor displacement smoothness",
+          "freeze_appearance": false,
+          "freeze_geometry": false,
+          "groups_sha256": null
+        }
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 已有修正版",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 已有修正版",
+            "display_version": "V1",
+            "display_label": "V1 · 已有修正版"
+          },
+          "point_count": 828050,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 原始高斯",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 原始高斯",
+            "display_version": "V2",
+            "display_label": "V2 · 原始高斯"
+          },
+          "point_count": 467436,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 时序表面细化",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 时序表面细化",
+            "display_version": "V3",
+            "display_label": "V3 · 时序表面细化"
+          },
+          "point_count": 301739,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ]
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

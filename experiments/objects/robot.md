@@ -1,0 +1,95 @@
+# robot — 推荐保留 V3
+
+推荐多视角SH V3，以原视频24帧为主表，合成训练/验证/独立角度测试分开。旧V1/V2仅有12帧历史完整报告，不拼成24帧对照。
+
+样本数：24。来源：`outputs/six-object-preview/robot-multiview-quality-20261102/audit.json`。
+原始文件 SHA256：`f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9`；JSON pointer：`/summary/original_all/candidate`。
+
+[原始文件快照](../sources/f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9.json) · [最佳版本登记](../best/robot.json)
+
+以下数值直接使用源JSON十进制数值字符串，未四舍五入、重算或补零。
+
+## 当前模型：原视频24帧
+
+这里的 baseline 是旧V3，candidate 是推荐的新V3，不能把它们称为V1/V2。
+
+| 指标（源字段） | 单位/方向 | baseline | candidate |
+|---|---|---|---|
+| psnr | dB ↑ | 22.881502254844474 | 23.12329563894843 |
+| ssim | ↑ | 0.9273492495487495 | 0.929330446383509 |
+| foreground_psnr | dB ↑ | 15.591519933202392 | 15.86056995719124 |
+| lpips | ↓ | 0.03948513092473149 | 0.037774843939890466 |
+| iou | ↑ | 0.6660229905465536 | 0.6660229905465536 |
+| missing | % ↓ | 0.040660695661671374 | 0.040660695661671374 |
+
+## 独立列示：synthetic_train
+
+| 指标（源字段） | 单位/方向 | baseline | candidate |
+|---|---|---|---|
+| psnr | dB ↑ | 19.95077259156892 | 30.25188760669316 |
+| ssim | ↑ | 0.9066631375560382 | 0.9751884573294026 |
+| foreground_psnr | dB ↑ | 11.057152890429744 | 24.938289513945527 |
+| lpips | ↓ | 0.10300172244509061 | 0.018998215682114714 |
+| iou | ↑ | 0.9589798725505275 | 0.9589798725505275 |
+| missing | % ↓ | 0.0007193143583748169 | 0.0007193143583748169 |
+
+## 独立列示：synthetic_validation
+
+| 指标（源字段） | 单位/方向 | baseline | candidate |
+|---|---|---|---|
+| psnr | dB ↑ | 20.330785554399593 | 25.769721444006493 |
+| ssim | ↑ | 0.9118329371506025 | 0.9392109470000057 |
+| foreground_psnr | dB ↑ | 11.489235173266332 | 18.018817223874592 |
+| lpips | ↓ | 0.10262722273667653 | 0.06879804066071908 |
+| iou | ↑ | 0.9544992890696475 | 0.9544992890696475 |
+| missing | % ↓ | 0.0 | 0.0 |
+
+## 独立列示：synthetic_test
+
+| 指标（源字段） | 单位/方向 | baseline | candidate |
+|---|---|---|---|
+| psnr | dB ↑ | 20.115972541528187 | 25.430031507478226 |
+| ssim | ↑ | 0.9199570166460533 | 0.9480867547212475 |
+| foreground_psnr | dB ↑ | 10.217543328096031 | 16.432146043873576 |
+| lpips | ↓ | 0.08668211381882429 | 0.056681218557059765 |
+| iou | ↑ | 0.958983121889205 | 0.958983121889205 |
+| missing | % ↓ | 0.0 | 0.0 |
+
+## 独立列示：original_validation
+
+| 指标（源字段） | 单位/方向 | baseline | candidate |
+|---|---|---|---|
+| psnr | dB ↑ | 22.05285225106372 | 22.24589619397632 |
+| ssim | ↑ | 0.9166074751488795 | 0.9191645305340296 |
+| foreground_psnr | dB ↑ | 14.09662432900357 | 14.309679278564811 |
+| lpips | ↓ | 0.05155656300485134 | 0.04777044802904129 |
+| iou | ↑ | 0.6677414586732453 | 0.6677414586732453 |
+| missing | % ↓ | 0.07472967778183473 | 0.07472967778183473 |
+
+合成视角与原视频指标不能混合平均；synthetic_test 为未用于选点的合成角度，不是新物件独立测试。缺少新V3完整标准报告的本地副本，因此前景SSIM、事件、速度等不从旧模型补填。
+
+## 历史候选（不同协议不直接排名）
+
+| 来源 | 版本 | PSNR | SSIM | LPIPS | IoU |
+|---|---|---|---|---|---|
+| [outputs/six-object-preview/robot-coherent-optimized-result.json](../sources/a3181ea65a5fdf22741705401e6ab41bf7ab0600848cf8bd3ce58033690302d8.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [outputs/six-object-preview/robot-coherent-optimized-result.json](../sources/a3181ea65a5fdf22741705401e6ab41bf7ab0600848cf8bd3ce58033690302d8.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [outputs/six-object-preview/robot-coherent-optimized-result.json](../sources/a3181ea65a5fdf22741705401e6ab41bf7ab0600848cf8bd3ce58033690302d8.json) | V3 | 22.00615237282233 | 0.9103958985090334 | 0.06271220929920673 | 0.6631682657154879 |
+| [outputs/six-object-preview/robot-coherent-validation-result.json](../sources/1808906d4bff620d6e814164a87fbfb3c98e644e91a889ba84a7d362659f3f02.json) | V1 | 16.771444540924964 | 0.8487621178375147 | 0.10555209778249264 | 0.6244441013651242 |
+| [outputs/six-object-preview/robot-coherent-validation-result.json](../sources/1808906d4bff620d6e814164a87fbfb3c98e644e91a889ba84a7d362659f3f02.json) | V2 | 17.3383548187197 | 0.8535811815124204 | 0.16661135107278824 | 0.6325047447023754 |
+| [outputs/six-object-preview/robot-coherent-validation-result.json](../sources/1808906d4bff620d6e814164a87fbfb3c98e644e91a889ba84a7d362659f3f02.json) | V3 | 21.501328881042518 | 0.9061241295901643 | 0.06812287494540215 | 0.6653450039207389 |
+| [outputs/six-object-preview/robot-rgb-optimized-result.json](../sources/2d183d7d8aeb5c3d9154d3d93694dd9600fdb03e3cc18c5922308cf79b913b8d.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [outputs/six-object-preview/robot-rgb-optimized-result.json](../sources/2d183d7d8aeb5c3d9154d3d93694dd9600fdb03e3cc18c5922308cf79b913b8d.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [outputs/six-object-preview/robot-rgb-optimized-result.json](../sources/2d183d7d8aeb5c3d9154d3d93694dd9600fdb03e3cc18c5922308cf79b913b8d.json) | V3 | 22.1134235918301 | 0.9143601970541361 | 0.05174625820169846 | 0.6631780216774442 |
+| [outputs/six-object-preview/robot-visible-quality-20261102/report-result.json](../sources/ecf56248f28161664d4d28b9464a7344f5f4aebce2e9250d73a2dca514e15858.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [outputs/six-object-preview/robot-visible-quality-20261102/report-result.json](../sources/ecf56248f28161664d4d28b9464a7344f5f4aebce2e9250d73a2dca514e15858.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [outputs/six-object-preview/robot-visible-quality-20261102/report-result.json](../sources/ecf56248f28161664d4d28b9464a7344f5f4aebce2e9250d73a2dca514e15858.json) | V3 | 22.852858527502445 | 0.9275025849659464 | 0.03917111037299037 | 0.6657948141594774 |
+| [/private/tmp/robot-quality-result.json](../sources/d5515b6405614bf5739a6c2052097e258e967297ecda45733883607f8b537f14.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [/private/tmp/robot-quality-result.json](../sources/d5515b6405614bf5739a6c2052097e258e967297ecda45733883607f8b537f14.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [/private/tmp/robot-quality-result.json](../sources/d5515b6405614bf5739a6c2052097e258e967297ecda45733883607f8b537f14.json) | V3 | 22.5306155012059 | 0.9216486479072229 | 0.04609032689283291 | 0.67402923329091 |
+| [/private/tmp/robot-sampling-result.json](../sources/0bede218f73fa2d439e1f09409d7ede9619c0452e99e6736c478dc46237503e3.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [/private/tmp/robot-sampling-result.json](../sources/0bede218f73fa2d439e1f09409d7ede9619c0452e99e6736c478dc46237503e3.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [/private/tmp/robot-sampling-result.json](../sources/0bede218f73fa2d439e1f09409d7ede9619c0452e99e6736c478dc46237503e3.json) | V3 | 22.958334668528256 | 0.9285446652623347 | 0.03856162059431275 | 0.7002492453042071 |
+| [/private/tmp/robot-visible-result.json](../sources/658ec75fc3095e3dc78cfc578216f5937ded00636c3ad6c291cfd6a69830363b.json) | V1 | 17.012930647867588 | 0.8502637233768772 | 0.10237148093680541 | 0.6223467661845578 |
+| [/private/tmp/robot-visible-result.json](../sources/658ec75fc3095e3dc78cfc578216f5937ded00636c3ad6c291cfd6a69830363b.json) | V2 | 17.457393262545825 | 0.8539570928349313 | 0.1649977763493856 | 0.6306608337464185 |
+| [/private/tmp/robot-visible-result.json](../sources/658ec75fc3095e3dc78cfc578216f5937ded00636c3ad6c291cfd6a69830363b.json) | V3 | 22.852858527502445 | 0.9275025849659464 | 0.03917111037299037 | 0.6657948141594774 |

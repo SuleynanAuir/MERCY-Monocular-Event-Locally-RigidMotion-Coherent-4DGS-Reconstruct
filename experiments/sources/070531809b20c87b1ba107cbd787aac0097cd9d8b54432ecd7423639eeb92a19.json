@@ -1,0 +1,85 @@
+{
+  "status": "complete",
+  "stage": "complete",
+  "percent": 100,
+  "completed": 1,
+  "total": 1,
+  "elapsed_seconds": 35.6,
+  "detail": "对照试验计算与可视化完成",
+  "warnings": [
+    "前景 PSNR / IoU 使用原始 RGB 的固定背景分割参考，属于光度前景代理掩码，不是人工或几何真值；阈值与定义随实验包保存。"
+  ],
+  "summary": [
+    {
+      "version": "V1",
+      "foreground_psnr": 17.787373389264648,
+      "psnr": 26.358016679529207,
+      "ssim": 0.9373096013523357,
+      "foreground_ssim": 0.5152684463119312,
+      "lpips": 0.048299386810797915,
+      "iou": 0.8662287694746728,
+      "missing": 7.09069067428794,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 32.89215374164856,
+      "point_count": 576117,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V2",
+      "foreground_psnr": 16.651627966125606,
+      "psnr": 25.389878362812777,
+      "ssim": 0.9366108625125824,
+      "foreground_ssim": 0.5209347133139121,
+      "lpips": 0.06996332108974457,
+      "iou": 0.8555949741193761,
+      "missing": 7.069771155278108,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 10.305204715293188,
+      "point_count": 288103,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    },
+    {
+      "version": "V3",
+      "foreground_psnr": 17.50744780221675,
+      "psnr": 26.321204713742585,
+      "ssim": 0.9611812274764711,
+      "foreground_ssim": 0.728385122534154,
+      "lpips": 0.03587696930536857,
+      "iou": 0.9206615048048424,
+      "missing": 1.769095421677473,
+      "part_missing": null,
+      "event_l1": null,
+      "event_cosine": null,
+      "polarity": null,
+      "silent": null,
+      "latency_ms": 29.203352303459095,
+      "point_count": 538488,
+      "metric_unavailable_reasons": {
+        "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+      }
+    }
+  ],
+  "output_bytes": 4703237,
+  "id": "a73012b98dd84ecab0f53439215a363d",
+  "object_name": "Arm_RGB参考修复",
+  "timestamp": "20261101_220839_493807",
+  "created_at": "2026-11-01T22:08:39.493807+08:00",
+  "timezone": "Asia/Shanghai",
+  "output_stem": "Arm_RGB参考修复_20261101_220839_493807",
+  "download_name": "Arm_RGB参考修复_20261101_220839_493807.zip",
+  "output_directory": "/root/autodl-tmp/SC-GS/experiment/output/Arm_RGB参考修复_20261101_220839_493807",
+  "report_url": "/api/comparisons/a73012b98dd84ecab0f53439215a363d/files/report.html",
+  "download_url": "/api/comparisons/a73012b98dd84ecab0f53439215a363d/files/Arm_RGB%E5%8F%82%E8%80%83%E4%BF%AE%E5%A4%8D_20261101_220839_493807.zip"
+}

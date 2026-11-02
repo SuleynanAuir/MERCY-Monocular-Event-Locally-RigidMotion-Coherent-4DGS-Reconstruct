@@ -1,0 +1,590 @@
+{
+  "revision": "cycle-integrated-atlas-20261027",
+  "numerical_metrics_recomputed": false,
+  "cycles": {
+    "status": "unavailable",
+    "reason": "No sufficiently recurrent common source-motion trajectory"
+  },
+  "radar": {
+    "Image reconstruction": {
+      "keys": [
+        "psnr",
+        "foreground_psnr",
+        "ssim",
+        "foreground_ssim",
+        "lpips",
+        "iou"
+      ],
+      "cap": [
+        45.0,
+        35.0,
+        1.0,
+        1.0,
+        0.045,
+        1.0
+      ],
+      "radius": [
+        [
+          0.7231086722755783,
+          0.6534294850840349,
+          0.969982634069803,
+          0.7305862673048762,
+          0.8910937772856818,
+          0.9576692757856445
+        ],
+        [
+          0.8239289034454165,
+          0.8009252689375523,
+          0.9792445704971532,
+          0.8218611706419554,
+          0.7113299469153086,
+          0.9588325670077963
+        ],
+        [
+          0.9610108582319359,
+          0.9915885199279121,
+          0.9950098880132784,
+          0.9720274995733557,
+          0.297274385061529,
+          0.9619114684053561
+        ]
+      ],
+      "rule": "raw / axis cap; no inversion"
+    }
+  },
+  "relative_gains": [
+    {
+      "metric": "foreground_psnr",
+      "pair": "V1 -> V2",
+      "percent": 22.572563255933975
+    },
+    {
+      "metric": "psnr",
+      "pair": "V1 -> V2",
+      "percent": 13.942611260982826
+    },
+    {
+      "metric": "ssim",
+      "pair": "V1 -> V2",
+      "percent": 0.9548559017484083
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V1 -> V2",
+      "percent": 12.493377910563693
+    },
+    {
+      "metric": "lpips",
+      "pair": "V1 -> V2",
+      "percent": 20.173390831876674
+    },
+    {
+      "metric": "iou",
+      "pair": "V1 -> V2",
+      "percent": 0.1214710810469952
+    },
+    {
+      "metric": "missing",
+      "pair": "V1 -> V2",
+      "percent": -66.54025664849858
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V1 -> V2",
+      "percent": 4.2655012898962354
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V1 -> V2",
+      "percent": null
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V1 -> V2",
+      "percent": null
+    },
+    {
+      "metric": "polarity",
+      "pair": "V1 -> V2",
+      "percent": null
+    },
+    {
+      "metric": "silent",
+      "pair": "V1 -> V2",
+      "percent": null
+    },
+    {
+      "metric": "foreground_psnr",
+      "pair": "V2 -> V3",
+      "percent": 23.8053734080933
+    },
+    {
+      "metric": "psnr",
+      "pair": "V2 -> V3",
+      "percent": 16.637595090217733
+    },
+    {
+      "metric": "ssim",
+      "pair": "V2 -> V3",
+      "percent": 1.609946890808013
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V2 -> V3",
+      "percent": 18.271495758110266
+    },
+    {
+      "metric": "lpips",
+      "pair": "V2 -> V3",
+      "percent": 58.208650380788384
+    },
+    {
+      "metric": "iou",
+      "pair": "V2 -> V3",
+      "percent": 0.32110938901127317
+    },
+    {
+      "metric": "missing",
+      "pair": "V2 -> V3",
+      "percent": 13.00595344713038
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V2 -> V3",
+      "percent": 14.240933808428126
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V2 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V2 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "polarity",
+      "pair": "V2 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "silent",
+      "pair": "V2 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "foreground_psnr",
+      "pair": "V1 -> V3",
+      "percent": 51.75141963488042
+    },
+    {
+      "metric": "psnr",
+      "pair": "V1 -> V3",
+      "percent": 32.89992155780598
+    },
+    {
+      "metric": "ssim",
+      "pair": "V1 -> V3",
+      "percent": 2.580175465458317
+    },
+    {
+      "metric": "foreground_ssim",
+      "pair": "V1 -> V3",
+      "percent": 33.04760068364729
+    },
+    {
+      "metric": "lpips",
+      "pair": "V1 -> V3",
+      "percent": 66.63938267338796
+    },
+    {
+      "metric": "iou",
+      "pair": "V1 -> V3",
+      "percent": 0.4429705251044438
+    },
+    {
+      "metric": "missing",
+      "pair": "V1 -> V3",
+      "percent": -44.88010839806339
+    },
+    {
+      "metric": "part_missing",
+      "pair": "V1 -> V3",
+      "percent": 17.89898788303259
+    },
+    {
+      "metric": "event_l1",
+      "pair": "V1 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "event_cosine",
+      "pair": "V1 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "polarity",
+      "pair": "V1 -> V3",
+      "percent": null
+    },
+    {
+      "metric": "silent",
+      "pair": "V1 -> V3",
+      "percent": null
+    }
+  ],
+  "gain_display": {
+    "kind": "three paired dot facets",
+    "x_scale": "symlog; linear within ±25%",
+    "y": "metric categories, not significance",
+    "size": "absolute measured percentage",
+    "colors": "six metric families"
+  },
+  "spatial_selection": {
+    "metric": "full-frame PSNR (dB)",
+    "rule": "top 4 sum of all pairwise absolute PSNR differences; finite matched frames; earlier-index tie break",
+    "sample_indices": [
+      1,
+      12,
+      13,
+      24
+    ],
+    "source_frames": [
+      2,
+      24,
+      26,
+      48
+    ],
+    "seconds": [
+      0.06666666666666667,
+      0.8,
+      0.8666666666666667,
+      1.6
+    ],
+    "gap_sum_db": [
+      24.7699313572397,
+      24.728060601122053,
+      24.13538852223681,
+      24.03182909401123
+    ]
+  },
+  "spatial_distributions": {
+    "scope": "all foreground pixels per selected frame",
+    "curves": "empirical CDF and exceedance tail",
+    "display_vertices_max": 1500,
+    "rows": [
+      {
+        "sample_index": 1,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.047058823529411764,
+            "p95": 0.12679738562091503,
+            "p99": 0.29879738562091734,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V2",
+            "p50": 0.00784313725490196,
+            "p95": 0.0784313725490196,
+            "p99": 0.16339869281045752,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V3",
+            "p50": 0.00392156862745098,
+            "p95": 0.023529411764705882,
+            "p99": 0.08235294117647057,
+            "foreground_pixels": 35143
+          }
+        ]
+      },
+      {
+        "sample_index": 12,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.047058823529411764,
+            "p95": 0.13594771241830067,
+            "p99": 0.29281045751633983,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V2",
+            "p50": 0.00784313725490196,
+            "p95": 0.0784313725490196,
+            "p99": 0.16601307189542483,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V3",
+            "p50": 0.00392156862745098,
+            "p95": 0.023529411764705882,
+            "p99": 0.08070588235294802,
+            "foreground_pixels": 35143
+          }
+        ]
+      },
+      {
+        "sample_index": 13,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.048366013071895426,
+            "p95": 0.12941176470588234,
+            "p99": 0.29411764705882354,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V2",
+            "p50": 0.00784313725490196,
+            "p95": 0.0784313725490196,
+            "p99": 0.16546405228758398,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V3",
+            "p50": 0.00392156862745098,
+            "p95": 0.023529411764705882,
+            "p99": 0.0784313725490196,
+            "foreground_pixels": 35143
+          }
+        ]
+      },
+      {
+        "sample_index": 24,
+        "quantiles": [
+          {
+            "version": "V1",
+            "p50": 0.047058823529411785,
+            "p95": 0.1215686274509804,
+            "p99": 0.29411764705882354,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V2",
+            "p50": 0.00784313725490196,
+            "p95": 0.07712418300653595,
+            "p99": 0.16601307189542483,
+            "foreground_pixels": 35143
+          },
+          {
+            "version": "V3",
+            "p50": 0.00392156862745098,
+            "p95": 0.023529411764705882,
+            "p99": 0.07843137254901962,
+            "foreground_pixels": 35143
+          }
+        ]
+      }
+    ]
+  },
+  "spatial_delta": {
+    "formula": "mean(abs(V3-GT),RGB) - mean(abs(V2-GT),RGB)",
+    "display_range": [
+      -0.05,
+      0.05
+    ],
+    "tie_tolerance": 1e-10,
+    "rows": [
+      {
+        "sample_index": 1,
+        "frame": 2,
+        "time_seconds": 0.06666666666666667,
+        "mean_error_delta": -0.0013951822916666667,
+        "foreground_improved_percent": 66.08997524400307,
+        "foreground_worse_percent": 11.899951626212902,
+        "foreground_tied_percent": 22.010073129784026
+      },
+      {
+        "sample_index": 12,
+        "frame": 24,
+        "time_seconds": 0.8,
+        "mean_error_delta": -0.0015006063623366015,
+        "foreground_improved_percent": 70.05662578607405,
+        "foreground_worse_percent": 8.841020971459464,
+        "foreground_tied_percent": 21.102353242466485
+      },
+      {
+        "sample_index": 13,
+        "frame": 26,
+        "time_seconds": 0.8666666666666667,
+        "mean_error_delta": -0.001504764731413399,
+        "foreground_improved_percent": 68.1359018865777,
+        "foreground_worse_percent": 9.856870500526421,
+        "foreground_tied_percent": 22.007227612895882
+      },
+      {
+        "sample_index": 24,
+        "frame": 48,
+        "time_seconds": 1.6,
+        "mean_error_delta": -0.0013413277420343142,
+        "foreground_improved_percent": 65.36721395441482,
+        "foreground_worse_percent": 12.312551574993599,
+        "foreground_tied_percent": 22.32023447059158
+      }
+    ]
+  },
+  "parts": {
+    "definition": "missing pixel contribution by GT mean-area bins; percentage points of total common visible area",
+    "alpha_threshold": 0.5,
+    "size_groups": [
+      {
+        "label": "16–32 px",
+        "part_ids": [
+          5
+        ]
+      },
+      {
+        "label": "64–128 px",
+        "part_ids": [
+          4
+        ]
+      },
+      {
+        "label": "256–512 px",
+        "part_ids": [
+          3
+        ]
+      },
+      {
+        "label": "512–1024 px",
+        "part_ids": [
+          2
+        ]
+      },
+      {
+        "label": "≥4096 px",
+        "part_ids": [
+          1
+        ]
+      }
+    ],
+    "total_parts": 5,
+    "excluded_pixel_frames": 0.0,
+    "heatmap_gamma": 0.5,
+    "heatmap_cap": 1.5,
+    "heatmap_samples": 25,
+    "trace_scale_percent": [
+      0,
+      2.0
+    ],
+    "heatmap_cycle_source": "data/cycle_protocol.json",
+    "gt_area_pooled_percent": [
+      1.0264232521939352,
+      1.7099237664105447,
+      1.4873757309859894
+    ],
+    "within_part_tail_counts": [
+      {
+        "version": "V1",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          2,
+          2,
+          2
+        ],
+        "part_percent": [
+          40.0,
+          40.0,
+          40.0
+        ],
+        "total_parts": 5
+      },
+      {
+        "version": "V2",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          2,
+          2,
+          2
+        ],
+        "part_percent": [
+          40.0,
+          40.0,
+          40.0
+        ],
+        "total_parts": 5
+      },
+      {
+        "version": "V3",
+        "thresholds_percent": [
+          5,
+          25,
+          50
+        ],
+        "part_counts": [
+          2,
+          2,
+          2
+        ],
+        "part_percent": [
+          40.0,
+          40.0,
+          40.0
+        ],
+        "total_parts": 5
+      }
+    ],
+    "original_equal_part_percent": [
+      38.68971085493154,
+      37.03940073935731,
+      31.764644197027
+    ],
+    "monotonic_gt_area_measured": false,
+    "monotonic_equal_part_measured": true
+  },
+  "efficiency_display": {
+    "points": "all finite repeat-by-frame latencies with matched frame PSNR; no jitter or trimming",
+    "cycle_markers": "odd/even common GT cycle",
+    "density": "50x40 equal-width 2D histogram; Gaussian sigma 1.2 bins; contours enclose 50/90% smoothed grid mass",
+    "latency_quantiles": [
+      {
+        "version": "V1",
+        "measurements": 125,
+        "p05": 12.661255896091461,
+        "p25": 13.046912848949432,
+        "p50": 13.8038769364357,
+        "p75": 18.300175666809082,
+        "p95": 43.99837851524352
+      },
+      {
+        "version": "V2",
+        "measurements": 125,
+        "p05": 46.67370915412903,
+        "p25": 52.504390478134155,
+        "p50": 56.490905582904816,
+        "p75": 82.2242870926857,
+        "p95": 88.45673352479935
+      },
+      {
+        "version": "V3",
+        "measurements": 125,
+        "p05": 45.54067403078079,
+        "p25": 52.410684525966644,
+        "p50": 72.6177915930748,
+        "p75": 81.41668140888214,
+        "p95": 92.16839075088501
+      }
+    ],
+    "latency_limits": [
+      11.482792139053345,
+      112.4636298418045
+    ]
+  },
+  "motion_display": {
+    "constraints": "parallel independent native axes; gap/swing log, SO3 jerk linear",
+    "residual": "position_v - position_0",
+    "residual_scale": "symlog linthresh=0.1",
+    "causal_smoothing_claim": false
+  }
+}

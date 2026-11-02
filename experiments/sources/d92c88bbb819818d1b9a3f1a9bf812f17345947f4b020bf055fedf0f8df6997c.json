@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "checks": {
+    "psnr": true,
+    "ssim": true,
+    "foreground_psnr": true,
+    "foreground_ssim": true,
+    "iou": true,
+    "lpips": true,
+    "missing": true
+  },
+  "scope": "25 same-view frames, includes 20 training and 5 checkpoint-selection frames; not independent test"
+}

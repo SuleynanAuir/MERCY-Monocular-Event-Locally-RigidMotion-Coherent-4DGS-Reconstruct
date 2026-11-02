@@ -1,0 +1,86 @@
+[
+  {
+    "version": "V1",
+    "total_frames": 50,
+    "aligned_rgb": 50,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 50,
+      "psnr": 50,
+      "ssim": 50,
+      "foreground_ssim": 50,
+      "lpips": 50,
+      "iou": 50,
+      "missing": 50,
+      "part_missing": 0,
+      "event_l1": 39,
+      "event_cosine": 39,
+      "polarity": 39,
+      "silent": 39
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "part_missing": "No finite aligned measurements; check RGB, masks, alpha, LPIPS availability and infinity flags"
+    }
+  },
+  {
+    "version": "V2",
+    "total_frames": 50,
+    "aligned_rgb": 50,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 50,
+      "psnr": 50,
+      "ssim": 50,
+      "foreground_ssim": 50,
+      "lpips": 50,
+      "iou": 50,
+      "missing": 50,
+      "part_missing": 0,
+      "event_l1": 39,
+      "event_cosine": 39,
+      "polarity": 39,
+      "silent": 39
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "part_missing": "No finite aligned measurements; check RGB, masks, alpha, LPIPS availability and infinity flags"
+    }
+  },
+  {
+    "version": "V3",
+    "total_frames": 50,
+    "aligned_rgb": 50,
+    "infinite_psnr_frames": 0,
+    "metrics": {
+      "foreground_psnr": 50,
+      "psnr": 50,
+      "ssim": 50,
+      "foreground_ssim": 50,
+      "lpips": 50,
+      "iou": 50,
+      "missing": 50,
+      "part_missing": 0,
+      "event_l1": 39,
+      "event_cosine": 39,
+      "polarity": 39,
+      "silent": 39
+    },
+    "motion_unavailable": {
+      "angular_jerk_rms": "No verified joint angles (radians) or insufficient timestamps",
+      "joint_gap_max": "No verified joint pivots and actual part transforms",
+      "rigidity_error": "No verified rigid part membership with >=2 fixed points"
+    },
+    "unavailable_reasons": {
+      "part_missing": "No finite aligned measurements; check RGB, masks, alpha, LPIPS availability and infinity flags"
+    }
+  }
+]

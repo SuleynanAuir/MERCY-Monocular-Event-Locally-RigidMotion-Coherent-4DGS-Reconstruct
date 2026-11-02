@@ -1,0 +1,894 @@
+{
+  "object": "rotation",
+  "recommended_version": "V3",
+  "sample_count": 40,
+  "source_original": "outputs/six-object-preview/rotation-quality-20261102/analysis.json",
+  "source_snapshot": "sources/052b3f75d3f3574329ff0ac917c8a389f2b1a8226c7b8b52f1b275aa6cd252b9.json",
+  "source_sha256": "052b3f75d3f3574329ff0ac917c8a389f2b1a8226c7b8b52f1b275aa6cd252b9",
+  "json_pointer": "/summary/2",
+  "source_record": {
+    "version": "V3",
+    "foreground_psnr": "31.21816687766296",
+    "psnr": "38.70829694548269",
+    "ssim": "0.9896410610496869",
+    "foreground_ssim": "0.9504345447833284",
+    "lpips": "0.0072767836099956185",
+    "iou": "0.9624986159707006",
+    "missing": "0.08106015002258349",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "32.097523333504796",
+    "point_count": "1016971",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "metrics_exact_decimal_strings": {
+    "foreground_psnr": "31.21816687766296",
+    "psnr": "38.70829694548269",
+    "ssim": "0.9896410610496869",
+    "foreground_ssim": "0.9504345447833284",
+    "lpips": "0.0072767836099956185",
+    "iou": "0.9624986159707006",
+    "missing": "0.08106015002258349",
+    "part_missing": null,
+    "event_l1": null,
+    "event_cosine": null,
+    "polarity": null,
+    "silent": null,
+    "latency_ms": "32.097523333504796",
+    "point_count": "1016971",
+    "metric_unavailable_reasons": {
+      "event_l1": "缺少可靠事件标定或完整时间窗：Raw event file is not available on this host"
+    }
+  },
+  "selection_reason": "推荐连续时序外观V3；8个留出时刻七项均值也优于V1/V2，属于同源视角选点验证。",
+  "attachments": [
+    {
+      "original": "outputs/six-object-preview/rotation-quality-20261102/series.npz",
+      "snapshot": "sources/592c7efe80691c8d6d145aaa440ab3c84e146899cf3d43942fb5fbf73c5b309a.npz",
+      "sha256": "592c7efe80691c8d6d145aaa440ab3c84e146899cf3d43942fb5fbf73c5b309a",
+      "bytes": 12873
+    },
+    {
+      "original": "outputs/six-object-preview/rotation-quality-20261102/quality-gate.json",
+      "snapshot": "sources/01a06075fd378f7c0a17cf6af3bf58d3ddb8bb4f90a0ce14e579bf8e0270284d.json",
+      "sha256": "01a06075fd378f7c0a17cf6af3bf58d3ddb8bb4f90a0ce14e579bf8e0270284d",
+      "bytes": 456
+    },
+    {
+      "original": "outputs/six-object-preview/rotation-quality-20261102/validation.json",
+      "snapshot": "sources/da3293a8132cc5fade4b56696a3b691ed2a07d2ebe2a63afd1b6ead0f8ac8481.json",
+      "sha256": "da3293a8132cc5fade4b56696a3b691ed2a07d2ebe2a63afd1b6ead0f8ac8481",
+      "bytes": 7883
+    },
+    {
+      "original": "outputs/six-object-preview/rotation-quality-20261102/spatial-validation.json",
+      "snapshot": "sources/a6d781a3dfc3deea3b68000229e7fd1636e606e42e90613355d7f2864198c0fc.json",
+      "sha256": "a6d781a3dfc3deea3b68000229e7fd1636e606e42e90613355d7f2864198c0fc",
+      "bytes": 29088
+    },
+    {
+      "original": "outputs/six-object-preview/rotation-quality-20261102/heldout-validation.json",
+      "snapshot": "sources/d925c9060614c15e515a22d2c1a118ddf5876d19febe2d8bc4db4940af4d4a7f.json",
+      "sha256": "d925c9060614c15e515a22d2c1a118ddf5876d19febe2d8bc4db4940af4d4a7f",
+      "bytes": 646
+    },
+    {
+      "original": "/tmp/rotation-quality-export.zip!/rotation_20261102T054903Z_2b6f2af6/manifest.json",
+      "snapshot": "sources/2c429294ebedf58393af3e5c38649d737810ef334c3ceac728d40bb9e8903753.json",
+      "sha256": "2c429294ebedf58393af3e5c38649d737810ef334c3ceac728d40bb9e8903753",
+      "bytes": 218424
+    }
+  ],
+  "model_identity_records": [
+    {
+      "source_snapshot": "sources/2c429294ebedf58393af3e5c38649d737810ef334c3ceac728d40bb9e8903753.json",
+      "sources": [
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/rgb-temporal-quality-20261102/manifest.json",
+          "sha256": "c8fbe53466e52567f908f3226c8a3a2e1dc09f94442b56c888913a848ec98240",
+          "bytes": 2760,
+          "available": true,
+          "included": true,
+          "file": "configs/c8fbe53466e52567f908f3226c8a3a2e1dc09f94442b56c888913a848ec98240.json"
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/baseline/left.npz",
+          "sha256": "b7ce9225af2100374c1426e20464d2b49d7d9ab97150352a0316cf6f570201ef",
+          "bytes": 566660118,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/optimized-fast/right.npz",
+          "sha256": "19bb43e63b30224d7261ccb6a93d5f67750b5e1dd21a4f3b5a7fbb2472d3b0d8",
+          "bytes": 777655806,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/baseline/right.npz",
+          "sha256": "0ba9acd91c2104af91b17604587723c79b00cd77a928823b177f302cc56e270d",
+          "bytes": 883437737,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/surface.npz",
+          "sha256": "7b1a9898afb17e11bd22436ed553688c10aa282efec9902fc4c3ac764dfe7b03",
+          "bytes": 7386428,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/rgb-temporal-quality-20261102/appearance.npz",
+          "sha256": "f3e97163441f5759bfcb58238c58ef4f9804c593f429203a26e997bed6a5d04c",
+          "bytes": 18034895,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/evaluation.json",
+          "sha256": "72c232ab90b08c5490014b1f94c08e2e6dc2310368023e7eb5ae7d1d5e11c226",
+          "bytes": 8079,
+          "available": true,
+          "included": true,
+          "file": "configs/72c232ab90b08c5490014b1f94c08e2e6dc2310368023e7eb5ae7d1d5e11c226.json"
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0000-rgb.png",
+          "sha256": "7f8209d5d39ff191cdc2f63034381d77295bb0ed2953df2bd8f260c17cc1c481",
+          "bytes": 39753,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0000-mask.png",
+          "sha256": "290a6f8e16a9421b1d0dc92c4b6d10f7e6957aea271ed01158f0199e8c68feb0",
+          "bytes": 2622,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0001-rgb.png",
+          "sha256": "ad0ba6263a4a7109c6b9e37a601bd523a9865a31e315a4c22bb3a5b870f65cca",
+          "bytes": 41392,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0001-mask.png",
+          "sha256": "b3201d26cd5d72b7553cac61f4727e903fda34d137faec94788dc7b230e5b807",
+          "bytes": 2716,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0002-rgb.png",
+          "sha256": "d45ac09f12cc542f7b324726ba685e757de6ee46e1fa2a5b6f1a5e39d5a7965d",
+          "bytes": 41852,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0002-mask.png",
+          "sha256": "cbc360daaaea215b7f2bb907e2c42177d90125c533c06d3d9a1e335acace3bfb",
+          "bytes": 2680,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0003-rgb.png",
+          "sha256": "0eee55554129ff0aa8591292d53c688fb621bb7c38fbf836048ffb22db125e71",
+          "bytes": 42073,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0003-mask.png",
+          "sha256": "ffdba064660aae70f5b7095565fe41b1165dbe643263ceab079f1779c1c1d334",
+          "bytes": 2678,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0004-rgb.png",
+          "sha256": "b390f113a09e75449f012eb1c0e6b08252c61f150661668b5b7463b9b324ea75",
+          "bytes": 42025,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0004-mask.png",
+          "sha256": "e8b8b21ee60ccaf8ad173c55b72ba45427289a94a3d58c8c3600a270adcb4da7",
+          "bytes": 2691,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0005-rgb.png",
+          "sha256": "f7b89e8c2e275e2dbda90f3228ceb6475802a6a3e459837297b29334ca039c0e",
+          "bytes": 42191,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0005-mask.png",
+          "sha256": "79994402a67389790fcf1b8f12b3eec2028b11f750c036947ca92dc6e3168520",
+          "bytes": 2646,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0006-rgb.png",
+          "sha256": "bf15cdde7fd604c6a81cc66e61814fb06f159d5f349a31a5b59e36acd09898f9",
+          "bytes": 42629,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0006-mask.png",
+          "sha256": "3f890bec3e5fda69a7b28c23924c91903985a50e2180c86c4dddac6fcd120221",
+          "bytes": 2674,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0007-rgb.png",
+          "sha256": "9445a7919ec9dd68a2e393f0a43f1eddec9a43192b7fc0f2f11a7b973c5e2d22",
+          "bytes": 42467,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0007-mask.png",
+          "sha256": "f83c80cac1ba75a77c1362f776f7915de4fe4aa871f9f8fdb8f321589f0e8dfd",
+          "bytes": 2644,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0008-rgb.png",
+          "sha256": "64ae97e874db344a010785478130f06a9ae83c29622aa8ab68dbe062ed9eaf50",
+          "bytes": 42636,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0008-mask.png",
+          "sha256": "01d621407cc8afb0ab4c8653edd734ddfa7ed0686a41b40176a03f59f5d59190",
+          "bytes": 2633,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0009-rgb.png",
+          "sha256": "c75dad440b2d6f2162a2692495e444ac4a2bc8a15c6316c92127fed1e726c2ec",
+          "bytes": 42890,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0009-mask.png",
+          "sha256": "e2cb8f3fd8e8a185c115bc6593e3411aff664b99fff9acb30892019b18562458",
+          "bytes": 2619,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0010-rgb.png",
+          "sha256": "a7f3513c872cfdc69def7a4db7ec37be7a4fa61658e987bd202c50fe12bfa06e",
+          "bytes": 43156,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0010-mask.png",
+          "sha256": "e8c67acf3be99a89624613a44a9aaaac76e1daa8fb2696e5357ea9d32ab64948",
+          "bytes": 2655,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0011-rgb.png",
+          "sha256": "5e295670629a8fb16c5e3e489c1e005a2eb4839fd644d3e62557ba624ca8d3db",
+          "bytes": 42701,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0011-mask.png",
+          "sha256": "5427c5c8098759d429ebedaa54666f189b34fe801468a83a54d5d633a1ae50a6",
+          "bytes": 2559,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0012-rgb.png",
+          "sha256": "9db4129da4ca961dfbf865495ff75ef06d9dcf7c4a6ad392549d2cc463073bb7",
+          "bytes": 41904,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0012-mask.png",
+          "sha256": "57ec24312cb4334221d4fdc8225b2505e6536e93680def2a31f7fa39a44bb99f",
+          "bytes": 2598,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0013-rgb.png",
+          "sha256": "c00fa336348e8f8d90c6ede5ee924a6240893ca92967fd07f17137917c74b872",
+          "bytes": 42339,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0013-mask.png",
+          "sha256": "cbc271f49bb25cea87900942ed90308a583ac2c68bac3c8cd56459f2f9c75559",
+          "bytes": 2527,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0014-rgb.png",
+          "sha256": "4099f059b61a30afd783d59416b5ecc39728ba1f6af7289b1afa6faec5efcff6",
+          "bytes": 42427,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0014-mask.png",
+          "sha256": "0959a46d4ac9c6f5e1bbda16f95be46fa76027ec9803bd0bdfd07751b7f69882",
+          "bytes": 2632,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0015-rgb.png",
+          "sha256": "6c65164bf8485306ee03933f52ce28485d034b11a04fc17be1ebf1824187494f",
+          "bytes": 42638,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0015-mask.png",
+          "sha256": "8a9311c54acec07e55f4d1cb71c18bcfbf44b7793fe6df0bf1eb1cabf67e8173",
+          "bytes": 2580,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0016-rgb.png",
+          "sha256": "c21f3dfce820eab0f0c82f3062f548c0660ea761f85e8175916ad40bf9846d38",
+          "bytes": 42945,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0016-mask.png",
+          "sha256": "9cd2623c5df19f7b2ee0abb686a184a82cde6ffce2195d5d1ac82e6e06be23db",
+          "bytes": 2623,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0017-rgb.png",
+          "sha256": "257dd250c33de42b3d96fd5cdf40b1acba6fef4f1716a543ffc3d79ef4d89237",
+          "bytes": 43186,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0017-mask.png",
+          "sha256": "387f65a5f508f3c9bf49a21b6f7d20723ce7386dd2c7b9c38c55ee5a4329a06a",
+          "bytes": 2599,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0018-rgb.png",
+          "sha256": "95c3fce35213eaffe9db64e0cc29ab72191e1a77d9b9df889fd75ff5516c0994",
+          "bytes": 40689,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0018-mask.png",
+          "sha256": "4105202558bab3c5d6e0a4f0fc3aef44a23acf6fbec335bc453cc592f360a9cb",
+          "bytes": 2582,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0019-rgb.png",
+          "sha256": "d6bbd7d6ef05329a86a7893840b08622447cd7d5f24287f7d35228ac4273bac1",
+          "bytes": 41802,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0019-mask.png",
+          "sha256": "34f7a5baa4b1931c42a30989a477b7d08035b0571709973dc1b387c1b555f82e",
+          "bytes": 2602,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0020-rgb.png",
+          "sha256": "4c8684b7f8dd14656fd5f9f749e85391c3326bbde048244ff2cf6872d8b37857",
+          "bytes": 42309,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0020-mask.png",
+          "sha256": "662d25218db46bfd9c5c0d00afd6457fe72f5104190f7a558b3e6162b55c42c3",
+          "bytes": 2607,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0021-rgb.png",
+          "sha256": "12a8c120ff7cc83ca2978f2a9d23c30a9819e83034d0706f91ab68da22f5cdf9",
+          "bytes": 42180,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0021-mask.png",
+          "sha256": "ad75b5bae8a5999402c68397189c2a4742a79f5158749b501a75f8781118dc56",
+          "bytes": 2593,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0022-rgb.png",
+          "sha256": "eaae970eb104028268e1fc842ebab0bee87fd9936aaa28a8ff539140751aca47",
+          "bytes": 42240,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0022-mask.png",
+          "sha256": "c22fe54b0f9a4869caf41f819f3ab12913748215b8dda45a2cbcd863d3626385",
+          "bytes": 2603,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0023-rgb.png",
+          "sha256": "0f465bc6b58c326ed923e73130b201351ee8cc5794991218a3d3a08777612adf",
+          "bytes": 42228,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0023-mask.png",
+          "sha256": "ae011dd9362dd6c038a06b64f422a2d8a8e04038d9206bcd0125e32ce105a1b1",
+          "bytes": 2600,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0024-rgb.png",
+          "sha256": "446e01c5ec2fb6a09db144c1b019c2999a0a2d7da15dec3d621777f31a084417",
+          "bytes": 42259,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0024-mask.png",
+          "sha256": "778baaecc0acca3a70c70404b3bbf01f0145c501993adf637f2367abc0be0b0d",
+          "bytes": 2602,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0025-rgb.png",
+          "sha256": "299a1534b26c3396687decde95ac773cc836624a57d2ab6d91ccc8b48953a9ec",
+          "bytes": 42289,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0025-mask.png",
+          "sha256": "778baaecc0acca3a70c70404b3bbf01f0145c501993adf637f2367abc0be0b0d",
+          "bytes": 2602,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0026-rgb.png",
+          "sha256": "32c4dcd4e26c90a5f9e2b55323b0163cb76713d719aa1ee6d3e6247df3a4cf24",
+          "bytes": 42269,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0026-mask.png",
+          "sha256": "ebb703f801d35b3e5c4f9fbdc039fd0b7674b9e396ad53232223b6580c2cb6ec",
+          "bytes": 2585,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0027-rgb.png",
+          "sha256": "3ab25e400e726b9b23cba2663f43efec79436c3a1ae6e8a55c1963206500761e",
+          "bytes": 42084,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0027-mask.png",
+          "sha256": "679e1a458801d912191a9d74b68071a4a2dce5bbb3a8f084964d21b911e6445b",
+          "bytes": 2605,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0028-rgb.png",
+          "sha256": "8ee576d6d52e396c00df6832fdb181478797ea26c9090e147298b238e5cef6e0",
+          "bytes": 42382,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0028-mask.png",
+          "sha256": "e11d2aced9e73410004b40d472962b3be3abacbcc5e7306d7b47f1a20a4113cf",
+          "bytes": 2581,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0029-rgb.png",
+          "sha256": "58536ad381f8c77cb90781602d7b3a47a7edff58a771cc028b16f2687bfb5fbf",
+          "bytes": 42226,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0029-mask.png",
+          "sha256": "85b75a0fa129c4056c9d48439c51ad7e12da1e93c7d4360d7a2c777371832069",
+          "bytes": 2594,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0030-rgb.png",
+          "sha256": "5fc1748ab17034aa76d9962e8a38b533cf436939a658a8e53b1aefa52ea89572",
+          "bytes": 42363,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0030-mask.png",
+          "sha256": "206b2a36fa41e911b63713692deece1ff2ca49a231038be2549ec69e9d47e40b",
+          "bytes": 2617,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0031-rgb.png",
+          "sha256": "c240871236330b1fb9e7beb59a21793b5bd74f5b97bde77ed60580b019af2af9",
+          "bytes": 42251,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0031-mask.png",
+          "sha256": "039d81750f1abcd18d4fde9e01249d2fd66b9d6d010e08f024f5bcda439c4326",
+          "bytes": 2587,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0032-rgb.png",
+          "sha256": "4be663d789023f882ec87700d997975378c461e37bf77beb84d29e8e1bc725e9",
+          "bytes": 41725,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0032-mask.png",
+          "sha256": "17772feeec379a8c5b83fd5a7b0730947cf648bb4659700864c52778e02e2ced",
+          "bytes": 2552,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0033-rgb.png",
+          "sha256": "149fd13aae2ee36dea81398284454ee7568230a50453f3b2a7ef034f9d9c3d00",
+          "bytes": 41865,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0033-mask.png",
+          "sha256": "df162c0d842eb8b3cae58d3e235f5d258faba26dbabb049b970b7124b0245537",
+          "bytes": 2573,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0034-rgb.png",
+          "sha256": "d55c3005ab376f1abe5c52909b9cd866f6d190a5b6b3e5279dc94a71cbdc492c",
+          "bytes": 42554,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0034-mask.png",
+          "sha256": "ef45ff0d73a81aada4b4f508712054b656f4c17d32006344aec7e50739c745ef",
+          "bytes": 2584,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0035-rgb.png",
+          "sha256": "ef7be428b3dcbad200c207205f108505800ed01422006fc5f8415259aa536dc9",
+          "bytes": 42745,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0035-mask.png",
+          "sha256": "e5878d5bf1dccad96dce8bab85b4fce6b414b80dd666f09e095c2bdba61046f7",
+          "bytes": 2638,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0036-rgb.png",
+          "sha256": "52d699ad805fcf6d6d9a3d35e71626db6f5eba58f776ee7d77220cb9c18b716b",
+          "bytes": 40063,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0036-mask.png",
+          "sha256": "89aac41f4fbc80819bbc67aa95c7d0e8b91d1d66554392aac5002cde17213bd7",
+          "bytes": 2662,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0037-rgb.png",
+          "sha256": "c802df4a43adc0d2e7f93c32d1bcfdb2354954017e9472e70c377014de6f0027",
+          "bytes": 41248,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0037-mask.png",
+          "sha256": "346fea3d36965bcff97d3891d98d5b9463fb56a35c47c737979087b77f43b69a",
+          "bytes": 2655,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0038-rgb.png",
+          "sha256": "980dfc07e89640f683cd18abc4621b7243c5a2061d9f2392398132ca10586e4f",
+          "bytes": 41762,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0038-mask.png",
+          "sha256": "e1faa6e8faf28f59d846ab218246d36bc2935cfe3e55785ab17cd727311f48dc",
+          "bytes": 2685,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0039-rgb.png",
+          "sha256": "08a204122312736359cb60ead1f54238d7b420a08fa863c8cb22a35d4f887b0a",
+          "bytes": 42141,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/evaluation/rotation/0039-mask.png",
+          "sha256": "e08f8f075d66904c098f676a55f9741372c76cadb56c0cc1044ee76fe9c347f3",
+          "bytes": 2722,
+          "available": true,
+          "included": false
+        },
+        {
+          "source": "/root/autodl-tmp/four-object-six-preview-20261101/animated/rotation/middle.json",
+          "sha256": "f9fb387bacf03bc6108b2ff77fc73f95b041db7f725b4fc2f5d8f1811d8bf8e5",
+          "bytes": 375,
+          "available": true,
+          "included": true,
+          "file": "configs/f9fb387bacf03bc6108b2ff77fc73f95b041db7f725b4fc2f5d8f1811d8bf8e5.json"
+        }
+      ],
+      "appearance_refinement": {
+        "format": "scgs_appearance_stage_v1",
+        "parent_sha256": "19bb43e63b30224d7261ccb6a93d5f67750b5e1dd21a4f3b5a7fbb2472d3b0d8",
+        "reference_sha256": "72c232ab90b08c5490014b1f94c08e2e6dc2310368023e7eb5ae7d1d5e11c226",
+        "train_frames": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12,
+          13,
+          15,
+          16,
+          17,
+          18,
+          20,
+          21,
+          22,
+          23,
+          25,
+          26,
+          27,
+          28,
+          30,
+          31,
+          32,
+          33,
+          35,
+          36,
+          37,
+          38
+        ],
+        "initialization_sha256": null,
+        "perceptual_weight": 0.05,
+        "temporal": {
+          "kind": "legendre",
+          "degree": 3,
+          "frame_count": 40
+        },
+        "train_sh": false,
+        "sh_degree": 0,
+        "train_views": [
+          "source"
+        ],
+        "validation_views": [
+          "source"
+        ],
+        "dc_anchor": null,
+        "achromatic_reference": true,
+        "spatial_weight": 0.03,
+        "freeze_surface": false,
+        "color_bound_rgb": null,
+        "smooth_field": false,
+        "spatial_field_basis": null,
+        "ssim_weight": 0.1,
+        "neighbor_count": 4,
+        "geometry_dice_weight": 0.5,
+        "final_lr_ratio": 0.15,
+        "render_supersample": 2,
+        "foreground_coverage_weight": 0.0,
+        "preserve_unobserved": true,
+        "visible_gaussians": 471510,
+        "selection": "Minimum validation LPIPS, MSE within 5 percent of previous stage",
+        "validation_frames": [
+          4,
+          9,
+          14,
+          19,
+          24,
+          29,
+          34,
+          39
+        ],
+        "baseline": {
+          "foreground_mse": 0.017733896267600358,
+          "iou": 0.9563493505120277,
+          "lpips": 0.06877121049910784,
+          "foreground_missing": 0.0003093993345828494,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.014166830107569695,
+            0.01799066923558712,
+            0.019178815186023712,
+            0.019181864336133003,
+            0.019159752875566483,
+            0.018979234620928764,
+            0.01765441708266735,
+            0.015559586696326733
+          ],
+          "foreground_psnr": 17.535559211129932
+        },
+        "validation": {
+          "iteration": 1400,
+          "foreground_mse": 0.0013958683084638324,
+          "iou": 0.9623550698161125,
+          "lpips": 0.011119070171844214,
+          "foreground_missing": 0.0007947206468088552,
+          "part_missing": null,
+          "per_frame_mse": [
+            0.0016980698565021157,
+            0.0015109684318304062,
+            0.0010821950854733586,
+            0.0004969208384864032,
+            0.0002368460118304938,
+            0.00036018184619024396,
+            0.0014303813222795725,
+            0.004351383075118065
+          ],
+          "foreground_psnr": 30.16891155633081
+        },
+        "changes": "Smooth temporal DC color, opacity and bounded log-scale; centers, rotations, identities and motion frozen",
+        "scope": "Single-view in-sequence RGB-supervised fit; held-out timestamps, not unseen-view or event-only training"
+      },
+      "versions": [
+        {
+          "id": "0",
+          "label": "V1 · 已有修正版",
+          "presentation": {
+            "source_panel_index": 1,
+            "source_version": "V2",
+            "source_label": "V2 · 已有修正版",
+            "display_version": "V1",
+            "display_label": "V1 · 已有修正版"
+          },
+          "point_count": 1567112,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "1",
+          "label": "V2 · 原始高斯",
+          "presentation": {
+            "source_panel_index": 0,
+            "source_version": "V1",
+            "source_label": "V1 · 原始高斯",
+            "display_version": "V2",
+            "display_label": "V2 · 原始高斯"
+          },
+          "point_count": 1155218,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        },
+        {
+          "id": "2",
+          "label": "V3 · 时序表面细化",
+          "presentation": {
+            "source_panel_index": 2,
+            "source_version": "V3",
+            "source_label": "V3 · 时序表面细化",
+            "display_version": "V3",
+            "display_label": "V3 · 时序表面细化"
+          },
+          "point_count": 1016971,
+          "sampled_point_count": 256,
+          "point_correspondence": "fixed row IDs within this version; cross-version correspondence unverified"
+        }
+      ]
+    }
+  ],
+  "model_retention": "原模型未删除/改写；这里只归档实验报告、身份和引用，不声称远端模型已备份或当前可用。",
+  "units": {
+    "psnr": "dB ↑",
+    "foreground_psnr": "dB ↑",
+    "ssim": "↑",
+    "foreground_ssim": "↑",
+    "lpips": "↓",
+    "iou": "↑",
+    "missing": "% ↓",
+    "part_missing": "% ↓",
+    "event_l1": "↓",
+    "event_cosine": "↑",
+    "polarity": "% ↑",
+    "silent": "↓",
+    "latency_ms": "ms ↓",
+    "point_count": "points"
+  },
+  "missing_fields": "缺失/不存在字段保持缺失；不从其他版本或协议拼接数值。"
+}

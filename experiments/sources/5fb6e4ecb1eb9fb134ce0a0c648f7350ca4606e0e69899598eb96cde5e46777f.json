@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "views_improved": 28,
+  "groups": [
+    "synthetic_train",
+    "synthetic_validation",
+    "synthetic_test",
+    "original_all",
+    "original_validation"
+  ]
+}
