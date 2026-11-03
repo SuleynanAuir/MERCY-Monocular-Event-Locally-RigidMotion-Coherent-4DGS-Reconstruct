@@ -1,0 +1,48 @@
+{
+  "manifest_sha256": "e4713e323cf216c18d48ef934b0214dbc86bcfae6505a77520e5b79a3283ccfe",
+  "source_version_ids": [
+    "0",
+    "1",
+    "2"
+  ],
+  "version_order": [
+    "V1",
+    "V2",
+    "V3"
+  ],
+  "sample_count": 13,
+  "resolutions": [
+    [
+      640,
+      640
+    ]
+  ],
+  "source_frames": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24
+  ],
+  "event_primary_rule": "response_validation only; calibration-overlap and unspecified windows retained in raw metrics but excluded",
+  "bootstrap": "5000 paired stationary resamples, blocks 5/10/20; descriptive within sequence",
+  "scope": "Comparison only; no ablations",
+  "version_presentation": {
+    "revision": "swap-v1-v2-20261027",
+    "source_to_display": {
+      "V1": "V2",
+      "V2": "V1",
+      "V3": "V3"
+    },
+    "disclosure": "版本重新编号：V1=原V2，V2=原V1，V3不变；模型、测量值与原始来源不变，不代表新增训练或已验证逐层消融。",
+    "changes": "Labels and display/export ordering only; raw assets and measured values unchanged"
+  }
+}
