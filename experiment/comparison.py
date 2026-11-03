@@ -56,11 +56,11 @@ def extras(root,output,a):
         for col,path in enumerate(paths):
             ax=axes[row,col]
             if path:ax.imshow(np.asarray(Image.open(path).convert('RGB')))
-            else:ax.text(.5,.5,'No aligned RGB',ha='center',va='center')
+            else:ax.text(.5,.5,'N/A',ha='center',va='center')
             ax.set_xticks([]);ax.set_yticks([])
-            if row==0:ax.set_title(['RGB reference',*names][col])
+            if row==0:ax.set_xlabel(['RGB reference',*names][col])
             if col==0:ax.set_ylabel(f'Frame {m["samples"][i]["frame"]}\n{z["times"][i]:.3f} s')
-    fig.suptitle('04 / Same-time image comparison · first / middle / last',x=.05,ha='left',fontsize=17,weight='bold');fig.tight_layout(rect=(0,.02,1,.94));fig.savefig(output/'figures/04_qualitative.png',dpi=160);plt.close(fig)
+    fig.tight_layout();fig.savefig(output/'figures/04_qualitative.png',dpi=160);plt.close(fig)
     return ['02_temporal','04_qualitative']
 
 

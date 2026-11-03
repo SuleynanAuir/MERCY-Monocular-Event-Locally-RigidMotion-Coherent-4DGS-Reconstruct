@@ -1,0 +1,111 @@
+{
+  "source_summary_sha256": "a953fb257daf713b33d8d8a9dbf52cdf637aec5525c3a2d5b028c6f740bc8e83",
+  "verified": true,
+  "objects": [
+    {
+      "object": "lego",
+      "source": "sources/80c8aaeb2303798f3c6cfd750a209b93a350032495e8cb9fc64dd17a4f7dff80.json",
+      "sha256": "80c8aaeb2303798f3c6cfd750a209b93a350032495e8cb9fc64dd17a4f7dff80",
+      "pointer": "/summary/2",
+      "series_source": "sources/8db8ee8028132bff93fb069e012a6b69e7c6dd438147f8347456aacb4d321b1c.npz"
+    },
+    {
+      "object": "fan",
+      "source": "sources/00e5822d6bc0ac5a42087284cfb3063db3c73abde188ae80d8ffe43b2a566bf4.json",
+      "sha256": "00e5822d6bc0ac5a42087284cfb3063db3c73abde188ae80d8ffe43b2a566bf4",
+      "pointer": "/summary/2",
+      "series_source": "sources/672c0331605b686abfa1df9079a89b62e473d05b4e64adef6d3d497423c8b6a7.npz"
+    },
+    {
+      "object": "lamp",
+      "source": "sources/26cd58320a1a888528594f091898944368a97a808937e6e2f261a2ccb765e41b.json",
+      "sha256": "26cd58320a1a888528594f091898944368a97a808937e6e2f261a2ccb765e41b",
+      "pointer": "/summary/2",
+      "series_source": "sources/f9268b6e512c9edf400033843e3a842314f25fb01b42ddbc1eca5779853d8980.npz"
+    },
+    {
+      "object": "metronome",
+      "source": "sources/5df55a784066977aa26d1f65e78ecba0c9d6839a062d017f35da8b4c4f4ad79d.json",
+      "sha256": "5df55a784066977aa26d1f65e78ecba0c9d6839a062d017f35da8b4c4f4ad79d",
+      "pointer": "/summary/2",
+      "series_source": "sources/5a0e5d6c411e186795279d3677b9813b17f7b93613f8a59148d6c25933eb2144.npz"
+    },
+    {
+      "object": "microphone",
+      "source": "sources/a752bcb401f3de812ce47d698683c7440a813cfa75b3987cdb5f7b59278c7e59.json",
+      "sha256": "a752bcb401f3de812ce47d698683c7440a813cfa75b3987cdb5f7b59278c7e59",
+      "pointer": "/summary/2",
+      "series_source": "sources/201334bb8c6d3db0665c0eeb8897f5ed505a1c3cb59a2bf77a51f4933f403ac8.npz"
+    },
+    {
+      "object": "arm",
+      "source": "sources/1c78d1d7a7ef2ffa50efcf960aafd58ec4096d7b99d17486c3c8a994f549a496.json",
+      "sha256": "1c78d1d7a7ef2ffa50efcf960aafd58ec4096d7b99d17486c3c8a994f549a496",
+      "pointer": "/summary/2",
+      "series_source": "visualization/supplemental/arm-series.npz"
+    },
+    {
+      "object": "robot",
+      "source": "sources/f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9.json",
+      "sha256": "f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9",
+      "pointer": "/summary/original_all/candidate",
+      "series_source": "sources/f65e041aec0ecd3b95d3b1912a4f00435382459d59b1709826740d4f248656c9.json"
+    },
+    {
+      "object": "gears",
+      "source": "sources/1d78963aa8b5d2c0619284f11c6a55b5f21216f716b8a0e54fe2875ec9fc4755.json",
+      "sha256": "1d78963aa8b5d2c0619284f11c6a55b5f21216f716b8a0e54fe2875ec9fc4755",
+      "pointer": "/summary/2",
+      "series_source": "sources/7fe49f09d4fb1472123d50a2e13ae6526e4c70f22cf2367c050604ebca1a41cf.npz"
+    },
+    {
+      "object": "rotation",
+      "source": "sources/052b3f75d3f3574329ff0ac917c8a389f2b1a8226c7b8b52f1b275aa6cd252b9.json",
+      "sha256": "052b3f75d3f3574329ff0ac917c8a389f2b1a8226c7b8b52f1b275aa6cd252b9",
+      "pointer": "/summary/2",
+      "series_source": "sources/592c7efe80691c8d6d145aaa440ab3c84e146899cf3d43942fb5fbf73c5b309a.npz"
+    }
+  ],
+  "figures": [
+    {
+      "file": "png/01_recommended_metrics.png",
+      "description": "Six raw-unit metric panels; baseline and selected values with connectors and selected-value labels.",
+      "sha256": "4a287421b6b4832e5ffb19cd18a98fb0ed79fec10f8e0cf9b3f3ca4e006e8808"
+    },
+    {
+      "file": "png/02_improvement_combined.png",
+      "description": "Paired V1/V2 columns per metric, shared color scale. Robot both columns use previous V3.",
+      "sha256": "3128ddb13ccd54d562ffed850c103cc0cb981bfce7468189e065c95fa160a3e4"
+    },
+    {
+      "file": "png/03_version_psnr.png",
+      "description": "Version curves with translucent fill to 15 dB; separated endpoint labels show selected PSNR.",
+      "sha256": "c0f4acf87e5658c44ed6a77570ded1fcca080123623f1858b29974f4530ca1ce"
+    },
+    {
+      "file": "png/04_temporal_psnr.png",
+      "description": "All nine original curves; x is per-sequence normalized source-frame progress, not common time. No smoothing or resampling. Fill to 18 dB; population standard deviation ddof=0.",
+      "sha256": "f57e4b5a150afc4d239581a5fc8c912bdc4145afd4c6dc1041fed1080a8ea2ac"
+    },
+    {
+      "file": "png/05_frame_distributions.png",
+      "description": "Per-object frame distributions. Violin is descriptive KDE, whiskers P05-P95, box P25-P75, center median; no pooling.",
+      "sha256": "2c628f324725839c51a07bde537b4a9a3475b41221a566ec4dee4a2e654331f3"
+    },
+    {
+      "file": "png/06_quality_ecdf.png",
+      "description": "Unsmoothed empirical CDFs, each object weighted within its own sequence; different evaluation protocols.",
+      "sha256": "d89d5357b14d01b01cb22688c663f31270b95a98beae246c2cc8ffae89875aab"
+    },
+    {
+      "file": "png/07_quality_stability.png",
+      "description": "Within-object baseline-to-selected arrows; measured interquartile spread, not confidence intervals. No cross-protocol ranking.",
+      "sha256": "7517dbb67b09871759ab7b6b6d5faea1fc03bfcfe5b5a236644a81a211f9e79d"
+    },
+    {
+      "file": "png/09_foreground_fullframe.png",
+      "description": "Raw foreground/full-frame PSNR and their arithmetic gap; segmentation masks differ by protocol, gap is not a universal quality score.",
+      "sha256": "6234503843ec274d0668027da61afd55c93110cc5daea70006ecb9d0dcef7263"
+    }
+  ]
+}

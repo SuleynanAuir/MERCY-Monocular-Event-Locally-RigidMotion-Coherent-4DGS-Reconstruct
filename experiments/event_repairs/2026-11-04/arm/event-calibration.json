@@ -1,0 +1,95 @@
+{
+  "format": "scgs_empirical_event_response_v1",
+  "calibration": {
+    "log_floor": 0.03,
+    "thresholds": [
+      0.25372886657714844,
+      0.25358548760414124
+    ],
+    "offset_frames": 0,
+    "calibration_cosine": 0.9944557349937141,
+    "validation_cosine": 0.995303447742051
+  },
+  "trials": [
+    {
+      "log_floor": 0.00392156862745098,
+      "thresholds": [
+        0.4654434621334076,
+        0.46233266592025757
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9831306069459119,
+      "validation_cosine": 0.9836742779083403
+    },
+    {
+      "log_floor": 0.01,
+      "thresholds": [
+        0.3687305450439453,
+        0.36709147691726685
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9903484775269255,
+      "validation_cosine": 0.9908368212739995
+    },
+    {
+      "log_floor": 0.03,
+      "thresholds": [
+        0.25372886657714844,
+        0.25358548760414124
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9944557349937141,
+      "validation_cosine": 0.995303447742051
+    }
+  ],
+  "calibration_ids": [
+    2,
+    3,
+    12,
+    13,
+    22,
+    23
+  ],
+  "validation_windows": [
+    [
+      0,
+      2
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      6,
+      8
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      10,
+      12
+    ],
+    [
+      14,
+      16
+    ],
+    [
+      16,
+      18
+    ],
+    [
+      18,
+      20
+    ],
+    [
+      20,
+      22
+    ]
+  ],
+  "video_sha256": "e41435902cb0ca8f91a83bcef1b5daac2cd523c95b3ab2d219354ba691ce03d3",
+  "events_sha256": "317c8c366e8b7f1c5bec5de81e93f9572365095120277fbbdaaaa802c86e47cf",
+  "fps": 30.0,
+  "provenance": "Original RGB/raw-event empirical fit; no method outputs. Fixed split, zero timestamp offset; not independent sensor calibration."
+}

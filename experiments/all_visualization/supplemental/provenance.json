@@ -1,0 +1,22 @@
+{
+  "remote_directory": "/root/autodl-tmp/SC-GS/experiment/output/Arm_V3_RGB结构优化_20261101_222918_077652/data",
+  "host": "region-41.seetacloud.com:30253",
+  "retrieved_at": "2026-11-03",
+  "files": [
+    {
+      "file": "arm-analysis.json",
+      "sha256": "96f3d1f4bf7bcddc2dfc5735ce509347e284ccc5209a636b203a48e2d658ae62",
+      "bytes": 30086
+    },
+    {
+      "file": "arm-protocol.json",
+      "sha256": "10e9eaba0085b35d68fcca4d4bb1faae1a13632da6a0d480ca4fb035fb4b2cd3",
+      "bytes": 1104
+    },
+    {
+      "file": "arm-series.npz",
+      "sha256": "c395535597707451da141048ada53d268b0c78806e2451903e8962ec3bc15c6e",
+      "bytes": 7095
+    }
+  ]
+}
