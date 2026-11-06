@@ -5,7 +5,7 @@
 🌟 Collaborators
 
 Li Minghao: suleynanaiur@gmail.com
-Liang Yirui: Laybaeknim@gmail.com
+Liang Yirui: laybaeknim@gmail.com
 Chen Qianqi：chenqianqi0719@gmail.com
 
 MERCY 面向机械部件动态场景，以事件流和视频观测为主要约束，以动态三维高斯为最终表示。系统联合处理时间对齐、运动校正、刚体与关节一致性、表面覆盖、外观细化和局部辅助变形，使运动后的高斯同时满足观测一致性、结构连续性与可渲染性。部件级运动与几何资产只作为初始化和结构辅助，不替代事件／视频监督，也不作为最终显示资产。
