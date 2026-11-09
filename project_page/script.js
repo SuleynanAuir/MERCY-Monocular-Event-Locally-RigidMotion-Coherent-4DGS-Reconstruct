@@ -45,24 +45,40 @@ dialog?.addEventListener('close', () => {
 
 const animation = document.querySelector('#reconstruction-animation');
 const animationToggle = document.querySelector('#animation-toggle');
-let playing = true;
-
-function setAnimation(next) {
-  playing = next;
-  animation.src = playing ? animation.dataset.gif : animation.dataset.poster;
+function syncPlayback() {
+  const playing = !animation.paused;
   animationToggle.textContent = playing ? 'Pause animation' : 'Play animation';
   animationToggle.setAttribute('aria-pressed', String(playing));
 }
 
 if (animation && animationToggle) {
   animationToggle.hidden = false;
-  animationToggle.addEventListener('click', () => setAnimation(!playing));
-  // The full-resolution GIF is already the image source: autoplay on page load.
-  setAnimation(true);
+  animationToggle.addEventListener('click', () => {
+    if (animation.paused) animation.play().catch(syncPlayback);
+    else animation.pause();
+  });
+  animation.addEventListener('play', syncPlayback);
+  animation.addEventListener('pause', syncPlayback);
   animation.addEventListener('error', () => {
-    if (playing) {
-      setAnimation(false);
-      document.querySelector('#animation-status').textContent = 'Animation could not load. The still preview remains available.';
-    }
+    syncPlayback();
+    document.querySelector('#animation-status').textContent = 'Animation could not load. Use Download GIF to view the original animation.';
+  });
+  animation.play().then(syncPlayback).catch(syncPlayback);
+}
+
+const sectionLinks = [...document.querySelectorAll('.section-nav a')];
+if ('IntersectionObserver' in window) {
+  const sectionObserver = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting);
+    if (!visible.length) return;
+    const id = visible[0].target.id;
+    sectionLinks.forEach(link => {
+      if (link.hash === '#' + id) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }, { rootMargin: '-10% 0px -45% 0px', threshold: 0 });
+  sectionLinks.forEach(link => {
+    const target = document.querySelector(link.hash);
+    if (target) sectionObserver.observe(target);
   });
 }

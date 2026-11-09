@@ -12,51 +12,58 @@
   <meta name="twitter:card" content="summary_large_image">
   <title>MERCY: Monocular Event-boosted Rigid-Motion Coherent 4D Gaussian Splatting Reconstruction Dynamic Object</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=mercy-2">
+  <link rel="stylesheet" href="styles.css?v=mercy-3">
   <link rel="preload" href="assets/web/reconstruction-poster.webp" as="image">
-  <script src="script.js?v=mercy-2" defer></script>
+  <script src="script.js?v=mercy-3" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+    <nav class="section-nav" aria-label="Page sections"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#visualizations">Visualizations</a></nav>
 <main id="main">
   <header class="publication-header">
     <h1 class="publication-title"><span class="title-line"><span class="title-brand">MERCY:</span> <span class="acronym-letter">M</span>onocular <span class="acronym-letter">E</span>vent-boosted <span class="acronym-letter">R</span>igid-Motion <span class="acronym-letter">C</span>oherent</span><span class="title-line">4D Gaussian Splatting Reconstruction D<span class="acronym-letter">y</span>namic Object</span></h1>
-    <p class="contributors"><span>Liang Yirui</span><span>Chen Qianqi</span><span>Li Minghao</span></p>
+    <div class="contributors">
+      <a href="mailto:t330034030@mail.bnbu.edu.cn"><span>Liang Yirui</span><span class="author-email">t330034030@mail.bnbu.edu.cn</span></a>
+      <a href="mailto:t330034001@mail.bnbu.edu.cn"><span>Chen Qianqi</span><span class="author-email">t330034001@mail.bnbu.edu.cn</span></a>
+      <a href="mailto:t330034027@mail.bnbu.edu.cn"><span>Li Minghao</span><span class="author-email">t330034027@mail.bnbu.edu.cn</span></a>
+    </div>
     <div class="keywords" aria-label="Project keywords" tabindex="0"><strong class="keyword-heading">KEY words:</strong><span class="keyword keyword-blue">Monocular Reconstruction</span><span class="keyword keyword-purple">Event Motion Refinement</span><span class="keyword keyword-green">Part-aware Kinematic Modeling</span><span class="keyword keyword-orange">Temporally Coherent 4DGS</span></div>
     <nav class="resource-links" aria-label="Project resources">
       <a class="primary-link" href="https://github.com/SuleynanAuir/MERCY-Monocular-Event-Locally-RigidMotion-Coherent-4DGS-Reconstruct"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.23c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.09 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.33.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.16 1.18A11 11 0 0 1 12 6.15c.98 0 1.96.13 2.88.39 2.2-1.49 3.16-1.18 3.16-1.18.62 1.59.23 2.76.11 3.05.73.8 1.18 1.82 1.18 3.08 0 4.42-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.23c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z"/></svg>Code</a>
       <a href="ppt_all.pdf">Technical slides <span aria-hidden="true">↗</span></a>
       <a href="assets/web/reconstruction-hq.gif" download>Download GIF <span aria-hidden="true">↓</span></a>
     </nav>
-    <nav class="section-nav" aria-label="Page sections"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#visualizations">Visualizations</a></nav>
+
   </header>
 
-  <section class="teaser wide" aria-label="Animated nine-object reconstruction">
-    <figure>
-      <div class="animation-frame">
-        <img id="reconstruction-animation" src="assets/web/reconstruction-hq.gif" data-poster="assets/web/reconstruction-poster.webp" data-gif="assets/web/reconstruction-hq.gif" alt="Animated Mercy reconstructions of Lego, Fan, Arm, Gears, Lamp, Metronome, Microphone, Robot and Rotation, accompanied by reference-camera diagnostics." width="3840" height="2160" fetchpriority="high">
-      </div>
-      <div class="animation-controls">
-        
-        <button id="animation-toggle" class="quiet-button" type="button" aria-controls="reconstruction-animation" aria-pressed="true" hidden>Pause animation</button>
-      </div>
-      <p id="animation-status" role="status" class="visually-hidden"></p>
-    </figure>
-  </section>
-
-  <section id="overview" class="abstract-band" aria-labelledby="overview-title">
+  <div class="hero-layout wide">
+    <div class="hero-left">
+      <figure class="hero-pipeline">
+        <a class="zoomable" href="assets/web/pipeline-wide.webp" data-figure data-alt="Mercy part-aware motion and event-supervision pipeline" data-caption="Supplied Mercy pipeline: input motion, part-aware kinematics, MotionFineTuner, rendering and event supervision." aria-label="Enlarge the Mercy motion pipeline"><img src="assets/web/pipeline-wide.webp" alt="Mercy pipeline: input motion, part-aware kinematic structure, motion refinement and event-supervised optimization." width="6563" height="3119" fetchpriority="high"></a>
+      </figure>
+      <section id="overview" class="abstract-band overview-card" aria-labelledby="overview-title">
     <div class="reading-width">
       <p class="eyebrow">Overview</p>
       <h2 id="overview-title">Coherent motion from a fixed viewpoint</h2>
-      <p>Reconstructing moving objects from a fixed monocular view provides limited geometric observations. Estimating motion independently for every Gaussian can also introduce inconsistent deformation. <strong>Mercy</strong> addresses locally rigid motion with a part-aware Gaussian representation: moving components share rigid transformations, while static components remain fixed.</p>
-      <p>The pipeline initializes 3D Gaussians from the first RGB frame, aligns and refines the canonical model, identifies moving parts, and estimates continuous motion through a kinematic structure. Rendering and event-based supervision then refine the motion jointly. The supplied evaluation uses nine Blender objects, rendered RGB videos and event streams generated with ESIM.</p>
+      <p>A <strong class="text-blue">fixed monocular view</strong> provides limited geometric observations. Estimating each Gaussian’s motion independently can cause inconsistent deformation. <strong class="text-blue">Mercy</strong> uses a <strong class="text-green">part-aware Gaussian representation</strong>: moving components share <strong class="text-green">rigid transformations</strong>, while static components remain fixed.</p>
+      <p>Starting from the first RGB frame, the pipeline initializes and refines a <strong class="text-blue">canonical Gaussian model</strong>, identifies moving parts, and estimates continuous motion through a <strong class="text-green">kinematic structure</strong>. Rendering and <strong class="text-purple">event-based supervision</strong> jointly refine motion. Evaluation uses <strong class="text-orange">nine Blender objects</strong>, rendered RGB videos and ESIM-generated event streams.</p>
     </div>
   </section>
+    </div>
+    <section class="teaser" aria-label="Animated nine-object reconstruction">
+      <figure>
+        <div class="animation-frame">
+          <video id="reconstruction-animation" src="assets/web/reconstruction-4k.mp4" poster="assets/web/reconstruction-poster.webp" autoplay muted loop playsinline preload="auto" width="3840" height="2160" aria-label="Animated Mercy reconstructions of nine objects with reference-camera diagnostics"><a href="assets/web/reconstruction-hq.gif">View the reconstruction GIF</a></video>
+        </div>
+        <div class="animation-controls"><button id="animation-toggle" class="quiet-button" type="button" aria-controls="reconstruction-animation" aria-pressed="true" hidden>Pause animation</button></div>
+        <p id="animation-status" role="status" class="visually-hidden"></p>
+      </figure>
+    </section>
+  </div>
 
   <section id="method" class="section wide" aria-labelledby="method-title">
     <p class="eyebrow">Method</p>
     <h2 id="method-title">Geometry, part motion and events work together</h2>
-    <p class="section-intro">A canonical Gaussian model anchors the reconstruction. Part-level rigidity constrains motion, and events provide additional temporal supervision.</p>
     <div class="method-layout">
       <figure>
         <a class="zoomable method-figure" href="assets/web/pipeline.jpeg" data-figure data-alt="Original Mercy pipeline diagram from the technical slides" data-caption="Mercy pipeline. Original framework figure from ppt_all.pdf, page 15: Gaussian initialization and refinement, part segmentation and motion separation, kinematic motion, and event-supervised optimization." aria-label="Enlarge the Mercy pipeline diagram"><img src="assets/web/pipeline.webp" alt="Mercy framework: Hunyuan3D, Mesh2Splat, CARE-GS, PartField, FEAST, MonoGS, part-aware kinematics, MotionFineTuner and event supervision." width="1355" height="1239" loading="lazy" decoding="async"></a>

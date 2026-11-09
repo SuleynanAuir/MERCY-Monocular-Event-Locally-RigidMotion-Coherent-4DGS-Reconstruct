@@ -55,7 +55,7 @@ class PageParser(HTMLParser):
             self.ids.add(attrs["id"])
         if "error-object" in attrs.get("class", "").split():
             self.object_count += 1
-        for key in ("href", "src", "data-gif", "data-poster"):
+        for key in ("href", "src", "data-gif", "data-poster", "poster"):
             value = attrs.get(key, "")
             url = urlsplit(value)
             if url.scheme or url.netloc or not value:
