@@ -44,7 +44,6 @@
       </figure>
       <section id="overview" class="abstract-band overview-card" aria-labelledby="overview-title">
     <div class="reading-width">
-      <p class="eyebrow">Overview</p>
       <h2 id="overview-title">Coherent motion from a fixed viewpoint</h2>
       <p>A <strong class="text-blue">fixed monocular view</strong> provides limited geometric observations. Estimating each Gaussian’s motion independently can cause inconsistent deformation. <strong class="text-blue">Mercy</strong> uses a <strong class="text-green">part-aware Gaussian representation</strong>: moving components share <strong class="text-green">rigid transformations</strong>, while static components remain fixed.</p>
       <p>Starting from the first RGB frame, the pipeline initializes and refines a <strong class="text-blue">canonical Gaussian model</strong>, identifies moving parts, and estimates continuous motion through a <strong class="text-green">kinematic structure</strong>. Rendering and <strong class="text-purple">event-based supervision</strong> jointly refine motion. Evaluation uses <strong class="text-orange">nine Blender objects</strong>, rendered RGB videos and ESIM-generated event streams.</p>
