@@ -1,0 +1,10 @@
+Tool: built-in image_gen (background extraction and compositing).
+
+Shared prompt:
+Use case: background-extraction and compositing. Create one row of five evenly spaced acknowledgment logos for an academic README using these five supplied images in exact input order. Wide landscape, five equal cells. Each logo centered above a crisp black English caption, with aligned label baselines. Remove outer white/gray/checkerboard backgrounds and use genuine alpha transparency. Preserve exact logo shapes, lettering, colors and aspect ratios, with comparable visual sizes, generous margins, no borders, shadows, title or extra symbols. Retain essential white interior parts of logos. Do not stylize.
+
+Top row prompt suffix:
+Row: teacher (duplicate as two slightly overlapping teachers), Blender, NVIDIA, EA Sports, Tencent. Captions exactly: 'All Professors' with second line '& Co-supervisors'; 'Blender'; 'NVIDIA'; 'EA'; 'Tencent'. Remove Blender's checkerboard background. Keep any existing Chinese lettering within Tencent's official logo, but all captions must be English.
+
+Bottom row prompt suffix:
+Row: Hunyuan Model, Hugging Face, NumPy, AutoDL, VAST. Captions exactly: 'Hunyuan Model'; 'Hugging Face'; 'NumPy'; 'AutoDL'; 'VAST AI' with second line 'Research'. Preserve Hunyuan's blue square behind its white symbol and VAST's black rectangle behind its white lettering. Aim for a 2172x724 image matching a companion top row, five equal cells. Transparent background outside the individual logo shapes and captions.
