@@ -45,8 +45,7 @@ dialog?.addEventListener('close', () => {
 
 const animation = document.querySelector('#reconstruction-animation');
 const animationToggle = document.querySelector('#animation-toggle');
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-let playing = false;
+let playing = true;
 
 function setAnimation(next) {
   playing = next;
@@ -58,17 +57,8 @@ function setAnimation(next) {
 if (animation && animationToggle) {
   animationToggle.hidden = false;
   animationToggle.addEventListener('click', () => setAnimation(!playing));
-  // Load the GIF only when the figure is visible, and respect reduced motion.
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) {
-        if (!reducedMotion.matches) setAnimation(true);
-        observer.disconnect();
-      }
-    }, { rootMargin: '100px' });
-    observer.observe(animation);
-  } else if (!reducedMotion.matches) setAnimation(true);
-  reducedMotion.addEventListener('change', event => { if (event.matches) setAnimation(false); });
+  // The full-resolution GIF is already the image source: autoplay on page load.
+  setAnimation(true);
   animation.addEventListener('error', () => {
     if (playing) {
       setAnimation(false);

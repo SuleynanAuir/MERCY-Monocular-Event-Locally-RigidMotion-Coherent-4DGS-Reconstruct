@@ -7,10 +7,11 @@ A static academic project page built with HTML, CSS and vanilla JavaScript, adap
 From the repository root:
 
 ```sh
-python3 -m http.server 8000 --directory project_page
+python3 project_page/scripts/build_site.py --output /tmp/mercy-preview
+python3 -m http.server 8000 --directory /tmp/mercy-preview
 ```
 
-Open `http://localhost:8000`. No npm install or application build is required.
+Open `http://localhost:8000`. Choose a new or empty output directory. No npm install is required.
 
 ## Files
 
@@ -21,7 +22,7 @@ Open `http://localhost:8000`. No npm install or application build is required.
 - `scripts/build_site.py`: validates local links and packages only the required public files.
 - `../.github/workflows/mercy-pages.yml`: GitHub Actions deployment to GitHub Pages.
 
-The page works without JavaScript: the table and figures remain visible, full-size figures open as ordinary links, and the GIF can be downloaded. JavaScript adds the dialog and controlled animation. Reduced-motion preferences disable autoplay.
+The page works without JavaScript: the table and figures remain visible, full-size figures open as ordinary links, and the GIF can be downloaded. JavaScript adds the dialog and controlled animation. The full-resolution GIF autoplays on page load, with a pause control.
 
 ## GitHub Pages
 
@@ -48,4 +49,8 @@ The summary gain of +6.75 dB is the difference between object-wise mean PSNR val
 
 Error previews retain the first ranked frame from each original `05_error_maps.png`. Four panels are displayed as a 2×2 group inside each of the nine object tiles. Clicking a tile opens the unmodified complete figure, including four sampled frames and foreground CDF/tail plots. The grid retains the shared RGB error and V3−V2 difference scales. Method names follow the supplied PDF rather than legacy labels in report metadata.
 
-The web copy is derived from the supplied original GIF and retains all 150 frames and their timing at a smaller resolution; the page provides a pause control and a still preview. On-image reference-camera diagnostics include fitting/selection and are not presented as an independent benchmark.
+The web GIF is the unmodified 3840 × 2160 original, preserving all 150 frames and their timing; the page provides a pause control and a still preview. On-image reference-camera diagnostics include fitting/selection and are not presented as an independent benchmark.
+
+The full-resolution GIF is stored as three binary `.part` files with a `.parts.json` manifest to accommodate upload limits. The packaging script verifies their SHA-256 checksum and size, then restores the exact original GIF. Only the restored GIF is published; no browser-side assembly is needed.
+
+The header uses two explicit title lines, with the M / E / R / C / y letters emphasized. Keywords stay in one row (horizontally scrollable on narrow devices). The square nine-object grid scales to viewport height and retains three columns on mobile; use the existing full-image dialog to inspect details.
