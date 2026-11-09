@@ -7,3 +7,12 @@
 [submodule "CARE-GS"]
 	path = CARE-GS
 	url = https://github.com/Kiki0719/CARE-GS.git
+[submodule "FEAST"]
+	path = FEAST
+	url = https://github.com/Kiki0719/FEAST-Flow-and-Event-Assisted-Dynamic-Static-Separation-via-Temporal-Contours.git
+[submodule "PartField"]
+	path = PartField
+	url = https://github.com/nv-tlabs/PartField.git
+[submodule "rpg_esim"]
+	path = rpg_esim
+	url = https://github.com/uzh-rpg/rpg_esim.git
