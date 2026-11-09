@@ -2,6 +2,8 @@
 
 **Monocular Event-boosted Locally Rigid Motion and Coherent 4D Gaussian Reconstruction**
 
+**Related project:** [CARE-GS](https://github.com/Kiki0719/CARE-GS)
+
 🌟 Collaborators
 
 Li Minghao: suleynanaiur@gmail.com
