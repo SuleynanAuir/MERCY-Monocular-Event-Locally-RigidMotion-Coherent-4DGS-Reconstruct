@@ -44,25 +44,12 @@ dialog?.addEventListener('close', () => {
 });
 
 const animation = document.querySelector('#reconstruction-animation');
-const animationToggle = document.querySelector('#animation-toggle');
-function syncPlayback() {
-  const playing = !animation.paused;
-  animationToggle.textContent = playing ? 'Pause animation' : 'Play animation';
-  animationToggle.setAttribute('aria-pressed', String(playing));
-}
-
-if (animation && animationToggle) {
-  animationToggle.hidden = false;
-  animationToggle.addEventListener('click', () => {
-    if (animation.paused) animation.play().catch(syncPlayback);
-    else animation.pause();
+if (animation) {
+  animation.muted = true;
+  animation.play().catch(() => {
+    document.querySelector('#animation-status').textContent = 'Automatic playback is unavailable. The original animation can be downloaded above.';
   });
-  animation.addEventListener('play', syncPlayback);
-  animation.addEventListener('pause', syncPlayback);
   animation.addEventListener('error', () => {
-    syncPlayback();
     document.querySelector('#animation-status').textContent = 'Animation could not load. Use Download GIF to view the original animation.';
   });
-  animation.play().then(syncPlayback).catch(syncPlayback);
 }
-

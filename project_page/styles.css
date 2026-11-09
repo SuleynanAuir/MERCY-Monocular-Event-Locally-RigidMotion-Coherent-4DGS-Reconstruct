@@ -100,3 +100,19 @@ body{padding-right:0;padding-bottom:0}
 .paper-table .zoomable:hover{box-shadow:0 0 0 3px #e6eef6}
 @media(max-width:1000px){.result-stats{gap:10px}.result-stats .stat-card{flex-direction:column;gap:9px;text-align:center;padding:18px 8px}.result-stats .stat-value{font-size:30px}.stat-value small{font-size:17px}}
 @media(max-width:640px){.result-stats{grid-template-columns:1fr;gap:10px;margin-bottom:28px}.result-stats .stat-card{flex-direction:row;justify-content:flex-start;gap:25px;text-align:left;padding:16px 20px}.result-stats .stat-value{min-width:128px}.motion-caption{font-size:12px;margin-top:12px;padding:13px 15px}.paper-table{margin-bottom:25px}}
+
+/* A continuous animation/caption block and paired quantitative comparison. */
+.hero-layout .motion-caption{margin:0;padding:10px 14px;border-radius:0 0 6px 6px;font-size:12px;line-height:1.75}
+.hero-layout .motion-caption strong{font-size:14px;margin-bottom:3px}
+.integrated-comparison{background:#fff;padding:20px 0 28px;margin:0 0 28px;border-top:1px solid #e0e7ed;border-bottom:1px solid #e0e7ed}
+.comparison-layout{display:grid;grid-template-columns:minmax(0,.44fr) minmax(0,.56fr);gap:22px;align-items:start;margin-top:16px}
+.comparison-maps{min-width:0;background:var(--band);padding:10px 8px 8px}
+.comparison-table{min-width:0;padding-top:10px}
+.comparison-maps .error-grid{width:100%;max-width:none;gap:7px}
+.comparison-maps .scale-row{gap:15px;margin-top:8px}
+.comparison-maps .scale-row img{height:24px}
+.comparison-maps .selection-note{font-size:9px;margin-top:4px}
+.comparison-table .paper-table.table-2{margin:0;width:100%;max-width:none}
+.foreground-description{font-size:13px;line-height:1.8;color:#65717a;margin:10px 8px 0}
+.foreground-description strong{display:block;color:var(--blue);font-size:14px;margin-bottom:4px}
+@media(max-width:760px){.comparison-layout{grid-template-columns:1fr;gap:16px}.comparison-maps{max-width:520px;width:100%;margin:auto}.comparison-table{padding-top:0}.foreground-description{font-size:12px}.integrated-comparison{padding-block:20px}.comparison-maps .error-grid{width:100%}}
