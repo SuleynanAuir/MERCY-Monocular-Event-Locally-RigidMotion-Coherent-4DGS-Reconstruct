@@ -1,0 +1,21 @@
+{
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "60/1",
+        "duration": "24.000000",
+        "nb_frames": "1440"
+      }
+    ]
+  },
+  "full_decode_passed": true,
+  "video_sha256": "5e2a4e076a29f8945fda05c7e0917dd6c9934e69dc9f49ffdbcfb2602a722b7a",
+  "model_sha256": "194377c7de2311d4b1dea0b31c5873db2f4518946f92b992b00cdefc47e0ccf6",
+  "sidecar_sha256": "59a60d4fea3f176f6d1c14abd9bd261ce67e591bdcc5313009a14464dc8e43b9",
+  "video_bytes": 7878665,
+  "preview_scope": "Frames near 0, 6, 12, 18 seconds inspected; complete model stays in frame; rear grain remains"
+}

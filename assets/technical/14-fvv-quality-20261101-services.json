@@ -1,0 +1,90 @@
+{
+  "original_scene_services": [
+    {
+      "local_port": 20893,
+      "http_status": 200
+    },
+    {
+      "local_port": 20895,
+      "http_status": 200
+    },
+    {
+      "local_port": 20899,
+      "http_status": 200
+    },
+    {
+      "local_port": 20900,
+      "http_status": 200
+    },
+    {
+      "local_port": 20903,
+      "http_status": 200
+    },
+    {
+      "local_port": 20905,
+      "http_status": 200
+    },
+    {
+      "local_port": 20908,
+      "http_status": 200
+    },
+    {
+      "local_port": 20909,
+      "http_status": 200
+    }
+  ],
+  "fvv": {
+    "ready": true,
+    "message": "Hybrid \u6a21\u578b\u5df2\u5c31\u7eea",
+    "schema": 1,
+    "trained_at": "2026-10-31T16:52:06.177661+00:00",
+    "backend": "ohsngjun/3D-4DGS",
+    "revision": "9528828d79148f032c924ccc840bd81374ab800c",
+    "scene": "lego",
+    "checkpoint": "model.pth",
+    "sha256": "d474131afdd23125b31d828f58b1495a56c3b2450ba04f5c6b32b671d226a7ec",
+    "config": "effective.yaml",
+    "config_sha256": "9b291ab20d7afa17f2ac7d3ebbd59823aafe5256f2744e1738939297eace7cf6",
+    "time_duration": [
+      0.0,
+      6.633333333333334
+    ],
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "fov": 39.59775410217631,
+    "bytes": 88721528,
+    "budget_bytes": 536870912,
+    "training_iteration": 81000,
+    "refinement": {
+      "parent_sha256": "202502e997b8f0960ba0fa378518f2c573a169b8f4a08aa6ba0a0ffe7be29c56",
+      "steps": 6000,
+      "all_frames": true,
+      "midpoint_weight": 2.0
+    },
+    "surface_repair": {
+      "parent_sha256": "1a6e572cf1854561ebb532cb4c697828133b2f267909a3d270542e236dc503d7",
+      "surface_prior_sha256": "eb60b7de75919ce488973c785806de011579e5dd2ded1dd304b183ae781b5325",
+      "distance": 0.08,
+      "removed": 4716,
+      "remaining": 320184,
+      "scope": "explicit source mesh prior; nearest timestamp to temporal peak; candidate requires image and motion validation"
+    },
+    "seed_initialization": {
+      "parent_sha256": "1e2675469fa268f7ad84f43463205099bb49532bdf07fe5b548d873c78ba201a",
+      "added": 19496,
+      "source_sha256": "92d14d9e3d615d414c90f72cb5677dcbc0fff97c46dd00b09982c6d5b67d1922",
+      "requires_training": false,
+      "fitted_steps": 6000
+    },
+    "temporal_sigma_seconds": 0.016666666666666666,
+    "busy": false,
+    "frame_protocol": "fvv-jpeg-v1",
+    "max_in_flight": 8,
+    "max_fps": 120
+  }
+}

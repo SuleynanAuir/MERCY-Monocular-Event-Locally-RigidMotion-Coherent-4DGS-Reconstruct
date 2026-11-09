@@ -1,0 +1,67 @@
+{
+  "job": {
+    "output": "/root/autodl-tmp/SC-GS/experiment/output/metronome_events_parts_fixed_20261104_002014_841804",
+    "source": "/root/autodl-tmp/SC-GS/outputs/metronome-event-repair/repaired-export/metronome_20261103T155726Z_669a312d",
+    "id": "8a4f46c2ec2f45ff92b31b7485f254f3",
+    "pid": 9284
+  },
+  "summary": [
+    {
+      "version": "V1",
+      "foreground_psnr": 22.87003197794122,
+      "psnr": 32.53989025240102,
+      "ssim": 0.969982634069803,
+      "foreground_ssim": 0.7305862673048762,
+      "lpips": 0.040099219977855684,
+      "iou": 0.9576692757856445,
+      "missing": 1.0264941680426254,
+      "part_missing": 38.68971085493154,
+      "event_l1": 0.41531493243352685,
+      "event_cosine": 0.9088015045490894,
+      "polarity": 71.40530446385532,
+      "silent": 0.0004916601729893883,
+      "latency_ms": 7.5533245503902435,
+      "point_count": 645262,
+      "metric_unavailable_reasons": {}
+    },
+    {
+      "version": "V2",
+      "foreground_psnr": 28.03238441281433,
+      "psnr": 37.07680065504374,
+      "ssim": 0.9792445704971532,
+      "foreground_ssim": 0.8218611706419554,
+      "lpips": 0.032009847611188885,
+      "iou": 0.9588325670077963,
+      "missing": 1.7095260219400585,
+      "part_missing": 37.03940073935731,
+      "event_l1": 0.43258837855251625,
+      "event_cosine": 0.8773216301996606,
+      "polarity": 70.50936183411488,
+      "silent": 0.0009105795678989347,
+      "latency_ms": 45.05773723125458,
+      "point_count": 1143789,
+      "metric_unavailable_reasons": {}
+    },
+    {
+      "version": "V3",
+      "foreground_psnr": 34.705598197476924,
+      "psnr": 43.245488620437115,
+      "ssim": 0.9950098880132784,
+      "foreground_ssim": 0.9720274995733557,
+      "lpips": 0.013377347327768803,
+      "iou": 0.9619114684053561,
+      "missing": 1.4871858633599546,
+      "part_missing": 31.764644197027,
+      "event_l1": 0.3268293122506822,
+      "event_cosine": 0.9288378305567351,
+      "polarity": 72.61664382591563,
+      "silent": 0.0006102777012374012,
+      "latency_ms": 44.93070536851883,
+      "point_count": 1143789,
+      "metric_unavailable_reasons": {}
+    }
+  ],
+  "verified_artifacts": 45,
+  "event_validation_windows": 19,
+  "all_event_bins": 24
+}

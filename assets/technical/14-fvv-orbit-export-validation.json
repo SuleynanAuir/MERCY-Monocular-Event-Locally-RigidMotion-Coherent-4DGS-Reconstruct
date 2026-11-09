@@ -1,0 +1,53 @@
+{
+  "scope": "Actual GPU offline export through local UI gateway; CLI and isolated browser button/download checks",
+  "default_export": {
+    "created_at": "2026-10-31T07:35:29.858953+00:00",
+    "scene": "lego",
+    "model_sha256": "aef06281b03c85d244cf9ce7457986d63b5953916a3125053a0eb45712ee265b",
+    "config_sha256": "9b291ab20d7afa17f2ac7d3ebbd59823aafe5256f2744e1738939297eace7cf6",
+    "model_trained_at": "2026-10-31T07:14:45.221070+00:00",
+    "training_iteration": 15000,
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "torch": "2.1.2+cu121",
+    "video_bytes": 2067171,
+    "elapsed_seconds": 5.662035271525383,
+    "trajectory": {
+      "seconds": 12.0,
+      "fps": 30,
+      "width": 960,
+      "height": 540,
+      "frames": 360,
+      "radius": 1.5,
+      "elevation_degrees": 15.0,
+      "target": [
+        0.0,
+        0.0,
+        1.5
+      ],
+      "motion": "360 degree orbit, two sinusoidal elevation cycles, always looking at target",
+      "coordinate_system": "FVV x right, y down, z forward; yaw/pitch degrees",
+      "animation": "model time advances 1 second per video second, loops at model boundary"
+    },
+    "video": {
+      "codec": "H.264",
+      "pixel_format": "yuv420p",
+      "crf": 18,
+      "preset": "fast"
+    }
+  },
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 960,
+    "height": 540,
+    "r_frame_rate": "30/1",
+    "duration": "12.000000",
+    "nb_frames": "360"
+  },
+  "embedded_parameters_match_json": true,
+  "browser": {
+    "errors": [],
+    "status": "导出完成，请保存视频和参数 JSON。"
+  },
+  "backend_tests": 49,
+  "frontend_tests": 97
+}

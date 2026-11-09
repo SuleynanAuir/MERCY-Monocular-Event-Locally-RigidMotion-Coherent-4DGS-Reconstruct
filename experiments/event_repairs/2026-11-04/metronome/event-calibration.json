@@ -1,0 +1,139 @@
+{
+  "format": "scgs_empirical_event_response_v1",
+  "calibration": {
+    "log_floor": 0.03,
+    "thresholds": [
+      0.27250975370407104,
+      0.27968132495880127
+    ],
+    "offset_frames": 0,
+    "calibration_cosine": 0.9751138822351872,
+    "validation_cosine": 0.979918147594459
+  },
+  "trials": [
+    {
+      "log_floor": 0.00392156862745098,
+      "thresholds": [
+        0.27436575293540955,
+        0.28247418999671936
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9594661669172725,
+      "validation_cosine": 0.9674257168634894
+    },
+    {
+      "log_floor": 0.01,
+      "thresholds": [
+        0.2739475667476654,
+        0.28195375204086304
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9663460993131496,
+      "validation_cosine": 0.9717083533595885
+    },
+    {
+      "log_floor": 0.03,
+      "thresholds": [
+        0.27250975370407104,
+        0.27968132495880127
+      ],
+      "offset_frames": 0,
+      "calibration_cosine": 0.9751138822351872,
+      "validation_cosine": 0.979918147594459
+    }
+  ],
+  "calibration_ids": [
+    2,
+    3,
+    12,
+    13,
+    22,
+    23,
+    32,
+    33,
+    42,
+    43
+  ],
+  "validation_windows": [
+    [
+      0,
+      2
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      6,
+      8
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      10,
+      12
+    ],
+    [
+      14,
+      16
+    ],
+    [
+      16,
+      18
+    ],
+    [
+      18,
+      20
+    ],
+    [
+      20,
+      22
+    ],
+    [
+      24,
+      26
+    ],
+    [
+      26,
+      28
+    ],
+    [
+      28,
+      30
+    ],
+    [
+      30,
+      32
+    ],
+    [
+      34,
+      36
+    ],
+    [
+      36,
+      38
+    ],
+    [
+      38,
+      40
+    ],
+    [
+      40,
+      42
+    ],
+    [
+      44,
+      46
+    ],
+    [
+      46,
+      48
+    ]
+  ],
+  "video_sha256": "5d4cb53319b559f0d8dbe19f48f328ce49e7c4a4ed0fd3d86a8a26f224091f83",
+  "events_sha256": "aa27a32e17f6cfb0a1646fced118870af0b88d85423372848d7ed1db3087e74e",
+  "fps": 30.0,
+  "provenance": "Original RGB/raw-event empirical fit; no method outputs. Fixed split, zero timestamp offset; not independent sensor calibration."
+}

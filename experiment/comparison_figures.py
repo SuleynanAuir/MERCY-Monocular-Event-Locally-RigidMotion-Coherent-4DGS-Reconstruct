@@ -173,18 +173,15 @@ def style():
 
 def canvas(title, subtitle, size=(16, 10)):
     f = plt.figure(figsize=size)
-    f.text(.045, .97, title, fontsize=21, weight='bold', va='top')
-    f.text(.045, .935, subtitle, fontsize=10, color=MUTED, va='top')
     return f
 
 
 def empty(ax, message='Not available in this export'):
-    ax.text(.5, .5, message, ha='center', va='center', transform=ax.transAxes, color=MUTED)
+    ax.text(.5, .5, 'N/A', ha='center', va='center', transform=ax.transAxes, color=MUTED)
     ax.set_axis_off()
 
 
 def panel(ax, title):
-    ax.set_title(title, loc='left', pad=12)
     ax.grid(alpha=.55)
     ax.set_axisbelow(True)
 
@@ -195,8 +192,6 @@ def method_legend(f, names, y=.89):
 
 
 def save_figure(f, output, name, foot, note=''):
-    f.text(.045, .065, foot, fontsize=9, color=MUTED, va='top', linespacing=1.5)
-    f.text(.045, .014, note, fontsize=8, color=MUTED, va='bottom')
     f.savefig(Path(output) / 'figures' / (name + '.png'), dpi=180, bbox_inches='tight')
     plt.close(f)
 
@@ -232,7 +227,6 @@ def quality(a, z, output, note, audit):
         for tick,key in zip(ax.get_xticklabels(),keys):tick.set_color(GOOD if METRICS[key][2]>0 else BAD)
         ax.set_yticks([.25, .5, .75, 1.], ['']*4); ax.set_ylim(0, 1.14)
         ax.spines['polar'].set_visible(False)
-        f.text(.32+j*.34,.875,title,ha='center',fontsize=13,weight='bold')
     keys=list(METRICS);pairs=[(i,j) for i,j in [(0,1),(1,2),(0,2)] if j<nv]
     gains=np.array([[improvement(a['summary'][b].get(k),a['summary'][e].get(k),METRICS[k][2]) for b,e in pairs] for k in keys])
     groups_by_key=dict(foreground_psnr=0,psnr=0,ssim=1,foreground_ssim=1,lpips=2,iou=2,
@@ -242,7 +236,6 @@ def quality(a, z, output, note, audit):
     valid=finite(gains);low=min(-100.,nice_cap(abs(valid.min()))*-1 if len(valid) and valid.min()<0 else -100.)
     high=max(350.,nice_cap(valid.max()) if len(valid) else 350.)
     audit['relative_gains']=[]
-    f.text(.19,.466,'Relative improvement across metrics',fontsize=15,weight='bold')
     f.legend([Line2D([0],[0],marker='o',ls='',color=c,markersize=7) for c in family_colors],families,
              loc='center',bbox_to_anchor=(.56,.441),ncol=6,frameon=False,fontsize=8,columnspacing=1.1,handletextpad=.35)
     for col,(b,e) in enumerate(pairs):
@@ -316,7 +309,7 @@ def temporal(output, a=None):
                 start = z['times'][i] if i < len(z['times']) else t[i]
                 ax.axvspan(start,t[i],color='#BBC5CD',alpha=.35,lw=0)
                 delta.axvspan(start,t[i],color='#BBC5CD',alpha=.35,lw=0)
-        ax.set_title(METRICS[k][0],loc='left',pad=12);ax.set_ylabel(METRICS[k][1] or 'Native value')
+        ax.set_ylabel(METRICS[k][0] + (' (' + METRICS[k][1] + ')' if METRICS[k][1] else ''))
         ax.grid(alpha=.5);ax.tick_params(labelbottom=False)
         density.set(xlim=(0,100),xlabel='CDF %');density.set_xticks([0,100]);density.tick_params(labelleft=False,labelsize=8);density.grid(alpha=.3)
         delta.axhline(0,color=MUTED,lw=.7);delta.set(xlabel='Time (s)',ylabel='Δ better ↑');delta.tick_params(labelsize=8);delta.grid(alpha=.4)
@@ -350,7 +343,6 @@ def spatial(root,a,z,manifest,output,note,audit):
         errors=[]
         curve_grid=curves[row,0].subgridspec(2,1,height_ratios=[3,1],hspace=.06)
         cdf=f.add_subplot(curve_grid[0]);tail=f.add_subplot(curve_grid[1],sharex=cdf)
-        cdf.set_title('Foreground error · CDF & tail',loc='left',fontsize=11,pad=6)
         quantiles=[]
         for v in range(nv):
             ax=f.add_subplot(grid[row,v]);ax.set_xticks([]);ax.set_yticks([])
@@ -360,7 +352,7 @@ def spatial(root,a,z,manifest,output,note,audit):
             im=ax.imshow(err,cmap='magma',vmin=0,vmax=.25,aspect='equal')
             if mask is not None and mask.any() and not mask.all():ax.contour(mask.astype(float),levels=[.5],colors=['#B9D9DB'],linewidths=.25,alpha=.5)
             ax.text(.04,.96,f'{names[v]} · {z["psnr"][v,i]:.2f} dB\nMAE {err.mean():.4f}',transform=ax.transAxes,color='white',fontsize=9,va='top')
-            if row==0:ax.set_title(names[v],color=COLORS[v],fontsize=13,pad=9)
+            if row==0:ax.set_xlabel(names[v],color=COLORS[v])
             if mask is not None and mask.any():
                 vals=np.sort(err[mask]);ind=np.unique(np.linspace(0,len(vals)-1,min(1500,len(vals)),dtype=int));mass=(ind+1)/len(vals)*100
                 q50,q95,q99=np.percentile(vals,[50,95,99]);quantiles.append(dict(version=names[v],p50=float(q50),p95=float(q95),p99=float(q99),foreground_pixels=len(vals)))
@@ -387,7 +379,7 @@ def spatial(root,a,z,manifest,output,note,audit):
                 record.update(foreground_improved_percent=float(better),foreground_worse_percent=float(worse),foreground_tied_percent=float(100-better-worse))
                 label+=f'\nFG − {better:.1f}% / + {worse:.1f}%'
             ax.text(.04,.96,label,transform=ax.transAxes,color=INK,fontsize=9,va='top')
-            if row==0:ax.set_title(f'{names[2]} − {names[1]}',color=INK,fontsize=13,pad=9)
+            if row==0:ax.set_xlabel(f'{names[2]} − {names[1]}')
             records.append(record)
     if im is not None:f.colorbar(im,cax=f.add_axes([.075,.115,.44,.012]),orientation='horizontal',extend='max').set_label('RGB error · 0 to 0.25',fontsize=10)
     if diffim is not None:f.colorbar(diffim,cax=f.add_axes([.545,.115,.15,.012]),orientation='horizontal',extend='both',ticks=[-.05,0,.05]).set_label('Δ error · negative = improvement',fontsize=10)
@@ -439,7 +431,7 @@ def foreground_coverage(root,manifest,a,z,output,note,audit):
         ax.contour(visibility>0,levels=[.5],colors=['#829DA7'],linewidths=.35)
         ax.set(xlim=(max(0,xx.min()-pad),min(visibility.shape[1],xx.max()+pad)),ylim=(min(visibility.shape[0],yy.max()+pad),max(0,yy.min()-pad)))
         ax.set_xticks([]);ax.set_yticks([])
-        ax.set_title(f'{name}  ·  pooled missing {pooled[v]:.3f}%',color=COLORS[v],fontsize=12)
+        ax.set_xlabel(f'{name} · {pooled[v]:.3f}%',color=COLORS[v])
     cb=f.colorbar(im,cax=f.add_axes([.935,.49,.009,.29]),ticks=[0,5,25,50,100]);cb.set_label('Missing / GT-visible samples (%) · √ scale',fontsize=9)
     ax=f.add_axes([.07,.15,.52,.24]);cdf=f.add_axes([.68,.15,.27,.24])
     shade_cycles(ax,audit.get('cycles',{}),float(times[0]),float(times[-1]))
@@ -517,7 +509,7 @@ def parts(a,z,output,note,audit,root=None,manifest=None):
         ax.set_xticks(ticks,[f'{t:.2f}' for t in ticks],fontsize=8)
         ax.set_yticks(range(ng),labels,fontsize=8)
         ax.set(xlim=(start,end),ylim=(ng-.5,-4.25),xlabel='Time (s)',ylabel='GT area bin · part count' if v==0 else '')
-        ax.set_title(f'{names[v]}  ·  pooled {pooled[v]:.3f}%',color=COLORS[v],pad=12)
+        ax.text(.02,.98,f'{names[v]} · {pooled[v]:.3f}%',transform=ax.transAxes,va='top',color=COLORS[v])
     if image is not None:
         cb=f.colorbar(image,cax=f.add_axes([.955,.50,.009,.23]));cb.set_label('Missing-area contribution (pp) · √ scale',fontsize=9)
     cdf=f.add_axes([.075,.15,.53,.255]);agg=f.add_axes([.735,.15,.22,.255])
@@ -546,11 +538,10 @@ def parts(a,z,output,note,audit,root=None,manifest=None):
             agg.annotate(f'{mean:.3f}%',(v+.08,mean),xytext=(0,10),textcoords='offset points',ha='center',fontsize=9,color=COLORS[v])
     cdf.set(xlim=(0,100),ylim=(0,102),xlabel='Within-part missing (%)',ylabel='Cumulative share (%)');panel(cdf,'Within-part loss · distribution & severe tails')
     cdf.legend([Line2D([0],[0],color=MUTED),Line2D([0],[0],color=MUTED,ls='--')],['Equal parts','GT area weighted'],fontsize=8,loc='lower left',frameon=False)
-    tail.set(xticks=range(len(thresholds)),xticklabels=[f'≥ {t}%' for t in thresholds],ylabel='Parts (%)');tail.set_title('Parts exceeding loss thresholds',fontsize=9,loc='left',pad=5);tail.tick_params(labelsize=7);tail.margins(y=.3);tail.grid(axis='y',alpha=.3);tail.set_axisbelow(True)
+    tail.set(xticks=range(len(thresholds)),xticklabels=[f'≥ {t}%' for t in thresholds],ylabel='Parts (%)');tail.tick_params(labelsize=7);tail.margins(y=.3);tail.grid(axis='y',alpha=.3);tail.set_axisbelow(True)
     agg.plot(np.arange(nv)-.08,pooled,color=MUTED,lw=1,alpha=.6,zorder=1)
     agg.set(xticks=range(nv),xticklabels=names,ylabel='Missing (%)',xlim=(-.5,nv-.5));agg.margins(y=.3);panel(agg,'Two aggregation scales')
     agg.legend([Line2D([0],[0],marker='D',color=MUTED,ls=''),Line2D([0],[0],marker='o',markerfacecolor='white',color=MUTED,ls='')],['GT area pooled','Equal parts / frame'],fontsize=8,loc='upper left',frameon=False)
-    f.text(.085,.442,'Full-resolution sample columns · dashed: full cycle · dotted: half-cycle · trace scale shared across versions',fontsize=9,color=MUTED)
     audit['parts']=dict(definition='missing pixel contribution by GT mean-area bins; percentage points of total common visible area',alpha_threshold=.5,
         size_groups=[dict(label=label,part_ids=z['part_ids'][g].tolist()) for label,g in zip(c['labels'],c['groups'])],
         total_parts=int((support.sum(0)>0).sum()),excluded_pixel_frames=c['excluded_pixel_frames'],
@@ -635,7 +626,6 @@ def efficiency(a,z,output,note,audit=None):
     labels=cycle_labels+['p5–p95','p25–p75'] if cycle.get('status')=='available' else ['Measurements','—','p5–p95','p25–p75']
     ax.legend(handles,labels,loc='upper left',frameon=False,ncol=4,fontsize=9,columnspacing=1.1)
     perf=a.get('performance',{});mem=perf.get('memory_peak');memory=f'{mem/1024**2:.1f} MiB' if mem else 'N/A'
-    f.text(.075,.115,f'{lat.shape[0]} repeats × {lat.shape[1]} frames   ·   ● centroid area ∝ Gaussians   ·   process peak {memory}',fontsize=10,color=MUTED)
     if audit is not None:audit['efficiency_display']=dict(points='all finite repeat-by-frame latencies with matched frame PSNR; no jitter or trimming',cycle_markers='odd/even common GT cycle',
         density='50x40 equal-width 2D histogram; Gaussian sigma 1.2 bins; contours enclose 50/90% smoothed grid mass',latency_quantiles=qrows,latency_limits=[xmin,xmax])
     save_figure(f,output,'07_efficiency','Density lanes: offset, not PSNR. Contours: distribution mass, not confidence regions. Timing scope: export record.',note)
@@ -688,15 +678,11 @@ def motion(a,z,output,note,audit):
                 if value is not None and np.isfinite(value):
                     ax.annotate(f'{names[v]}  {value:.4g}',(j,values[j]),xytext=(8,12-v*15),textcoords='offset points',fontsize=8,color=COLORS[v])
     ax.set(xlim=(-.35,max(len(keys)-.45,.65)),ylim=(-.08,1.1));ax.set_axis_off()
-    f.text(.075,.86,profile_title,fontsize=13,weight='bold')
-    if profile_title=='Measured point-motion diagnostics':
-        f.text(.075,.19,'Joint pivots / part rotations were not exported.\nPoint diagnostics do not replace joint constraints.',fontsize=9,color=MUTED)
     cycle=audit.get('cycles',{})
     if len(z['times']):
         shade_cycles(main,cycle,float(z['times'][0]),float(z['times'][-1]))
         shade_cycles(res,cycle,float(z['times'][0]),float(z['times'][-1]),labels=False)
     cycle_label=f"T = {cycle['period_seconds']:.3f} s · common GT" if cycle.get('status')=='available' else 'Cycle unavailable'
-    f.text(.50,.855,cycle_label,fontsize=11,color=MUTED)
     curves=[]
     for v in range(nv):
         curve=z.get(f'position_{v}',np.array([]));curves.append(curve)
