@@ -66,19 +66,3 @@ if (animation && animationToggle) {
   animation.play().then(syncPlayback).catch(syncPlayback);
 }
 
-const sectionLinks = [...document.querySelectorAll('.section-nav a')];
-if ('IntersectionObserver' in window) {
-  const sectionObserver = new IntersectionObserver(entries => {
-    const visible = entries.filter(entry => entry.isIntersecting);
-    if (!visible.length) return;
-    const id = visible[0].target.id;
-    sectionLinks.forEach(link => {
-      if (link.hash === '#' + id) link.setAttribute('aria-current', 'location');
-      else link.removeAttribute('aria-current');
-    });
-  }, { rootMargin: '-10% 0px -45% 0px', threshold: 0 });
-  sectionLinks.forEach(link => {
-    const target = document.querySelector(link.hash);
-    if (target) sectionObserver.observe(target);
-  });
-}

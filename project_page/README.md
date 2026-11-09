@@ -55,4 +55,6 @@ The full-resolution GIF is stored as three binary `.part` files with a `.parts.j
 
 The header uses two explicit title lines, with the M / E / R / C / y letters emphasized. Keywords stay in one row (horizontally scrollable on narrow devices). The square nine-object grid scales to viewport height and retains three columns on mobile; use the existing full-image dialog to inspect details.
 
-The first page aligns the supplied wide motion pipeline on the left with the animation on the right; a color-emphasized overview sits beneath the pipeline. Author names include mailto contacts. Desktop section navigation sits in the right sidebar; small screens use a bottom navigation bar and stacked content.
+The first page aligns the supplied wide motion pipeline on the left with the animation on the right; a color-emphasized overview sits beneath the pipeline. Author names include mailto contacts. Section navigation has been removed; small screens use stacked content. A short explanation sits below the animation.
+
+Tables 1, 2 and 5 use the supplied high-resolution PNGs in `assets/tables/` to exactly preserve publication typography, rules, shading and numbers. All open in the figure dialog. Table 1 also retains its semantic text table for screen readers. The three summary cards report unchanged values.

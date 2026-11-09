@@ -12,13 +12,13 @@
   <meta name="twitter:card" content="summary_large_image">
   <title>MERCY: Monocular Event-boosted Rigid-Motion Coherent 4D Gaussian Splatting Reconstruction Dynamic Object</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=mercy-3">
+  <link rel="stylesheet" href="styles.css?v=mercy-4">
   <link rel="preload" href="assets/web/reconstruction-poster.webp" as="image">
-  <script src="script.js?v=mercy-3" defer></script>
+  <script src="script.js?v=mercy-4" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-    <nav class="section-nav" aria-label="Page sections"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#visualizations">Visualizations</a></nav>
+
 <main id="main">
   <header class="publication-header">
     <h1 class="publication-title"><span class="title-line"><span class="title-brand">MERCY:</span> <span class="acronym-letter">M</span>onocular <span class="acronym-letter">E</span>vent-boosted <span class="acronym-letter">R</span>igid-Motion <span class="acronym-letter">C</span>oherent</span><span class="title-line">4D Gaussian Splatting Reconstruction D<span class="acronym-letter">y</span>namic Object</span></h1>
@@ -57,6 +57,7 @@
         </div>
         <div class="animation-controls"><button id="animation-toggle" class="quiet-button" type="button" aria-controls="reconstruction-animation" aria-pressed="true" hidden>Pause animation</button></div>
         <p id="animation-status" role="status" class="visually-hidden"></p>
+        <figcaption class="motion-caption"><strong>One viewpoint, nine moving objects.</strong> Mercy models motion through locally rigid parts while preserving a coherent Gaussian representation. Event supervision helps refine motion over time.</figcaption>
       </figure>
     </section>
   </div>
@@ -81,9 +82,12 @@
   <section id="results" class="section wide results" aria-labelledby="results-title">
     <p class="eyebrow">Quantitative results</p>
     <h2 id="results-title">Better reconstruction across nine objects</h2>
-    <p class="section-intro">Full-image reconstruction quality for MaTGS, MonoGS and Mercy, reproduced from the supplied results table.</p>
-    <div class="result-stats" aria-label="Summary of reported reconstruction results"><div><strong>9 / 9</strong><span>Objects with the highest PSNR</span></div><div><strong>+6.75 dB</strong><span>Mean PSNR gain over MonoGS</span></div><div><strong>−69.2%</strong><span>Mean LPIPS change vs. MonoGS</span></div></div>
-    <div class="table-scroll" role="region" aria-label="Reconstruction metrics for nine objects; scroll horizontally on small screens" tabindex="0">
+    <div class="result-stats" aria-label="Summary of reported reconstruction results">
+      <div class="stat-card stat-blue"><span class="stat-value">9 <small>/ 9</small></span><strong>Objects with the<br>highest PSNR</strong></div>
+      <div class="stat-card stat-green"><span class="stat-value">+6.75 <small>dB</small></span><strong>Mean PSNR gain<br>over MonoGS</strong></div>
+      <div class="stat-card stat-purple"><span class="stat-value">−69.2<small>%</small></span><strong>Mean LPIPS change<br>vs. MonoGS</strong></div>
+    </div>
+    <div class="visually-hidden" aria-label="Text version of Table 1">
       <table id="reconstruction-table"><caption>Table 1. Image reconstruction quality across nine objects.</caption><thead><tr><th rowspan="2" scope="col">Object</th>
 <th colspan="3" scope="colgroup">PSNR (dB) ↑</th>
 <th colspan="3" scope="colgroup">SSIM ↑</th>
@@ -231,8 +235,17 @@
 </tr>
 </tbody></table>
     </div>
-    <p class="table-hint">Swipe horizontally to compare all four metrics and three methods.</p>
-    <p class="experiment-note">↑ Higher is better. ↓ Lower is better. Mercy columns are shaded. PSNR and SSIM are full-image metrics. Summary gains are object-wise macro-averages computed from the reported rounded values, not a new evaluation.</p>
+
+    <figure class="paper-table table-1">
+      <a class="zoomable" href="assets/tables/01_reconstruction.png" data-figure data-alt="Table 1: Image reconstruction quality" data-caption="Table 1: Image reconstruction quality. Original supplied table; Mercy columns are shaded light blue." aria-label="Enlarge Table 1: Image reconstruction quality"><img src="assets/tables/01_reconstruction.png" alt="Table 1: Image reconstruction quality. Comparison of MaTGS, MonoGS and Mercy across nine objects." width="3227" height="1304" loading="lazy" decoding="async"></a>
+    </figure>
+    <figure class="paper-table table-2">
+      <a class="zoomable" href="assets/tables/02_foreground_coverage.png" data-figure data-alt="Table 2: Foreground quality and coverage" data-caption="Table 2: Foreground quality and coverage. Original supplied table; Mercy columns are shaded light blue." aria-label="Enlarge Table 2: Foreground quality and coverage"><img src="assets/tables/02_foreground_coverage.png" alt="Table 2: Foreground quality and coverage. Comparison of MaTGS, MonoGS and Mercy across nine objects." width="3184" height="1537" loading="lazy" decoding="async"></a>
+    </figure>
+    <figure class="paper-table table-5">
+      <a class="zoomable" href="assets/tables/05_event_consistency.png" data-figure data-alt="Table 5: Event consistency" data-caption="Table 5: Event consistency. Original supplied table; Mercy columns are shaded light blue." aria-label="Enlarge Table 5: Event consistency"><img src="assets/tables/05_event_consistency.png" alt="Table 5: Event consistency. Comparison of MaTGS, MonoGS and Mercy across nine objects." width="3253" height="1334" loading="lazy" decoding="async"></a>
+    </figure>
+    <p class="experiment-note">Summary gains are object-wise macro-averages computed from the reported rounded values. Select any table to view the full-resolution original.</p>
     <p class="result-discussion"><strong>Fidelity and structural consistency.</strong> Mercy achieves the highest PSNR and SSIM and the lowest LPIPS across the nine objects in the supplied table. IoU also improves or ties the baselines; Fan ties MonoGS. The technical slides report a scene-dependent quality–efficiency trade-off: gains in reconstruction quality do not imply lower runtime for every object.</p>
   </section>
 

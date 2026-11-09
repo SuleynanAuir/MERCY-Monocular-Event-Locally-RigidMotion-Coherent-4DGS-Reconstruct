@@ -80,3 +80,23 @@ dialog{width:min(1500px,96vw);max-height:95vh;padding:58px 22px 22px;border:1px 
 
 @media(min-width:1001px){.publication-header{padding-bottom:12px}.publication-header h1.publication-title{margin-bottom:14px}.hero-layout{padding-top:14px;padding-bottom:20px}}
 @media(min-width:1001px) and (max-height:950px){.publication-header{padding-top:12px}.publication-header h1.publication-title{font-size:clamp(26px,2.2vw,32px);margin-bottom:10px}.contributors{font-size:16px;margin-bottom:9px}.keywords{margin-bottom:9px}.keyword{padding-block:6px}.resource-links a{padding:6px 16px}.hero-layout{padding-bottom:16px}}
+
+/* Results use the exact supplied publication tables. */
+body{padding-right:0;padding-bottom:0}
+.motion-caption{margin:18px 0 0;padding:17px 19px;border-left:3px solid #b8cfdf;background:#f7f9fb;color:#626e77;font-size:13px;line-height:1.85;text-align:left;border-radius:0 6px 6px 0}
+.motion-caption strong{display:block;color:var(--blue);font-size:15px;margin-bottom:5px}
+.result-stats{gap:18px;margin:28px 0 42px}
+.result-stats .stat-card{display:flex;align-items:center;justify-content:center;gap:18px;padding:23px 18px;border-radius:12px;border:1px solid #dfE8ef;text-align:left;box-shadow:0 4px 14px #244d6906}
+.stat-blue{background:linear-gradient(135deg,#eff6fc,#fafcfe);--stat-color:#28698f}
+.stat-green{background:linear-gradient(135deg,#edf7f2,#fbfdfc);--stat-color:#34775f}
+.stat-purple{background:linear-gradient(135deg,#f3effa,#fdfcfe);--stat-color:#78589a}
+.result-stats .stat-value{display:block;margin:0;color:var(--stat-color);font-size:36px;font-weight:700;line-height:1.15;letter-spacing:-.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stat-value small{font-size:20px;font-weight:500;letter-spacing:-.02em}
+.result-stats .stat-card strong{font-size:12px;font-weight:650;line-height:1.65;letter-spacing:0;color:#4d5b66}
+.paper-table{margin:0 auto 38px;width:100%;background:#fff}
+.paper-table.table-2{max-width:980px}
+.paper-table img{width:100%;height:auto}
+.paper-table .zoomable{border-radius:3px;transition:box-shadow .15s ease}
+.paper-table .zoomable:hover{box-shadow:0 0 0 3px #e6eef6}
+@media(max-width:1000px){.result-stats{gap:10px}.result-stats .stat-card{flex-direction:column;gap:9px;text-align:center;padding:18px 8px}.result-stats .stat-value{font-size:30px}.stat-value small{font-size:17px}}
+@media(max-width:640px){.result-stats{grid-template-columns:1fr;gap:10px;margin-bottom:28px}.result-stats .stat-card{flex-direction:row;justify-content:flex-start;gap:25px;text-align:left;padding:16px 20px}.result-stats .stat-value{min-width:128px}.motion-caption{font-size:12px;margin-top:12px;padding:13px 15px}.paper-table{margin-bottom:25px}}
