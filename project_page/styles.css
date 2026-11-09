@@ -116,3 +116,22 @@ body{padding-right:0;padding-bottom:0}
 .foreground-description{font-size:13px;line-height:1.8;color:#65717a;margin:10px 8px 0}
 .foreground-description strong{display:block;color:var(--blue);font-size:14px;margin-bottom:4px}
 @media(max-width:760px){.comparison-layout{grid-template-columns:1fr;gap:16px}.comparison-maps{max-width:520px;width:100%;margin:auto}.comparison-table{padding-top:0}.foreground-description{font-size:12px}.integrated-comparison{padding-block:20px}.comparison-maps .error-grid{width:100%}}
+
+/* Author profiles and reference-style resource buttons. */
+.author{display:flex;flex-direction:column;align-items:center}
+.author-name{display:flex;align-items:center;gap:7px}
+.contributors .author-name>a{display:inline-flex;align-items:center}
+.contributors a.author-email{font-size:10px;color:#74808a}
+.contributors .author-github{width:24px;height:24px;justify-content:center;border-radius:50%;transition:background .15s ease,transform .15s ease}
+.author-github svg{width:18px;height:18px;fill:currentColor}
+.contributors .github-blue{color:#2878aa}.contributors .github-purple{color:#8b59a8}.contributors .github-green{color:#30816b}
+.author-github:hover{background:#eef3f7;transform:translateY(-1px)}
+.publication-header .resource-links{gap:12px}
+.publication-header .resource-links a{background:#1e293b;border:1px solid #1e293b;color:#fff;border-radius:13px;padding:10px 20px;font-size:15px;font-weight:650;gap:9px;box-shadow:0 4px 8px #1823341a}
+.publication-header .resource-links a:hover{background:#334155;border-color:#334155;box-shadow:0 5px 12px #18233424}
+.publication-header .resource-links svg{width:19px;height:19px}
+.hf-icon{font-size:23px;line-height:1}
+.hero-layout{gap:28px}
+.hero-left{position:relative;align-self:stretch}
+.hero-left::after{content:"";position:absolute;top:0;bottom:0;right:-15px;border-right:1px dashed #bdc3c9;pointer-events:none}
+@media(max-width:700px){.hero-left::after{display:none}.hero-layout .teaser{border-top:1px dashed #bdc3c9;padding-top:14px}.publication-header .resource-links{gap:8px}.publication-header .resource-links a{font-size:12px;padding:9px 12px;border-radius:10px}.publication-header .resource-links svg{width:16px;height:16px}.hf-icon{font-size:20px}.contributors a.author-email{font-size:9px}}

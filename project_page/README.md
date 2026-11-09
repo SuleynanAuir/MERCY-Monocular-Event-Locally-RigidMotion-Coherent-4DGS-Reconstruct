@@ -60,3 +60,5 @@ The first page aligns the supplied wide motion pipeline on the left with the ani
 Tables 1, 2 and 5 use the supplied high-resolution PNGs in `assets/tables/` to exactly preserve publication typography, rules, shading and numbers. All open in the figure dialog. Table 1 also retains its semantic text table for screen readers. The three summary cards report unchanged values.
 
 The animation explanation directly adjoins the video, which autoplays muted in a continuous loop without play/pause buttons. Table 2 is paired with the square error-map grid in the Results section: maps on the left, the original table and a short interpretation on the right. Their top edges align on desktop, and the pair stacks on mobile.
+
+Author names include individually colored GitHub profile icons alongside their email contacts. Header resources use dark icon buttons and include the supplied Hugging Face dataset URL. A gray dashed divider separates the first-page columns.
