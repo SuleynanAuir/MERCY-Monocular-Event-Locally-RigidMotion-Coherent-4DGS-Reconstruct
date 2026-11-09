@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Arm",
+    "id": "arm",
+    "preview": "assets/web/arm-error.webp",
+    "full": "assets/vis/vis_arm_20261103_223400_955498/figures/vis_arm_20261103_223400_955498_05_error_maps.png"
+  },
+  {
+    "name": "Fan",
+    "id": "fan",
+    "preview": "assets/web/fan-error.webp",
+    "full": "assets/vis/vis_fan_20261104_001913_448096/figures/vis_fan_20261104_001913_448096_05_error_maps.png"
+  },
+  {
+    "name": "Gears",
+    "id": "gears",
+    "preview": "assets/web/gears-error.webp",
+    "full": "assets/vis/vis_gears_20261103_233556_829763/figures/vis_gears_20261103_233556_829763_05_error_maps.png"
+  },
+  {
+    "name": "Lamp",
+    "id": "lamp",
+    "preview": "assets/web/lamp-error.webp",
+    "full": "assets/vis/vis_lamp_20261104_000713_469918/figures/vis_lamp_20261104_000713_469918_05_error_maps.png"
+  },
+  {
+    "name": "Lego",
+    "id": "lego",
+    "preview": "assets/web/lego-error.webp",
+    "full": "assets/vis/vis_lego_20261103_235043_098252/figures/vis_lego_20261103_235043_098252_05_error_maps.png"
+  },
+  {
+    "name": "Metronome",
+    "id": "metronome",
+    "preview": "assets/web/metronome-error.webp",
+    "full": "assets/vis/vis_metronme/figures/metronome_events_parts_fixed_20261104_002014_841804_05_error_maps.png"
+  },
+  {
+    "name": "Microphone",
+    "id": "microphone",
+    "preview": "assets/web/microphone-error.webp",
+    "full": "assets/vis/vis_microphone_20261104_003158_924078/figures/vis_microphone_20261104_003158_924078_05_error_maps.png"
+  },
+  {
+    "name": "Robot",
+    "id": "robot",
+    "preview": "assets/web/robot-error.webp",
+    "full": "assets/vis/vis_robot_20261103_232552_018165/figures/vis_robot_20261103_232552_018165_05_error_maps.png"
+  },
+  {
+    "name": "Rotation",
+    "id": "rotation",
+    "preview": "assets/web/rotation-error.webp",
+    "full": "assets/vis/vis_rotation_20261103_234527_852096/figures/vis_rotation_20261103_234527_852096_05_error_maps.png"
+  }
+]
