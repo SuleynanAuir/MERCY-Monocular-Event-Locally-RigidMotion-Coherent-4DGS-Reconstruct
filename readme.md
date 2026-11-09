@@ -8,12 +8,6 @@ MERCY reconstructs coherent dynamic 3D Gaussians from a fixed monocular viewpoin
 
 [📄 Technical Report](project_page/ppt_all.pdf) · [🌐 Project Page](project_page/index.html) · [🎬 Reconstruction Demo](project_page/assets/web/reconstruction-4k.mp4)
 
-## Dataset
-
-![MERCY dataset overview](project_page/assets/mercy_data.png)
-
-Nine Blender scenes: **Arm, Fan, Gears, Lamp, Lego, Metronome, Microphone, Robot, and Rotation**. Each provides a **640 × 640, 30 FPS RGB video**, its first frame, an ESIM-simulated event stream `(x, y, t, p)`, and camera intrinsics `K` (PDF pp. 8–14).
-
 ## Workflow
 
 ![MERCY motion modeling and event supervision pipeline](project_page/assets/web/pipeline-wide.webp)
@@ -40,6 +34,20 @@ Method names follow PDF pp. 61–78.
 | MonoGS | Adds monocular video supervision to improve appearance; disconnected parts can remain. |
 | MERCY | Adds part-aware joint structure, motion smoothing, and event-supervised refinement for coherent motion and geometry. |
 
+
+## Dataset
+
+![MERCY dataset overview](project_page/assets/mercy_data.png)
+
+Nine Blender scenes: **Arm, Fan, Gears, Lamp, Lego, Metronome, Microphone, Robot, and Rotation**. Each provides a **640 × 640, 30 FPS RGB video**, its first frame, an ESIM-simulated event stream `(x, y, t, p)`, and camera intrinsics `K` (PDF pp. 8–14).
+
+## Key Concepts
+
+- **Dynamic Gaussians:** 3DGS represents a spatial scene; 4DGS also describes its evolution over time.
+- **Event supervision:** Events encode pixel-level log-intensity changes as position, timestamp, and polarity, providing motion supervision.
+- **Local rigidity:** Gaussians within a moving part share a rigid transformation, while static parts remain fixed.
+- **Joint and temporal coherence:** A joint tree, forward kinematics, and trajectory interpolation preserve connections and smooth motion beyond independent rotations and translations.
+- 
 ## Results
 
 ![Dynamic Gaussian reconstruction across nine objects](project_page/assets/web/reconstruction.gif)
@@ -60,14 +68,7 @@ Method names follow PDF pp. 61–78.
 
 ![Table 5: Event consistency](project_page/assets/tables/05_event_consistency.png)
 
-## Key Concepts
 
-- **Dynamic Gaussians:** 3DGS represents a spatial scene; 4DGS also describes its evolution over time.
-- **Event supervision:** Events encode pixel-level log-intensity changes as position, timestamp, and polarity, providing motion supervision.
-- **Local rigidity:** Gaussians within a moving part share a rigid transformation, while static parts remain fixed.
-- **Joint and temporal coherence:** A joint tree, forward kinematics, and trajectory interpolation preserve connections and smooth motion beyond independent rotations and translations.
-
-See PDF pp. 3–7, 20–24, 66, and 74–78.
 
 ## Acknowledgments
 
