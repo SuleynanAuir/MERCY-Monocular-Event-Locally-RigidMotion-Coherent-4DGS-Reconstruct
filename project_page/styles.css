@@ -135,3 +135,10 @@ body{padding-right:0;padding-bottom:0}
 .hero-left{position:relative;align-self:stretch}
 .hero-left::after{content:"";position:absolute;top:0;bottom:0;right:-15px;border-right:1px dashed #bdc3c9;pointer-events:none}
 @media(max-width:700px){.hero-left::after{display:none}.hero-layout .teaser{border-top:1px dashed #bdc3c9;padding-top:14px}.publication-header .resource-links{gap:8px}.publication-header .resource-links a{font-size:12px;padding:9px 12px;border-radius:10px}.publication-header .resource-links svg{width:16px;height:16px}.hf-icon{font-size:20px}.contributors a.author-email{font-size:9px}}
+
+/* Compact resource row. */
+.publication-header .resource-links{gap:8px}
+.publication-header .resource-links a{font-size:12px;line-height:1.5;padding:7px 12px;gap:6px;border-radius:9px;box-shadow:0 2px 5px #18233412}
+.publication-header .resource-links svg{width:15px;height:15px}
+.resource-links .hf-logo{display:block;width:18px;height:18px;flex-shrink:0;object-fit:contain}
+@media(max-width:700px){.publication-header .resource-links{gap:6px}.publication-header .resource-links a{font-size:11px;padding:6px 9px}.publication-header .resource-links svg{width:14px;height:14px}.publication-header .hf-logo{width:16px;height:16px}}
