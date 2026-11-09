@@ -1,0 +1,10 @@
+{
+  "target": "assets/web/reconstruction-hq.gif",
+  "sha256": "278785c86c55ddf1f9f40ade17ffe9e66e4d5cdda02c5f0418e42306940732c8",
+  "size": 72113514,
+  "parts": [
+    "assets/web/reconstruction-hq.gif.part01",
+    "assets/web/reconstruction-hq.gif.part02",
+    "assets/web/reconstruction-hq.gif.part03"
+  ]
+}
